@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.11
-Release: 10.devel
+Version: 0.99.13
+Release: 1.devel
 License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -29,9 +29,9 @@ Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
 
 %define docdir %{_docdir}/%{name}-%{version}
 %define ssldir /usr/share/ssl
-%define restart_flag %{_tmppath}/%{name}-restart-after-rpm-install
-%define dovecot-uid 97
-%define dovecot-gid 97
+%define restart_flag /tmp/%{name}-restart-after-rpm-install
+%define dovecot_uid 97
+%define dovecot_gid 97
 
 %description
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
@@ -94,7 +94,7 @@ do
 done
 
 %pre
-/usr/sbin/useradd -c "dovecot" -u %{dovecot-uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
+/usr/sbin/useradd -c "dovecot" -u %{dovecot_uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
 
 # stop service during installation, keep flag if it was running to restart later
 rm -f %{restart_flag}
@@ -147,6 +147,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Jan  6 2005 John Dennis <jdennis@redhat.com> 0.99.13-1.devel
+- bring up to date with latest upstream, 0.99.13, bug #143707
+  also fix bug #14462, bad dovecot-uid macro name
+
 * Thu Jan  6 2005 John Dennis <jdennis@redhat.com> 0.99.11-10.devel
 - fix bug #133618, removed LITERAL+ capability from capability string
 
