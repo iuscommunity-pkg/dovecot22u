@@ -1,6 +1,6 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.10.7
+Version: 0.99.10.9
 Release: 1,FC3,1
 License: GPL
 Group: System Environment/Daemons
@@ -8,7 +8,6 @@ Source: %{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Patch100: dovecot-0.99.10.4-conf.patch
-Patch101: dovecot-configure.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
@@ -32,7 +31,6 @@ in either of maildir or mbox formats.
 %setup -q -n %{name}-%{version}
 
 %patch100 -p1 -b .config
-%patch101 -p1 -b .configure
 
 %build
 rm -f ./configure
@@ -123,6 +121,22 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Aug  2 2004 John Dennis <jdennis@redhat.com> 0.99.10.9-1,FC3,1
+- bring up to date with latest upstream, fixes include:
+- LDAP support compiles now with Solaris LDAP library
+- IMAP BODY and BODYSTRUCTURE replies were wrong for MIME parts which
+  didn't contain Content-Type header.
+- MySQL and PostgreSQL auth didn't reconnect if connection was lost
+  to SQL server
+- Linking fixes for dovecot-auth with some systems
+- Last fix for disconnecting client when downloading mail longer than
+  30 seconds actually made it never disconnect client. Now it works
+  properly: disconnect when client hasn't read _any_ data for 30
+  seconds.
+- MySQL compiling got broken in last release
+- More PostgreSQL reconnection fixing
+
+
 * Mon Jul 26 2004 John Dennis <jdennis@redhat.com> 0.99.10.7-1,FC3,1
 - enable postgres and mySQL in build
 - fix configure to look for mysql in alternate locations
