@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.13
-Release: 4.devel
+Version: 0.99.14
+Release: 1.fc4
 License: LGPL
 Group: System Environment/Daemons
 
@@ -164,6 +164,23 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Feb 14 2005 John Dennis <jdennis@redhat.com> - 0.99.14-1.fc4
+- fix bug #147874, update to 0.99.14 release
+  v0.99.14 2005-02-11  Timo Sirainen <tss at iki.fi>
+  - Message address fields are now parsed differently, fixing some
+    issues with spaces. Affects only clients which use FETCH ENVELOPE
+    command.
+  - Message MIME parser was somewhat broken with missing MIME boundaries
+  - mbox: Don't allow X-UID headers in mails to override the UIDs we
+    would otherwise set. Too large values can break some clients and
+    cause other trouble.
+  - passwd-file userdb wasn't working
+  - PAM crashed with 64bit systems
+  - non-SSL inetd startup wasn't working
+  - If UID FETCH notices and skips an expunged message, don't return
+    a NO reply. It's not needed and only makes clients give error
+    messages.
+
 * Wed Feb  2 2005 John Dennis <jdennis@redhat.com> - 0.99.13-4.devel
 - fix bug #146198, clean up temp kerberos tickets
 
