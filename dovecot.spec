@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.14
-Release: 1.fc4
+Release: 2.fc4
 License: LGPL
 Group: System Environment/Daemons
 
@@ -164,6 +164,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Mar  7 2005 John Dennis <jdennis@redhat.com> 0.99.14-2.fc4
+- bump rev for gcc4 build
+
 * Mon Feb 14 2005 John Dennis <jdennis@redhat.com> - 0.99.14-1.fc4
 - fix bug #147874, update to 0.99.14 release
   v0.99.14 2005-02-11  Timo Sirainen <tss at iki.fi>
