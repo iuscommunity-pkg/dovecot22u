@@ -4,7 +4,7 @@
 #
 # Starts the dovecot daemon
 #
-# chkconfig: - 54 54
+# chkconfig: - 65 35
 # description: Dovecot Imap Server
 # processname: dovecot
 # Source function library.

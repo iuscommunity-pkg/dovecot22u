@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 7.devel
+Release: 8.devel
 License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -98,20 +98,6 @@ done
 # create a ssl cert
 if [ ! -f %{ssldir}/certs/dovecot.pem ]; then
 %{docdir}/examples/mkcert.sh &> /dev/null
-#pushd %{ssldir} &>/dev/null
-#umask 077
-#cat << EOF | openssl req -new -x509 -days 365 -nodes -out certs/dovecot.pem -keyout private/dovecot.pem &>/dev/null
-#--
-#SomeState
-#SomeCity
-#SomeOrganization
-#SomeOrganizationalUnit
-#localhost.localdomain
-#root@localhost.localdomain
-#EOF
-#chown root:root private/dovecot.pem certs/dovecot.pem
-#chmod 600 private/dovecot.pem certs/dovecot.pem
-#popd &>/dev/null
 fi
 exit 0
 
@@ -145,6 +131,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jan  5 2005 John Dennis <jdennis@redhat.com> 0.99.11-8.devel
+- fix bug #129539, dovecot starts too early,
+  set chkconfig to 65 35 to match cyrus-imapd
+- also delete some old commented out code from SSL certificate creation
+
 * Thu Dec 23 2004 John Dennis <jdennis@redhat.com> 0.99.11-7.devel
 - add UW to Dovecot migration documentation and scripts, bug #139954
   fix SSL documentation and scripts, add missing documentation, bug #139276
