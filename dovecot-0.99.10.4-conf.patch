@@ -1,0 +1,62 @@
+diff -urN dovecot-0.99.10.4.orig/dovecot-example.conf dovecot-0.99.10.4/dovecot-example.conf
+--- dovecot-0.99.10.4.orig/dovecot-example.conf	2003-11-08 05:21:22.000000000 -1000
++++ dovecot-0.99.10.4/dovecot-example.conf	2004-05-07 03:49:31.604463526 -1000
+@@ -4,7 +4,7 @@
+ # any of the lines. Exception to this are paths, they're just examples
+ # with real defaults being based on configure options. The paths listed here
+ # are for configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+-# --with-ssldir=/etc/ssl
++# --with-ssldir=/usr/share/ssl
+ 
+ # Base directory where to store runtime data.
+ #base_dir = /var/run/dovecot/
+@@ -33,8 +33,8 @@
+ # dropping root privileges, so keep the key file unreadable by anyone but
+ # root. Included doc/mkcert.sh can be used to easily generate self-signed
+ # certificate, just make sure to update the domains in dovecot-openssl.cnf
+-#ssl_cert_file = /etc/ssl/certs/dovecot.pem
+-#ssl_key_file = /etc/ssl/private/dovecot.pem
++#ssl_cert_file = /usr/share/ssl/certs/dovecot.pem
++#ssl_key_file = /usr/share/ssl/private/dovecot.pem
+ 
+ # SSL parameter file. Master process generates this file for login processes.
+ # It contains Diffie Hellman and RSA parameters.
+@@ -67,7 +67,7 @@
+ # Directory where authentication process places authentication UNIX sockets
+ # which login needs to be able to connect to. The sockets are created when
+ # running as root, so you don't have to worry about permissions.
+-#login_dir = /var/run/dovecot/login
++login_dir = /var/run/dovecot-login
+ 
+ # chroot login process to the login_dir. Only reason not to do this is if you
+ # wish to run the whole Dovecot without roots.
+@@ -288,7 +288,7 @@
+ # with is important to avoid deadlocks if other MTAs/MUAs are using both fcntl
+ # and flock. Some operating systems don't allow using both of them
+ # simultaneously, eg. BSDs. If dotlock is used, it's always created first.
+-#mbox_locks = dotlock fcntl
++mbox_locks = fcntl
+ 
+ # Should we create dotlock file even when we want only a read-lock? Setting
+ # this to yes hurts the performance when the mailbox is accessed simultaneously
+@@ -380,8 +380,8 @@
+ #   vpopmail: vpopmail library
+ #   ldap <config path>: LDAP, see doc/dovecot-ldap.conf
+ #   pgsql <config path>: a PostgreSQL database, see doc/dovecot-pgsql.conf
+-#auth_userdb = passwd
+-auth_userdb = pgsql /usr/local/etc/dovecot-pgsql.conf
++auth_userdb = passwd
++# auth_userdb = pgsql /usr/local/etc/dovecot-pgsql.conf
+ 
+ # Where password database is kept:
+ #   passwd: /etc/passwd or similiar, using getpwnam()
+@@ -391,7 +391,8 @@
+ #   vpopmail: vpopmail authentication
+ #   ldap <config path>: LDAP, see doc/dovecot-ldap.conf
+ #   pgsql <config path>: a PostgreSQL database, see doc/dovecot-pgsql.conf
+-auth_passdb = pgsql /usr/local/etc/dovecot-pgsql.conf
++# auth_passdb = pgsql /usr/local/etc/dovecot-pgsql.conf
++auth_passdb = pam
+ 
+ #auth_executable = /usr/libexec/dovecot/dovecot-auth
+ 
