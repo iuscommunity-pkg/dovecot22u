@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 8.devel
+Release: 9.devel
 License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -28,6 +28,7 @@ Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
 
 %define docdir %{_docdir}/%{name}-%{version}
 %define ssldir /usr/share/ssl
+%define restart_flag %{_tmppath}/%{name}-restart-after-rpm-install
 %define dovecot-uid 97
 %define dovecot-gid 97
 
@@ -93,11 +94,24 @@ done
 %pre
 /usr/sbin/useradd -c "dovecot" -u %{dovecot-uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
 
+# stop service during installation, keep flag if it was running to restart later
+rm -f %{restart_flag}
+/sbin/service %{name} status >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    touch %{restart_flag}
+    /sbin/service %{name} stop >/dev/null 2>&1
+fi
+
 %post
-/sbin/chkconfig --add dovecot
+/sbin/chkconfig --add %{name}
 # create a ssl cert
-if [ ! -f %{ssldir}/certs/dovecot.pem ]; then
+if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
 %{docdir}/examples/mkcert.sh &> /dev/null
+fi
+# Restart if it had been running before installation
+if [ -e %{restart_flag} ]; then
+  rm %{restart_flag}
+  /sbin/service %{name} start >/dev/null 2>&1
 fi
 exit 0
 
@@ -106,8 +120,8 @@ exit 0
 if [ $1 = 0 ]; then
  /usr/sbin/userdel dovecot 2>/dev/null || :
  /usr/sbin/groupdel dovecot 2>/dev/null || :
- [ -f /var/lock/subsys/dovecot ] && /sbin/service dovecot stop > /dev/null 2>&1
- /sbin/chkconfig --del dovecot
+ [ -f /var/lock/subsys/%{name} ] && /sbin/service %{name} stop > /dev/null 2>&1
+ /sbin/chkconfig --del %{name}
 fi
 
 %clean
@@ -131,6 +145,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jan  5 2005 John Dennis <jdennis@redhat.com> 0.99.11-9.devel
+- fix bug #134325, stop dovecot during installation
+
 * Wed Jan  5 2005 John Dennis <jdennis@redhat.com> 0.99.11-8.devel
 - fix bug #129539, dovecot starts too early,
   set chkconfig to 65 35 to match cyrus-imapd
