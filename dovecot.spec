@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.13
-Release: 2.devel
+Release: 3.devel
 License: LGPL
 Group: System Environment/Daemons
 
@@ -32,12 +32,10 @@ Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
 
 %if %{build_postgres}
 BuildRequires: postgresql-devel
-Prereq: postgresql
 %endif
 
 %if %{build_mysql}
 BuildRequires: mysql-devel
-Prereq: mysql
 %endif
 
 %define docdir %{_docdir}/%{name}-%{version}
@@ -161,6 +159,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Jan 17 2005 John Dennis <jdennis@redhat.com> 0.99.13-3.devel
+- fix bug #145214, force mbox_locks to fcntl only
+- fix bug #145241, remove prereq on postgres and mysql, allow rpm auto
+  dependency generator to pick up client lib dependency if needed.
+
 * Thu Jan 13 2005 John Dennis <jdennis@redhat.com> 0.99.13-2.devel
 - make postgres & mysql conditional build
 - remove execute bit on migration example scripts so rpm does not pull
