@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 1.FC3.1
+Release: 1.FC3.2
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
