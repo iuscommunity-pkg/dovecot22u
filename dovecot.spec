@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 9.devel
+Release: 10.devel
 License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -13,6 +13,7 @@ Source5: migrate-users
 Source6: perfect_maildir.pl
 Patch100: dovecot-conf.patch
 Patch101: dovecot-configfile.patch
+Patch102: dovecot-0.99-no-literal-plus-capability.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
@@ -44,6 +45,7 @@ in either of maildir or mbox formats.
 %patch100 -p1 -b .config
 cp $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot-example.conf $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot.conf
 %patch101 -p1 -b .configfile
+%patch102 -p1 -b .no-literal-plus-capability
 
 %build
 rm -f ./configure
@@ -145,6 +147,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Jan  6 2005 John Dennis <jdennis@redhat.com> 0.99.11-10.devel
+- fix bug #133618, removed LITERAL+ capability from capability string
+
 * Wed Jan  5 2005 John Dennis <jdennis@redhat.com> 0.99.11-9.devel
 - fix bug #134325, stop dovecot during installation
 
