@@ -1,6 +1,6 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.10.6
+Version: 0.99.10.7
 Release: 1,FC3,1
 License: GPL
 Group: System Environment/Daemons
@@ -8,10 +8,13 @@ Source: %{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Patch100: dovecot-0.99.10.4-conf.patch
+Patch101: dovecot-configure.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRequires: mysql-devel
+BuildRequires: postgresql-devel
 BuildRequires: openssl-devel
 BuildRequires: openldap-devel
 BuildRequires: pam-devel
@@ -29,9 +32,18 @@ in either of maildir or mbox formats.
 %setup -q -n %{name}-%{version}
 
 %patch100 -p1 -b .config
+%patch101 -p1 -b .configure
 
 %build
-%configure --with-ssl=openssl --with-ssldir=/usr/share/ssl --with-ldap
+rm -f ./configure
+aclocal
+autoconf
+%configure                           \
+	--with-pgsql                 \
+	--with-mysql                 \
+	--with-ssl=openssl           \
+	--with-ssldir=/usr/share/ssl \
+	--with-ldap
 
 make
 
@@ -111,6 +123,20 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Jul 26 2004 John Dennis <jdennis@redhat.com> 0.99.10.7-1,FC3,1
+- enable postgres and mySQL in build
+- fix configure to look for mysql in alternate locations
+- nuke configure script in tar file, recreate from configure.in using autoconf
+
+- bring up to latest upstream, which included:
+- Added outlook-pop3-no-nuls workaround to fix Outlook hang in mails with NULs.
+- Config file lines can now contain quoted strings ("value ")
+- If client didn't finish downloading a single mail in 30 seconds,
+  Dovecot closed the connection. This was supposed to work so that
+  if client hasn't read data at all in 30 seconds, it's disconnected.
+- Maildir: LIST now doesn't skip symlinks
+
+
 * Wed Jun 30 2004 John Dennis <jdennis@redhat.com>
 - bump rev for build
 - change rev for FC3 build
