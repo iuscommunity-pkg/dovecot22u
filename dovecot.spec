@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 1.FC3.3
-License: GPL
+Release: 1.FC3.4
+License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
 Source1: dovecot.init
@@ -121,6 +121,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Oct 21 2004 John Dennis <jdennis@redhat.com>
+- fix bug #136623
+  Change License field from GPL to LGPL to reflect actual license
+
 * Thu Sep 30 2004 John Dennis <jdennis@redhat.com> 0.99.11-1.FC3.3
 - fix bug #124786, listen to ipv6 as well as ipv4
 
