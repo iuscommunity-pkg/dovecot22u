@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.10.9
-Release: 1,FC3,1
+Release: 1.FC3.2
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Aug  4 2004 John Dennis <jdennis@redhat.com>
+- change release field separator from comma to dot, bump build number
+
 * Mon Aug  2 2004 John Dennis <jdennis@redhat.com> 0.99.10.9-1,FC3,1
 - bring up to date with latest upstream, fixes include:
 - LDAP support compiles now with Solaris LDAP library
