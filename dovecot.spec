@@ -1,13 +1,17 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 2.FC4.1
+Release: 6.devel
 License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-Patch100: dovecot-0.99.10.4-conf.patch
+Source3: maildir-migration.txt
+Source4: migrate-folders
+Source5: migrate-users
+Source6: perfect_maildir.pl
+Patch100: dovecot-conf.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
@@ -19,7 +23,11 @@ BuildRequires: openldap-devel
 BuildRequires: pam-devel
 BuildRequires: pkgconfig
 BuildRequires: zlib-devel
+BuildRequires: gettext-devel
 Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
+
+%define docdir %{_docdir}/%{name}-%{version}
+%define ssldir /usr/share/ssl
 
 %description
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
@@ -35,21 +43,25 @@ in either of maildir or mbox formats.
 %build
 rm -f ./configure
 aclocal
-autoconf
-%configure                           \
-	--with-pgsql                 \
-	--with-mysql                 \
-	--with-ssl=openssl           \
-	--with-ssldir=/usr/share/ssl \
+automake -a -f
+autoconf -f
+%configure                           		\
+	--with-docdir=%{docdir}			\
+	--with-logindir=/var/run/dovecot-login	\
+	--with-mbox-locks=fcntl			\
+	--with-pgsql                 		\
+	--with-mysql                 		\
+	--with-ssl=openssl           		\
+	--with-ssldir=%{ssldir} 		\
 	--with-ldap
 
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-%makeinstall
+make DESTDIR=$RPM_BUILD_ROOT install
+
 rm -rf $RPM_BUILD_ROOT/%{_datadir}/%{name}
-install -m 644 dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rc.d/init.d
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/rc.d/init.d/dovecot
 
@@ -57,17 +69,19 @@ mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pam.d
 install -m 644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/pam.d/dovecot
 
 # generate ghost .pem file
-mkdir -p $RPM_BUILD_ROOT/%{_datadir}/ssl/{certs,private}
-touch $RPM_BUILD_ROOT/%{_datadir}/ssl/{certs,private}/dovecot.pem
-chmod 600 $RPM_BUILD_ROOT/%{_datadir}/ssl/{certs,private}/dovecot.pem
+mkdir -p $RPM_BUILD_ROOT/%{ssldir}/{certs,private}
+touch $RPM_BUILD_ROOT/%{ssldir}/{certs,private}/dovecot.pem
+chmod 600 $RPM_BUILD_ROOT/%{ssldir}/{certs,private}/dovecot.pem
 
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot-login
 
-# the dovecot make install installs docs.  blah.
-rm -rf $RPM_BUILD_ROOT/%{_docdir}/%{name}
-rm -f $RPM_BUILD_ROOT/etc/dovecot-example.conf
+install -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
+for f in maildir-migration.txt migrate-folders migrate-users perfect_maildir.pl
+do
+    install -m644 $RPM_SOURCE_DIR/$f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
+done
 
 %pre
 /usr/sbin/useradd -c "dovecot" -u 97 -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
@@ -75,8 +89,8 @@ rm -f $RPM_BUILD_ROOT/etc/dovecot-example.conf
 %post
 /sbin/chkconfig --add dovecot
 # create a ssl cert
-if [ ! -f %{_datadir}/ssl/certs/dovecot.pem ]; then
-pushd %{_datadir}/ssl &>/dev/null
+if [ ! -f %{ssldir}/certs/dovecot.pem ]; then
+pushd %{ssldir} &>/dev/null
 umask 077
 cat << EOF | openssl req -new -x509 -days 365 -nodes -out certs/dovecot.pem -keyout private/dovecot.pem &>/dev/null
 --
@@ -107,12 +121,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc doc/*.txt doc/dovecot-openssl.cnf doc/mkcert.sh INSTALL AUTHORS ChangeLog COPYING TODO README NEWS COPYING.LGPL
+%doc %{docdir}
 %config(noreplace) %{_sysconfdir}/dovecot.conf
 %config %{_sysconfdir}/rc.d/init.d/dovecot
 %config %{_sysconfdir}/pam.d/dovecot
-%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_datadir}/ssl/certs/dovecot.pem
-%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_datadir}/ssl/private/dovecot.pem
+%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
+%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/*
 %{_sbindir}/dovecot

@@ -1,0 +1,315 @@
+Replacing UW-IMAP with Dovecot on Red Hat Enterprise Linux 3.
+
+G.R.Keech <rkeech@redhat.com>
+
+2004-11-09
+
+Version 1.0
+
+
+Summary
+
+The IMAP server in Red Hat Enterprise Linux version 3 (RHEL3) is the
+University of Washington (UW) implemenation.  UW IMAP uses the mbox
+mail storage format which has been found to have significant
+scalability and performance issues.  This paper describes how to
+replace UW IMAP with the Dovecot IMAP server which uses the maildir
+mail storage format and, consequently, is significantly faster.
+
+
+Maildir vs Mbox
+
+Format issues. The mbox format holds email with one file corresponding
+to an entire mail folder.  Maildir, on the other hand, stores messages
+one directory per folder, with each message being a single file.  The
+mbox format doesn't scale well when many users have large mail folders
+which are polled frequently.  When the sum of sizes of all the
+frequently polled mail greatly exceed the system's RAM, then mail
+boxes cannot be effectively cached in RAM.  This leads to a situation
+where mbox files are being continually re-read with each poll by each
+mail client, leading to excessive IO activity and poor performance.
+
+Example.  Here is a real example of poor performance using UW IMAP.
+The site characteristics were as follows:
+
+*	about 116 active mail accounts with users using a mix of both
+Outlook express and Outlook;
+
+*	Mail clients poll for new mail every five minutes;
+
+*	1GB system RAM in mail server;
+
+*	Mail server using Postfix on RHEL3 (kernel 2.4.21-20.EL);
+
+*	System has single 3.0GHz P4 processor and SATA disk;
+
+*	112 inboxes totalling 3.3GB (average about 30MB each);
+
+*	8.5GB of filed email in imap folders.
+
+Performance with mbox. When in use the load average on the mail server
+was normally between four and six with spikes above 15 not uncommon
+and spikes above 20 occasionally.  Most of this load was associated
+with instances of uw-imap in disk wait state.  The user experience in
+checking mail was very poor, despite this being a reasonably small
+site.  When users checked for new mail they frequently encountered
+server timeouts. For users with large inboxes, it was not uncommon
+for it to take between 60 and 90 seconds just to check for new mail.
+
+Performance with maildir. Once the imap service was changed to
+Dovecot, with all the other variables remaining unchanged, the
+situation improved dramatically.  Load average is very rarely above
+0.5 and is usually under 0.2 during working hours.  The user
+experience was improved significantly. Users no longer
+experience timeouts, and the time taken to check for new mail
+is usually only two or three seconds and always less than 10 seconds.
+
+
+Setting up Dovecot
+
+Dovecot.  The Dovecot IMAP server will replace UW IMAP in RHEL4. The
+Dovecot project is at http://dovecot.procontrol.fi/.  It was built for
+RHEL3 based on the package from the Beta of RHEL4.  The RHEL3 version
+used in this migration can be found at
+http://people.redhat.com/rkeech/#dovecot.
+
+Operation.  Dovecot, unlike uw-imap, runs as a conventional
+daemon-based service, ie it is not run from xinetd.  When running
+A typical process hierarchy when Dovecot is running looks as follows:
+
+dovecot --+--- dovecot-auth
+          +--- imap
+          +--- imap-login
+
+One instance of the "imap" process will exist for each mail client
+connection.  These imap processes execute with the user context of
+whichever mail account user is connecting. The main "dovecot" process
+runs as root, as does "dovecot-auth".  The imap-login processes run
+as user "dovecot".
+
+Configuration.  Dovecot is configured with /etc/dovecot.conf. The relevant
+configuration setting that had to be changed in this case were as follows:
+
+  protocols = imap
+  default_mail_env = maildir:/data/mail2/%u/
+
+User home.  In this particular migration, mail account users did not
+need shell access and did not need home directories for anything but
+mail folder storage.  Accordingly it was possible to change the users'
+home directories to be the same as the mail spool area.  This can be
+achieved with (for this example)
+
+      usermod -d /data/mail2/<user>  <user>
+
+User shell.  Mail accounts can function without a user shell.  However
+if a mail auto-responder (ie "vacation") is used then a shell is necessary.
+Under RHEL3 a restricted shell is possible and reduces the security
+concerns associated with providing shell access to mail users.  For
+a restricted version of bash make a sybolic link called "/bin/rbash" 
+pointing to "/bin/bash", and make /bin/rbash the users' shell.
+
+Postfix delivery.  The location of mail delivery by Postfix is set
+according to the "mail_spool_directory" parameter. When using uw-imap
+this was set to "/var/spool/mail".  A trailing slash on the
+mail_spool_directory value directs Postfix to use maildir format.  The
+change to Postfix configuration in this case was done with:
+
+   postconf -e "mail_spool_directory = /data/mail2/"
+
+Directory structure.  For mail delivery to work with maildir a number
+of sub-directories must exist in the user's personal mail spool
+directory.  If user "fred" has mail delivered to /data/mail2/fred/
+then that directory should have subdirectories "cur" "new" and "tmp"
+in it.  The "new" directory is where incoming mail messages are put.
+Other folders structured in subdirectories, eg an imap folder called
+"Sent" for user "fred" would be /data/mail2/fred/.Sent, and there would
+be a line "Sent" in the file /data/mail2/fred/.subscriptions.
+
+Account creation.  In the case where the mail spool area is also the
+home directory, then for new accounts to accept maildir mail delivery,
+the following directories should be created:
+
+    /etc/skel/cur
+    /etc/skel/tmp
+    /etc/skel/new
+
+thus when an account is created, the necessary subdirectories are
+automatically created in the new user's home for a maildir-style
+inbox.
+
+
+Migrating Mbox folders to Maildirs
+
+Conversion.  The tools to convert existing mbox-style mailboxes
+and folders to maildir format are not provided with Dovecot or RHEL3.
+A tool called perfect_maildir was found on the Net which performs
+the conversion for a single folder only.  A script  was written to
+provide for bulk conversion of folders for all users.
+
+Perfect_maildir.  The tool lives at http://perfectmaildir.home-dn.net.
+Versions prior to 0.3 should not be used. Perfect_maildir is a Perl
+script.
+
+Migration plan.  The migration to maildir was performed within the
+following bounds:
+
+*	  existing inboxes were in /var/spool/mail
+
+*	  existing mail folders were under /home/<user>/
+
+*	  new inboxes and mailfolders were combined under /data/mail2/<user>/
+
+
+Migration scripts.  The scripts prepared to handle the bulk conversion are
+"migration-users" and "migrate-folders".  migrate-users creates the 
+necessary new user mail directories under the new base directory, which
+in this case was /data/mail2/.  In a situation where mail accounts
+needed to be setup, without the need to migrate folders then migrate-users
+would be sufficient, ie the second script would not be used.
+migrate-folders does the main work of the migration by calling perfect_maildir
+once for each mbox mailfolder including the users' inbox.  migrate-users
+must be run before migrate-folders.
+
+
+Pre-migration.  Before migrating, some things to check are:
+
+  Will the file system have enough inodes now that the number of files
+  is much larger?  "df -i" will help.  Run tune2fs as required to
+  increase the allowance for inodes.
+
+  Will there be a very large number of mail accounts?  The maximum
+  number of subdirectories per directory is 32k.  If the number of
+  accounts does or might exceed this, then change the Dovecot
+  default_mail_env to suit.  See the Dovecot documentation for more
+  information.
+
+  Where do you want dovecot to send its log messages?  By default it
+  uses syslog and sends to the mail facility.  This can be changed to
+  log to a its own log file if it is not convenient to log to maillog.
+
+Migration steps.  The actual mail file migration was performed as below
+using the scripts from http://people.rehdat.com/rkeech/#maildirmigration
+Note, the migration steps described here leave the original mbox inboxes
+and mail folders intact.  Should the migration fail, then the capacity
+to continue using mbox format is retained.
+
+1.  Ensure that no new accounts are created until the migration is
+complete.  Normal email operation can proceed until step X.  Do not
+change Postfix's mail_spool_directory until step Y.
+
+2.  Create a working directory /root/migrate/.
+
+3.  Create a list of users whose mailboxes are to be migrated
+/root/migrate/userlist-master.  The file has one user per line.
+
+4.  Create a list of mbox folders (excluding inboxes) to be migrated
+/root/migrate/folderlist-master  The file has one mbox per line and
+excludes the path to the user's home, eg
+
+        +-----------------
+ 	|fred/Drafts
+	|fred/private
+	|fred/Sent
+	|fred/office
+	|fred/projectx
+	|mary/Sent
+	|mary/private
+
+
+Check that the folderlist does not contain any folders with characters
+likely to be problematic when handled by scripts, ie folders whose names
+include quotation marks, comas, pound signs, "&" symbols etc.  Any such
+folders should have their names changed.  The name change in the
+folderlist file should reflect the name change on disk.  Folder names
+with spaces, hyphens, percent signs, and periods are known to be OK.
+
+5. Proceed with a test migration with a small subset of users by
+creating /root/migrate/userlist and /root/migrate/folderlist based on
+subsets of userlist-master and folderlist-master.  The test migration
+should be done with accounts that have representative mail in both
+inbox and imap folders.
+
+6. Ensure that the new mail base directory is clear.  In this example
+it means that /data/mail2/ is emtpy.
+
+7. Run migrate-users which should read /root/migrate/userlist and
+create the new user mail directories under /data/mail2/.  Check that
+a directory for each user is created under /data/mail2/.
+
+8. Start dovecot on an alternative port so as not to intefere with the
+normal uw-imap. This is done by editing /etc/dovecot.conf with
+
+       imap_listen = 1.2.3.4:1043
+
+Obviously change address 1.2.3.4 to correspond to the local server.
+Run 
+
+    service dovecot start
+
+Dovecot should start cleanly.
+
+It is assumed that the "protocols" and "default_mail_env" settings
+are already set in /etc/dovecot.conf as described in "Configuration"
+above.
+
+9. Run migrate-folders which should reate /root/migrate/folderlist and
+populate all the necessary maildirs under each user directory.
+This will invoke perfect_maildir.pl as required for each mbox file.
+If the mail folders are large the this step could take some time.
+
+10. Test that the files created under /data/mail2/ are visible as
+folders via Dovecot by configuring an imap mail client.to point
+to port 1043 on the mail server using on of the test migrated accounts.
+The imap mail client program should correctly sign on to the
+new imap server and the migrated folders should be visible to
+the user.  The mail client should test that:
+
+a.  new folders can be created and deleted.
+
+b.  that existing mail from migrated folders is visible and that
+it sorts correctly by date
+
+c.  test that existing mail can be moved between folders.
+
+d.  the mail client should see both an inbox and all other folders
+which were in the folderlist.
+
+If step 10 passes (ie folders are visible as expected) then proceed with
+full migration per the following steps.  Do not proceed further unless
+proper and expected mail folder operation is seen in the imap test of
+step 10.
+
+11. Prepare new folderlist and userlist files from the respective
+master files in the mitrate directory.
+
+12. Remove the test mail folders prepared steps 7 and 9 from the
+new base directory (/data/mail2/* in this example).
+
+13. Declare mail as unavailable.
+
+14. Stop incoming mail (service postfix stop) and prevent further
+use of imap (chkconfig imap off).
+
+15. Run migrate-users and migrate-folders again.
+
+16. Check a test user on the alternate port like step 10.
+If all is OK, then
+
+17. Re-configure dovecot to operate on the normal imap port
+by commenting out the imap_listen directive in dovecot.conf.
+Re-start dovecot.
+
+18. Check that mail can be read on the normal imap port.
+
+19. Change email delivery into the new folders:
+
+   postconf -e "mail_spool_directory = /data/mail2/"
+
+20 Re-start mail 
+
+   service postfix start
+
+21. Check and double check.  
+
+22. Go home.
+

@@ -1,0 +1,77 @@
+#!/bin/bash
+# file: migrate-users
+# author: Richard Keech <rkeech@redhat.com>
+
+# This script assists in the conversion of mail boxes
+# in mbox format to maildir format.
+# See also migrage-folders.
+
+#This is a list of users to have their mail folders created.
+#One user per line. 
+#Suggest create with cut -d: -f1 /etc/passwd > ~/migrate/u1
+#then remove inappropriate entries by hand.
+USERLIST=/root/migrate/userlist
+
+#Specify the location of the new location for mail folders.
+#This cannot be the same as the old location because it will
+#create directory names that contend with existing file names.
+NEWBASE=/var/spool/mail2/
+
+echo this will create user mail folders in $NEWBASE from
+echo the list of users in $USERLIST.
+echo
+echo "Do you want to continue? (y/n)"
+read ans
+if [ "$ans" != "y" ]
+then 
+  echo Good Bye.
+  exit 0
+fi
+
+if [ ! -f "$USERLIST" ]
+then 
+  echo Error: user list file \"$USERLIST\" does not exist.
+  exit 1
+fi
+
+if [ ! -d "$NEWBASE" ]
+then
+  echo Error: new base directory \"$NEWBASE\" does not exist.
+  exit 1
+fi
+
+while read user
+do
+  if grep ^${user}: /etc/passwd &> /dev/null
+  then
+    echo User \"$user\" is OK.
+  else
+    echo User \"$user\": is bogus.
+    exit 1
+  fi
+
+  mkdir ${NEWBASE}/$user 
+  newdir="${NEWBASE}/${user}/"
+  mkdir -p "$newdir"/cur
+  mkdir -p "$newdir"/new
+  mkdir -p "$newdir"/tmp
+  chmod -R 770 "${newdir}"
+  chown -R ${user}:mail "$newdir"
+done < $USERLIST
+
+echo 
+echo New mail directories have been created under $NEWBASE
+echo
+echo If required, prepare a list of existing mbox folders
+echo as /root/migrate/folderlist and run migrate-folders.
+echo
+echo To make the new base mail directory active, change the
+echo mail_spool_directory setting for postfix using
+echo postconf -e \"mail_spool_directory = ${NEWBASE}/\"
+echo and change Dovecots default_mail_env setting in
+echo /etc/dovecot.conf to
+echo default_mail_env = maildir:${NEWBASE}/%u
+echo
+echo If you want to migrate existing mail folders then defer
+echo the dovecot and postfix changes until the folder migration
+echo is complete.
