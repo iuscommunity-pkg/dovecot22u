@@ -39,13 +39,11 @@ diff -urN dovecot-0.99.10.4.orig/dovecot-example.conf dovecot-0.99.10.4/dovecot-
  
  # Should we create dotlock file even when we want only a read-lock? Setting
  # this to yes hurts the performance when the mailbox is accessed simultaneously
-@@ -380,8 +380,8 @@
+@@ -380,7 +380,8 @@
  #   vpopmail: vpopmail library
  #   ldap <config path>: LDAP, see doc/dovecot-ldap.conf
  #   pgsql <config path>: a PostgreSQL database, see doc/dovecot-pgsql.conf
--#auth_userdb = passwd
--auth_userdb = pgsql /usr/local/etc/dovecot-pgsql.conf
-+auth_userdb = passwd
+ auth_userdb = passwd
 +# auth_userdb = pgsql /usr/local/etc/dovecot-pgsql.conf
  
  # Where password database is kept:

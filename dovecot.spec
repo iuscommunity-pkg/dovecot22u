@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.10.4
-Release: 4
+Version: 0.99.10.5
+Release: 1
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -10,9 +10,6 @@ Source2: dovecot.pam
 Patch100: dovecot-0.99.10.4-conf.patch
 
 # Patches 500+ from upstream fixes
-Patch500: dovecot-0.99.10.4-maildir.patch
-Patch501: dovecot-0.99.10.4-customflags-fix.patch
-Patch502: dovecot-0.99.10.4-imap-fetch-body-section.patch
 URL: http://dovecot.procontrol.fi/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: openssl-devel
@@ -32,10 +29,6 @@ in either of maildir or mbox formats.
 %setup -q -n %{name}-%{version}
 
 %patch100 -p1 -b .config
-
-%patch500 -p0 -b .maildir
-%patch501 -p0 -b .customflags-fix
-%patch502 -p1 -b .imap-fetch-body-section
 
 %build
 %configure --with-ssl=openssl --with-ssldir=/usr/share/ssl --with-ldap
@@ -118,6 +111,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu May 27 2004 David Woodhouse <dwmw2@redhat.com> 0.99.10.5-1
+- Update to 0.99.10.5 to fix maildir segfaults (#123022)
+
 * Fri May 07 2004 Warren Togami <wtogami@redhat.com> 0.99.10.4-4
 - default auth config that is actually usable
 - Timo Sirainen (author) suggested functionality fixes
