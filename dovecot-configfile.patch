@@ -1,7 +1,6 @@
-diff -u dovecot-0.99.13/dovecot-example.conf dovecot-0.99.13/dovecot.conf 
 --- dovecot-0.99.13/dovecot-example.conf	2004-12-29 13:00:24.000000000 -0500
-+++ dovecot-0.99.13/dovecot.conf	2005-01-07 13:17:53.000000000 -0500
-@@ -1,17 +1,11 @@
++++ dovecot-0.99.13/dovecot.conf	2005-01-13 14:24:24.000000000 -0500
+@@ -1,30 +1,24 @@
  ## Dovecot 1.0 configuration file
  
 -# Default values are shown after each value, it's not required to uncomment
@@ -20,7 +19,13 @@ diff -u dovecot-0.99.13/dovecot-example.conf dovecot-0.99.13/dovecot.conf
  
  # IP or host address where to listen in for connections. It's not currently
  # possible to specify multiple addresses. "*" listens in all IPv4 interfaces.
-@@ -23,8 +17,8 @@
+ # "[::]" listens in all IPv6 interfaces, but may also listen in all IPv4
+ # interfaces depending on the operating system. You can specify ports with
+ # "host:port".
+-#imap_listen = *
+-#pop3_listen = *
++imap_listen = [::]
++pop3_listen = [::]
  
  # IP or host address where to listen in for SSL connections. Defaults
  # to above non-SSL equilevants if not specified.

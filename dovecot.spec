@@ -1,9 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.13
-Release: 1.devel
+Release: 2.devel
 License: LGPL
 Group: System Environment/Daemons
+
+%define build_postgres 1
+%define build_mysql 1
+
 Source: %{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
@@ -11,6 +15,7 @@ Source3: maildir-migration.txt
 Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
+Source7: dovecot-REDHAT-FAQ.txt
 Patch100: dovecot-conf.patch
 Patch101: dovecot-configfile.patch
 Patch102: dovecot-0.99-no-literal-plus-capability.patch
@@ -18,14 +23,22 @@ Patch102: dovecot-0.99-no-literal-plus-capability.patch
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: mysql-devel
-BuildRequires: postgresql-devel
 BuildRequires: openssl-devel
 BuildRequires: openldap-devel
 BuildRequires: pam-devel
 BuildRequires: pkgconfig
 BuildRequires: zlib-devel
 Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
+
+%if %{build_postgres}
+BuildRequires: postgresql-devel
+Prereq: postgresql
+%endif
+
+%if %{build_mysql}
+BuildRequires: mysql-devel
+Prereq: mysql
+%endif
 
 %define docdir %{_docdir}/%{name}-%{version}
 %define ssldir /usr/share/ssl
@@ -54,8 +67,12 @@ automake -a
 autoconf
 %configure                           \
 	--with-docdir=%{docdir}	     \
+%if %{build_postgres}
 	--with-pgsql                 \
+%endif
+%if %{build_mysql}
 	--with-mysql                 \
+%endif
 	--with-ssl=openssl           \
 	--with-ssldir=%{ssldir}      \
 	--with-ldap
@@ -82,15 +99,12 @@ chmod 700 $RPM_BUILD_ROOT/var/run/dovecot
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot-login
 
 # Install some of our own documentation
+install -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
+
 install -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
-for f in maildir-migration.txt
+for f in maildir-migration.txt migrate-folders migrate-users perfect_maildir.pl
 do
     install -m644 $RPM_SOURCE_DIR/$f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
-done
-
-for f in migrate-folders migrate-users perfect_maildir.pl
-do
-    install -m755 $RPM_SOURCE_DIR/$f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 done
 
 %pre
@@ -147,6 +161,13 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Jan 13 2005 John Dennis <jdennis@redhat.com> 0.99.13-2.devel
+- make postgres & mysql conditional build
+- remove execute bit on migration example scripts so rpm does not pull
+  in additional dependences on perl and perl modules that are not present
+  in dovecot proper.
+- add REDHAT-FAQ.txt to doc directory
+
 * Thu Jan  6 2005 John Dennis <jdennis@redhat.com> 0.99.13-1.devel
 - bring up to date with latest upstream, 0.99.13, bug #143707
   also fix bug #14462, bad dovecot-uid macro name
