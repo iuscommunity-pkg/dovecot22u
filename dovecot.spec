@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.10.5
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -111,6 +111,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
 * Thu May 27 2004 David Woodhouse <dwmw2@redhat.com> 0.99.10.5-1
 - Update to 0.99.10.5 to fix maildir segfaults (#123022)
 
