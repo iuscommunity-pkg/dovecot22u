@@ -1,16 +1,12 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.10
-Release: 6
+Version: 0.99.10.4
+Release: 1
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-Patch0: dovecot-0.99.10-fix-search-assert.patch
-Patch1: dovecot-0.99.10-drop-privs-2.6.patch
-Patch2: dovecot-0.99.10-auth-home.patch
-Patch3: dovecot-0.99.10-bodystructure.patch
 Patch100: dovecot-0.99.9.1-conf.patch
 URL: http://dovecot.procontrol.fi/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -30,10 +26,6 @@ in either of maildir or mbox formats.
 
 %setup -q -n %{name}-%{version}
 
-%patch0 -p0 -b .search
-%patch1 -p1 -b .26
-%patch2 -p1 -b .authhome
-%patch3 -p1 -b .bodystructure
 %patch100 -p1 -b .config
 
 %build
@@ -117,6 +109,14 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Nov 24 2003 Jeremy Katz <katzj@redhat.com> 0.99.10.4-1
+- update to 0.99.10.4
+
+* Mon Oct  6 2003 Jeremy Katz <katzj@redhat.com> 0.99.10-7
+- another patch from upstream to fix returning invalid data on partial 
+  BODY[part] fetches
+- patch to avoid confusion of draft/deleted in indexes
+
 * Tue Sep 23 2003 Jeremy Katz <katzj@redhat.com> 0.99.10-6
 - add some patches from upstream (#104288)
 
