@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.10.9
-Release: 1.FC3.2
+Version: 0.99.11
+Release: 1.FC3.1
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -121,6 +121,24 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Sep  8 2004 John Dennis <jdennis@redhat.com> 0.99.11-1.FC3.1
+- bring up to latest upstream,
+  comments from Timo Sirainen <tss at iki.fi> on release v0.99.11 2004-09-04  
+  + 127.* and ::1 IP addresses are treated as secured with
+    disable_plaintext_auth = yes
+  + auth_debug setting for extra authentication debugging
+  + Some documentation and error message updates
+  + Create PID file in /var/run/dovecot/master.pid
+  + home setting is now optional in static userdb
+  + Added mail setting to static userdb
+  - After APPENDing to selected mailbox Dovecot didn't always notice the
+    new mail immediately which broke some clients
+  - THREAD and SORT commands crashed with some mails
+  - If APPENDed mail ended with CR character, Dovecot aborted the saving
+  - Output streams sometimes sent data duplicated and lost part of it.
+    This could have caused various strange problems, but looks like in
+    practise it rarely caused real problems.
+
 * Wed Aug  4 2004 John Dennis <jdennis@redhat.com>
 - change release field separator from comma to dot, bump build number
 
