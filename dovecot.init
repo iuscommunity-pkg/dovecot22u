@@ -16,14 +16,11 @@ RETVAL=0
 prog="Dovecot Imap"
 
 start() {
-	# Check if dovecot is already running
-	if [ ! -f /var/lock/subsys/dovecot ]; then
-	    echo -n $"Starting $prog: "
-	    daemon /usr/sbin/dovecot
-	    RETVAL=$?
-	    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/dovecot
-	    echo
-	fi
+        echo -n $"Starting $prog: "
+	daemon /usr/sbin/dovecot
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/dovecot
+	echo
 }
 
 stop() {

@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.10.4
-Release: 1
+Release: 3
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -109,6 +109,12 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Feb 17 2004 Jeremy Katz <katzj@redhat.com> - 0.99.10.4-3
+- restart properly if it dies (#115594)
+
+* Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
 * Mon Nov 24 2003 Jeremy Katz <katzj@redhat.com> 0.99.10.4-1
 - update to 0.99.10.4
 
