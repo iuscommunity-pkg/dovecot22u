@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 1.FC3.2
+Release: 1.FC3.3
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Sep 30 2004 John Dennis <jdennis@redhat.com> 0.99.11-1.FC3.3
+- fix bug #124786, listen to ipv6 as well as ipv4
+
 * Wed Sep  8 2004 John Dennis <jdennis@redhat.com> 0.99.11-1.FC3.1
 - bring up to latest upstream,
   comments from Timo Sirainen <tss at iki.fi> on release v0.99.11 2004-09-04  
