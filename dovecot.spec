@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.13
-Release: 3.devel
+Release: 4.devel
 License: LGPL
 Group: System Environment/Daemons
 
@@ -19,6 +19,7 @@ Source7: dovecot-REDHAT-FAQ.txt
 Patch100: dovecot-conf.patch
 Patch101: dovecot-configfile.patch
 Patch102: dovecot-0.99-no-literal-plus-capability.patch
+Patch103: dovecot-pam-setcred.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
@@ -28,6 +29,9 @@ BuildRequires: openldap-devel
 BuildRequires: pam-devel
 BuildRequires: pkgconfig
 BuildRequires: zlib-devel
+# gettext-devel is needed for running autoconf because of the
+# presence of AM_ICONV
+BuildRequires: gettext-devel
 Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
 
 %if %{build_postgres}
@@ -57,6 +61,7 @@ in either of maildir or mbox formats.
 cp $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot-example.conf $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot.conf
 %patch101 -p1 -b .configfile
 %patch102 -p1 -b .no-literal-plus-capability
+%patch103 -p1 -b .pam-setcred
 
 %build
 rm -f ./configure
@@ -159,6 +164,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Feb  2 2005 John Dennis <jdennis@redhat.com> - 0.99.13-4.devel
+- fix bug #146198, clean up temp kerberos tickets
+
 * Mon Jan 17 2005 John Dennis <jdennis@redhat.com> 0.99.13-3.devel
 - fix bug #145214, force mbox_locks to fcntl only
 - fix bug #145241, remove prereq on postgres and mysql, allow rpm auto
