@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.11
-Release: 2.FC4
+Release: 2.FC4.1
 License: LGPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -121,7 +121,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Thu Nov 15 2004 Warren Togami <wtogami@redhat.com> 0.99.11-2.FC4
+* Thu Nov 15 2004 Warren Togami <wtogami@redhat.com> 0.99.11-2.FC4.1
 - rebuild against MySQL4
 
 * Thu Oct 21 2004 John Dennis <jdennis@redhat.com>
