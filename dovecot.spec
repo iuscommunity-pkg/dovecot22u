@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.10.5
-Release: 2
+Version: 0.99.10.6
+Release: 1,FC3,1
 License: GPL
 Group: System Environment/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -111,6 +111,23 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jun 30 2004 John Dennis <jdennis@redhat.com>
+- bump rev for build
+- change rev for FC3 build
+
+* Fri Jun 25 2004 John Dennis <jdennis@redhat.com> - 0.99.10.6-1
+- bring up to date with upstream,
+  recent change log comments from Timo Sirainen were:
+  SHA1 password support using OpenSSL crypto library
+  mail_extra_groups setting
+  maildir_stat_dirs setting
+  Added NAMESPACE capability and command
+  Autocreate missing maildirs (instead of crashing)
+  Fixed occational crash in maildir synchronization
+  Fixed occational assertion crash in ioloop.c
+  Fixed FreeBSD compiling issue
+  Fixed issues with 64bit Solaris binary
+
 * Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
 - rebuilt
 
