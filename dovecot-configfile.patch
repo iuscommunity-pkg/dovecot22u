@@ -42,8 +42,8 @@
  # certificate, just make sure to update the domains in dovecot-openssl.cnf
 -#ssl_cert_file = /etc/ssl/certs/dovecot.pem
 -#ssl_key_file = /etc/ssl/private/dovecot.pem
-+ssl_cert_file = /usr/share/ssl/certs/dovecot.pem
-+ssl_key_file = /usr/share/ssl/private/dovecot.pem
++ssl_cert_file = /etc/pki/dovecot/dovecot.pem
++ssl_key_file = /etc/pki/dovecot/private/dovecot.pem
  
  # SSL parameter file. Master process generates this file for login processes.
  # It contains Diffie Hellman and RSA parameters.
@@ -74,13 +74,13 @@ diff -u -r dovecot-0.99.11.orig/doc/mkcert.sh dovecot-0.99.11/doc/mkcert.sh
  OPENSSL=${OPENSSL-openssl}
 -SSLDIR=${SSLDIR-/etc/ssl}
 -OPENSSLCONFIG=${OPENSSLCONFIG-dovecot-openssl.cnf}
-+SSLDIR=${SSLDIR-/usr/share/ssl}
++SSLDIR=${SSLDIR-/etc/pki/dovecot}
 +OPENSSLCONFIG=${OPENSSLCONFIG-$SSLDIR/dovecot-openssl.cnf}
 +CERTNAME=${CERTNAME-dovecot}
  
 -CERTFILE=$SSLDIR/certs/imapd.pem
 -KEYFILE=$SSLDIR/private/imapd.pem
-+CERTFILE=$SSLDIR/certs/$CERTNAME.pem
++CERTFILE=$SSLDIR/$CERTNAME.pem
 +KEYFILE=$SSLDIR/private/$CERTNAME.pem
  
  if [ ! -d $SSLDIR/certs ]; then

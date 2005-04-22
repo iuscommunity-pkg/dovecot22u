@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.14
-Release: 3.fc4
+Release: 4.fc4
 License: LGPL
 Group: System Environment/Daemons
 
@@ -32,7 +32,7 @@ BuildRequires: zlib-devel
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
-Prereq: openssl, /sbin/chkconfig, /usr/sbin/useradd
+Prereq: openssl >= 0.9.7f-4, /sbin/chkconfig, /usr/sbin/useradd
 
 %if %{build_postgres}
 BuildRequires: postgresql-devel
@@ -43,7 +43,7 @@ BuildRequires: mysql-devel
 %endif
 
 %define docdir %{_docdir}/%{name}-%{version}
-%define ssldir /usr/share/ssl
+%define ssldir /etc/pki/%{name}
 %define restart_flag /tmp/%{name}-restart-after-rpm-install
 %define dovecot_uid 97
 %define dovecot_gid 97
@@ -93,9 +93,11 @@ mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pam.d
 install -m 644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/pam.d/dovecot
 
 # generate ghost .pem file
-mkdir -p $RPM_BUILD_ROOT/%{ssldir}/{certs,private}
-touch $RPM_BUILD_ROOT/%{ssldir}/{certs,private}/dovecot.pem
-chmod 600 $RPM_BUILD_ROOT/%{ssldir}/{certs,private}/dovecot.pem
+mkdir -p $RPM_BUILD_ROOT/%{ssldir}/private
+touch $RPM_BUILD_ROOT/%{ssldir}/dovecot.pem
+chmod 600 $RPM_BUILD_ROOT/%{ssldir}/dovecot.pem
+touch $RPM_BUILD_ROOT/%{ssldir}/private/dovecot.pem
+chmod 600 $RPM_BUILD_ROOT/%{ssldir}/private/dovecot.pem
 
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot
@@ -124,7 +126,13 @@ fi
 %post
 /sbin/chkconfig --add %{name}
 # create a ssl cert
-if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
+if [ -f /usr/share/ssl/certs/dovecot.pem -a ! -f %{ssldir}/%{name}.pem ]; then
+mv /usr/share/ssl/certs/dovecot.pem %{ssldir}/%{name}.pem
+fi
+if [ -f /usr/share/ssl/private/dovecot.pem -a ! -f %{ssldir}/private/%{name}.pem ]; then
+mv /usr/share/ssl/private/dovecot.pem %{ssldir}/private/%{name}.pem
+fi
+if [ ! -f %{ssldir}/%{name}.pem ]; then
 %{docdir}/examples/mkcert.sh &> /dev/null
 fi
 # Restart if it had been running before installation
@@ -153,7 +161,7 @@ rm -rf $RPM_BUILD_ROOT
 %config %{_sysconfdir}/rc.d/init.d/dovecot
 %config %{_sysconfdir}/pam.d/dovecot
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
-%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
+%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/*
@@ -164,6 +172,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Apr 22 2005 John Dennis <jdennis@redhat.com> - 0.99.14-4.fc4
+- openssl moved its certs, CA, etc. from /usr/share/ssl to /etc/pki
+
 * Tue Apr 12 2005 Tom Lane <tgl@redhat.com> 0.99.14-3.fc4
 - Rebuild for Postgres 8.0.2 (new libpq major version).
 

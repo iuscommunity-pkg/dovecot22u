@@ -5,7 +5,7 @@
  # with real defaults being based on configure options. The paths listed here
  # are for configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 -# --with-ssldir=/etc/ssl
-+# --with-ssldir=/usr/share/ssl
++# --with-ssldir=/etc/pki/dovecot
  
  # Base directory where to store runtime data.
  #base_dir = /var/run/dovecot/
@@ -26,8 +26,8 @@
  # certificate, just make sure to update the domains in dovecot-openssl.cnf
 -#ssl_cert_file = /etc/ssl/certs/dovecot.pem
 -#ssl_key_file = /etc/ssl/private/dovecot.pem
-+#ssl_cert_file = /usr/share/ssl/certs/dovecot.pem
-+#ssl_key_file = /usr/share/ssl/private/dovecot.pem
++#ssl_cert_file = /etc/pki/dovecot/dovecot.pem
++#ssl_key_file = /etc/pki/dovecot/private/dovecot.pem
  
  # SSL parameter file. Master process generates this file for login processes.
  # It contains Diffie Hellman and RSA parameters.
