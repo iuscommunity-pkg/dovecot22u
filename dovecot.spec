@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.14
-Release: 4.fc4
+Release: 5.fc4
 License: LGPL
 Group: System Environment/Daemons
 
@@ -44,7 +44,7 @@ BuildRequires: mysql-devel
 
 %define docdir %{_docdir}/%{name}-%{version}
 %define ssldir /etc/pki/%{name}
-%define restart_flag /tmp/%{name}-restart-after-rpm-install
+%define restart_flag /var/run/%{name}-restart-after-rpm-install
 %define dovecot_uid 97
 %define dovecot_gid 97
 
@@ -172,6 +172,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Apr 28 2005 John Dennis <jdennis@redhat.com> - 0.99.14-5.fc4
+- fix bug #156159 insecure location of restart flag file
+
 * Fri Apr 22 2005 John Dennis <jdennis@redhat.com> - 0.99.14-4.fc4
 - openssl moved its certs, CA, etc. from /usr/share/ssl to /etc/pki
 
