@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.14
-Release: 5.fc4
+Release: 6.fc5
 License: LGPL
 Group: System Environment/Daemons
 
@@ -172,6 +172,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Jul 22 2005 John Dennis <jdennis@redhat.com> - 0.99.14-6.fc5
+- fix bug #149673, add dummy PAM_TTY
+
 * Thu Apr 28 2005 John Dennis <jdennis@redhat.com> - 0.99.14-5.fc4
 - fix bug #156159 insecure location of restart flag file
 

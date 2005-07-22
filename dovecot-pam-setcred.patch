@@ -1,5 +1,5 @@
---- dovecot-0.99.13.orig/src/auth/passdb-pam.c	2004-12-19 00:25:15.000000000 -0500
-+++ dovecot-0.99.13/src/auth/passdb-pam.c	2005-02-02 16:18:59.177660000 -0500
+--- passdb-pam.c.pam-setcred	2005-01-30 02:52:53.000000000 -0500
++++ dovecot-0.99.14/src/auth/passdb-pam.c	2005-07-22 16:38:16.000000000 -0400
 @@ -180,12 +180,37 @@
  	}
  
@@ -38,3 +38,13 @@
  
  	if ((status = pam_acct_mgmt(pamh, 0)) != PAM_SUCCESS) {
  		*error = t_strdup_printf("pam_acct_mgmt(%s) failed: %s",
+@@ -228,6 +253,9 @@
+ 		str = t_strdup_printf("pam_start(%s) failed: %s",
+ 				      user, pam_strerror(pamh, status));
+ 	} else {
++		/* fix bug 149673, need dummy TTY for pam_access */
++		/* FIXME: should we check and report an error for PAM_TTY? */
++		pam_set_item(pamh, PAM_TTY, "dovecot");
+ 		status = pam_auth(pamh, user, &str);
+ 		if ((status2 = pam_end(pamh, status)) == PAM_SUCCESS) {
+ 			/* FIXME: check for PASSDB_RESULT_UNKNOWN_USER
