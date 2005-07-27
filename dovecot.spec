@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.14
-Release: 6.fc5
+Release: 7.fc5
 License: LGPL
 Group: System Environment/Daemons
 
@@ -20,6 +20,7 @@ Patch100: dovecot-conf.patch
 Patch101: dovecot-configfile.patch
 Patch102: dovecot-0.99-no-literal-plus-capability.patch
 Patch103: dovecot-pam-setcred.patch
+Patch104: dovecot-auth-log.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
@@ -62,6 +63,7 @@ cp $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot-example.con
 %patch101 -p1 -b .configfile
 %patch102 -p1 -b .no-literal-plus-capability
 %patch103 -p1 -b .pam-setcred
+%patch104 -p1 -b .auth-log
 
 %build
 rm -f ./configure
@@ -172,6 +174,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jul 27 2005 John Dennis <jdennis@redhat.com> - 0.99.14-7.fc5
+- fix bug #150888, log authenication failures with ip address
+
 * Fri Jul 22 2005 John Dennis <jdennis@redhat.com> - 0.99.14-6.fc5
 - fix bug #149673, add dummy PAM_TTY
 
