@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 0.99.14
-Release: 7.fc5
+Release: 8.fc5
 License: LGPL
 Group: System Environment/Daemons
 
@@ -174,6 +174,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Sep 30 2005 Tomas Mraz <tmraz@redhat.com> - 0.99.14-8.fc5
+- use include instead of pam_stack in pam config
+
 * Wed Jul 27 2005 John Dennis <jdennis@redhat.com> - 0.99.14-7.fc5
 - fix bug #150888, log authenication failures with ip address
 
