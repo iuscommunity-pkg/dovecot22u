@@ -1,14 +1,15 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 0.99.14
-Release: 10.fc5.1
+Version: 1.0
+Release: 0.beta2
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
+%define upstream 1.0.beta2
 
-Source: %{name}-%{version}.tar.gz
+Source: %{name}-1.0.beta2.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -43,7 +44,7 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 %endif
 
-%define docdir %{_docdir}/%{name}-%{version}
+%define docdir %{_docdir}/%{name}
 %define ssldir /etc/pki/%{name}
 %define restart_flag /var/run/%{name}-restart-after-rpm-install
 %define dovecot_uid 97
@@ -56,14 +57,14 @@ in either of maildir or mbox formats.
 
 %prep
 
-%setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{upstream}
 
-%patch100 -p1 -b .config
-cp $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot-example.conf $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}/dovecot.conf
+#%patch100 -p1 -b .config
+#cp $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-%{upstream}/dovecot.conf
 %patch101 -p1 -b .configfile
-%patch102 -p1 -b .no-literal-plus-capability
-%patch103 -p1 -b .pam-setcred
-%patch104 -p1 -b .auth-log
+#%patch102 -p1 -b .no-literal-plus-capability
+#%patch103 -p1 -b .pam-setcred
+#%patch104 -p1 -b .auth-log
 
 %build
 rm -f ./configure
@@ -71,7 +72,8 @@ aclocal
 automake -a
 autoconf
 %configure                           \
-	--with-docdir=%{docdir}	     \
+        INSTALL_DATA="install -c -p -m644" \
+	--with-doc		     \
 %if %{build_postgres}
 	--with-pgsql                 \
 %endif
@@ -95,24 +97,36 @@ mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pam.d
 install -m 644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/pam.d/dovecot
 
 # generate ghost .pem file
+mkdir -p $RPM_BUILD_ROOT/%{ssldir}/certs
 mkdir -p $RPM_BUILD_ROOT/%{ssldir}/private
-touch $RPM_BUILD_ROOT/%{ssldir}/dovecot.pem
-chmod 600 $RPM_BUILD_ROOT/%{ssldir}/dovecot.pem
+touch $RPM_BUILD_ROOT/%{ssldir}/certs/dovecot.pem
+chmod 600 $RPM_BUILD_ROOT/%{ssldir}/certs/dovecot.pem
 touch $RPM_BUILD_ROOT/%{ssldir}/private/dovecot.pem
 chmod 600 $RPM_BUILD_ROOT/%{ssldir}/private/dovecot.pem
 
-mkdir -p $RPM_BUILD_ROOT/var/run/dovecot
-chmod 700 $RPM_BUILD_ROOT/var/run/dovecot
-mkdir -p $RPM_BUILD_ROOT/var/run/dovecot-login
+mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/login
+chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
+chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
+
+# Install dovecot.conf and dovecot-openssl.cnf
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/
+install -p -m644 $RPM_SOURCE_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
+rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot-example.conf # dovecot seems to install this by itself
+install -p -m644 $RPM_SOURCE_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf
 
 # Install some of our own documentation
-install -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
+install -p -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
 
-install -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
+mkdir -p $RPM_BUILD_ROOT%{docdir}/examples/
+install -p -m755 $RPM_SOURCE_DIR/dovecot-%{upstream}/doc/mkcert.sh $RPM_BUILD_ROOT%{docdir}/examples/mkcert.sh
+
+install -p -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 for f in maildir-migration.txt migrate-folders migrate-users perfect_maildir.pl
 do
-    install -m644 $RPM_SOURCE_DIR/$f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
+    install -p -m644 $RPM_SOURCE_DIR/$f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 done
+
+mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
 
 %pre
 /usr/sbin/useradd -c "dovecot" -u %{dovecot_uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
@@ -128,13 +142,17 @@ fi
 %post
 /sbin/chkconfig --add %{name}
 # create a ssl cert
-if [ -f /usr/share/ssl/certs/dovecot.pem -a ! -f %{ssldir}/%{name}.pem ]; then
-mv /usr/share/ssl/certs/dovecot.pem %{ssldir}/%{name}.pem
+if [ -f %{ssldir}/%{name}.pem -a ! -f %{ssldir}/certs/%{name}.pem ]; then
+    mv  %{ssldir}/%{name}.pem %{ssldir}/certs/%{name}.pem
+else
+    if [ -f /usr/share/ssl/certs/dovecot.pem -a ! -f %{ssldir}/certs/%{name}.pem ]; then
+        mv /usr/share/ssl/certs/dovecot.pem %{ssldir}/certs/%{name}.pem
+    fi
+    if [ -f /usr/share/ssl/private/dovecot.pem -a ! -f %{ssldir}/private/%{name}.pem ]; then
+        mv /usr/share/ssl/private/dovecot.pem %{ssldir}/private/%{name}.pem
+    fi
 fi
-if [ -f /usr/share/ssl/private/dovecot.pem -a ! -f %{ssldir}/private/%{name}.pem ]; then
-mv /usr/share/ssl/private/dovecot.pem %{ssldir}/private/%{name}.pem
-fi
-if [ ! -f %{ssldir}/%{name}.pem ]; then
+if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
 %{docdir}/examples/mkcert.sh &> /dev/null
 fi
 # Restart if it had been running before installation
@@ -158,22 +176,30 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc %{docdir}
+%doc %{docdir}-%{version}
 %config(noreplace) %{_sysconfdir}/dovecot.conf
 %config %{_sysconfdir}/rc.d/init.d/dovecot
 %config %{_sysconfdir}/pam.d/dovecot
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
-%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/dovecot.pem
+%attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/*
+%{_libdir}/%{name}/imap/*
+%{_libdir}/%{name}/lda/*
+%{_libdir}/%{name}/*
 %{_sbindir}/dovecot
-%dir /var/run/dovecot
-%attr(0750,root,dovecot) %dir /var/run/dovecot-login
-%attr(0750,root,dovecot) %{docdir}/examples/mkcert.sh
+%{_sbindir}/dovecotpw
+%attr(0755,root,dovecot) %dir /var/run/dovecot
+%attr(0750,root,dovecot) %dir /var/run/dovecot/login
+%attr(0750,root,dovecot) %{docdir}-%{version}/examples/mkcert.sh
 
 
 %changelog
+* Mon Jan 23 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2
+- new upstream version, hopefully fixes #173928, #163550
+- fix #168866, use install -p to install documentation
+
 * Fri Dec 09 2005 Jesse Keating <jkeating@redhat.com>
 - rebuilt
 
