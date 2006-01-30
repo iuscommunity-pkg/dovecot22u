@@ -20,8 +20,11 @@ Source7: dovecot-REDHAT-FAQ.txt
 Patch100: dovecot-conf.patch
 Patch101: dovecot-configfile.patch
 Patch102: dovecot-0.99-no-literal-plus-capability.patch
-Patch103: dovecot-pam-setcred.patch
-Patch104: dovecot-auth-log.patch
+Patch103: dovecot-1.0.beta2-pam-tty.patch
+Patch104: dovecot-1.0.beta2-pam-setcred.patch
+
+# XXX this patch needs review and forward porting
+#Patch105: dovecot-auth-log.patch
 
 # Patches 500+ from upstream fixes
 URL: http://dovecot.procontrol.fi/
@@ -63,8 +66,9 @@ in either of maildir or mbox formats.
 #cp $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-%{upstream}/dovecot.conf
 %patch101 -p1 -b .configfile
 #%patch102 -p1 -b .no-literal-plus-capability
-#%patch103 -p1 -b .pam-setcred
-#%patch104 -p1 -b .auth-log
+%patch103 -p2 -b .pam-tty
+%patch104 -p2 -b .pam-setcred
+#%patch105 -p1 -b .auth-log
 
 %build
 rm -f ./configure
