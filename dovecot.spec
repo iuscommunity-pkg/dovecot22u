@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2
+Release: 0.beta2.1
 License: LGPL
 Group: System Environment/Daemons
 
@@ -114,15 +114,15 @@ chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 
 # Install dovecot.conf and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/
-install -p -m644 $RPM_SOURCE_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
+install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
 rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot-example.conf # dovecot seems to install this by itself
-install -p -m644 $RPM_SOURCE_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf
+install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf
 
 # Install some of our own documentation
 install -p -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
 
 mkdir -p $RPM_BUILD_ROOT%{docdir}/examples/
-install -p -m755 $RPM_SOURCE_DIR/dovecot-%{upstream}/doc/mkcert.sh $RPM_BUILD_ROOT%{docdir}/examples/mkcert.sh
+install -p -m755 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/mkcert.sh $RPM_BUILD_ROOT%{docdir}/examples/mkcert.sh
 
 install -p -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 for f in maildir-migration.txt migrate-folders migrate-users perfect_maildir.pl
@@ -200,6 +200,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Jan 30 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.1
+- fix spec to work with BUILD_DIR != SOURCE_DIR
+- forward-port and split pam-nocred patch
+
 * Mon Jan 23 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2
 - new upstream version, hopefully fixes #173928, #163550
 - fix #168866, use install -p to install documentation
