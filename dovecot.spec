@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.1
+Release: 0.beta2.2
 License: LGPL
 Group: System Environment/Daemons
 
@@ -27,7 +27,7 @@ Patch104: dovecot-1.0.beta2-pam-setcred.patch
 #Patch105: dovecot-auth-log.patch
 
 # Patches 500+ from upstream fixes
-URL: http://dovecot.procontrol.fi/
+URL: http://www.dovecot.org/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: openssl-devel
 BuildRequires: openldap-devel
@@ -159,6 +159,11 @@ fi
 if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
 %{docdir}/examples/mkcert.sh &> /dev/null
 fi
+
+if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
+    dovecot --build-ssl-parameters
+fi
+
 # Restart if it had been running before installation
 if [ -e %{restart_flag} ]; then
   rm %{restart_flag}
@@ -200,6 +205,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Jan 31 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.2
+- update URL in description
+- call dovecot --build-ssl-parameters in postinst as per #179430
+
 * Mon Jan 30 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.1
 - fix spec to work with BUILD_DIR != SOURCE_DIR
 - forward-port and split pam-nocred patch
