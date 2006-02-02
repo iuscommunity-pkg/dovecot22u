@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.2
+Release: 0.beta2.3
 License: LGPL
 Group: System Environment/Daemons
 
@@ -17,11 +17,10 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-Patch100: dovecot-conf.patch
-Patch101: dovecot-configfile.patch
-Patch102: dovecot-0.99-no-literal-plus-capability.patch
-Patch103: dovecot-1.0.beta2-pam-tty.patch
-Patch104: dovecot-1.0.beta2-pam-setcred.patch
+Patch100: dovecot-1.0.beta2-default-settings.patch
+Patch101: dovecot-1.0.beta2-pam-tty.patch
+Patch102: dovecot-1.0.beta2-pam-setcred.patch
+Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -62,12 +61,10 @@ in either of maildir or mbox formats.
 
 %setup -q -n %{name}-%{upstream}
 
-#%patch100 -p1 -b .config
-#cp $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_DIR/${RPM_PACKAGE_NAME}-%{upstream}/dovecot.conf
-%patch101 -p1 -b .configfile
-#%patch102 -p1 -b .no-literal-plus-capability
-%patch103 -p2 -b .pam-tty
-%patch104 -p2 -b .pam-setcred
+%patch100 -p2 -b .default-settings
+%patch101 -p2 -b .pam-tty
+%patch102 -p2 -b .pam-setcred
+%patch103 -p1 -b .mkcert-permissions
 #%patch105 -p1 -b .auth-log
 
 %build
@@ -205,6 +202,15 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Feb 02 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.3
+- change the compiled-in defaults and adjust the default's configfile
+  commented-out example settings to match compiled-in defaults,
+  instead of changing the defaults only in the configfile, as per #179432
+- fix #179574 by providing a default uidl_format for pop3
+- half-fix #179620 by having plaintext auth enabled by default... this
+  needs more thinking (which one we really want) and documentation
+  either way
+
 * Tue Jan 31 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.2
 - update URL in description
 - call dovecot --build-ssl-parameters in postinst as per #179430
