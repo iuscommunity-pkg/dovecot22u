@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.3
+Release: 0.beta2.3.1
 License: LGPL
 Group: System Environment/Daemons
 
@@ -202,6 +202,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta2.3.1
+- rebuilt for new gcc4.1 snapshot and glibc changes
+
 * Thu Feb 02 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.3
 - change the compiled-in defaults and adjust the default's configfile
   commented-out example settings to match compiled-in defaults,
