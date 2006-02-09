@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.3.1
+Release: 0.beta2.4
 License: LGPL
 Group: System Environment/Daemons
 
@@ -83,7 +83,8 @@ autoconf
 %endif
 	--with-ssl=openssl           \
 	--with-ssldir=%{ssldir}      \
-	--with-ldap
+	--with-ldap                  \
+        --with-notify=inotify
 
 make
 
@@ -202,6 +203,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Feb 09 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.4
+- enable inotify as it should work now (#179431)
+
 * Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta2.3.1
 - rebuilt for new gcc4.1 snapshot and glibc changes
 
