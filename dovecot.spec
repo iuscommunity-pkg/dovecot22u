@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.4
+Release: 0.beta2.4.1
 License: LGPL
 Group: System Environment/Daemons
 
@@ -203,6 +203,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta2.4.1
+- bump again for double-long bug on ppc(64)
+
 * Thu Feb 09 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.4
 - enable inotify as it should work now (#179431)
 
