@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.4.1
+Release: 0.beta2.5
 License: LGPL
 Group: System Environment/Daemons
 
@@ -21,6 +21,7 @@ Patch100: dovecot-1.0.beta2-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.beta2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
+Patch104: dovecot-1.0.beta2-lib64.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -65,6 +66,7 @@ in either of maildir or mbox formats.
 %patch101 -p2 -b .pam-tty
 %patch102 -p2 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
+%patch104 -p1 -b .lib64
 #%patch105 -p1 -b .auth-log
 
 %build
@@ -73,18 +75,18 @@ aclocal
 automake -a
 autoconf
 %configure                           \
-        INSTALL_DATA="install -c -p -m644" \
-	--with-doc		     \
+    INSTALL_DATA="install -c -p -m644" \
+    --with-doc		             \
 %if %{build_postgres}
-	--with-pgsql                 \
+    --with-pgsql                 \
 %endif
 %if %{build_mysql}
-	--with-mysql                 \
+    --with-mysql                 \
 %endif
-	--with-ssl=openssl           \
-	--with-ssldir=%{ssldir}      \
-	--with-ldap                  \
-        --with-notify=inotify
+    --with-ssl=openssl           \
+    --with-ssldir=%{ssldir}      \
+    --with-ldap                  \
+    --with-notify=inotify
 
 make
 
@@ -109,7 +111,7 @@ chmod 600 $RPM_BUILD_ROOT/%{ssldir}/private/dovecot.pem
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/login
 chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
-
+	
 # Install dovecot.conf and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/
 install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
@@ -121,6 +123,9 @@ install -p -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}
 
 mkdir -p $RPM_BUILD_ROOT%{docdir}/examples/
 install -p -m755 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/mkcert.sh $RPM_BUILD_ROOT%{docdir}/examples/mkcert.sh
+for f in `cd $RPM_BUILD_DIR/dovecot-%{upstream}/doc; echo *.conf`; do
+	install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/$f $RPM_BUILD_ROOT%{docdir}/examples/$f;
+done
 
 install -p -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 for f in maildir-migration.txt migrate-folders migrate-users perfect_maildir.pl
@@ -203,6 +208,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Feb 27 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.5
+- fix #182240 by looking in lib64 for libs first and then lib
+- fix comment #1 in #182240 by copying over the example config files
+  to documentation directory
+
 * Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta2.4.1
 - bump again for double-long bug on ppc(64)
 
