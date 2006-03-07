@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.5
+Release: 0.beta2.6
 License: LGPL
 Group: System Environment/Daemons
 
@@ -160,7 +160,8 @@ else
     fi
 fi
 if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
-%{docdir}/examples/mkcert.sh &> /dev/null
+SSLDIR=%{ssldir} OPENSSLCONFIG=%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf \
+	%{docdir}-%{version}/examples/mkcert.sh &> /dev/null
 fi
 
 if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
@@ -208,6 +209,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Mar  6 2006 Jeremy Katz <katzj@redhat.com> - 1.0-0.beta2.6
+- fix scriptlet error (mitr, #184151)
+
 * Mon Feb 27 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.5
 - fix #182240 by looking in lib64 for libs first and then lib
 - fix comment #1 in #182240 by copying over the example config files
