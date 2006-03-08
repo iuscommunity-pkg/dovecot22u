@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.6
+Release: 0.beta2.7
 License: LGPL
 Group: System Environment/Daemons
 
