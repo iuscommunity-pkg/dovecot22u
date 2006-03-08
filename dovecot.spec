@@ -165,7 +165,7 @@ SSLDIR=%{ssldir} OPENSSLCONFIG=%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf \
 fi
 
 if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
-    dovecot --build-ssl-parameters
+    dovecot --build-ssl-parameters &>/dev/null
 fi
 
 # Restart if it had been running before installation
@@ -209,6 +209,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Mar  8 2006 Bill Nottingham <notting@redhat.com> - 1.0-0.beta2.7
+- fix scriplet noise some more
+
 * Mon Mar  6 2006 Jeremy Katz <katzj@redhat.com> - 1.0-0.beta2.6
 - fix scriptlet error (mitr, #184151)
 
