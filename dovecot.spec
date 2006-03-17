@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta2.7
+Release: 0.beta2.8
 License: LGPL
 Group: System Environment/Daemons
 
@@ -22,6 +22,7 @@ Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.beta2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch104: dovecot-1.0.beta2-lib64.patch
+Patch105: dovecot-1.0.beta2-sqlite-check.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -67,7 +68,7 @@ in either of maildir or mbox formats.
 %patch102 -p2 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 %patch104 -p1 -b .lib64
-#%patch105 -p1 -b .auth-log
+%patch105 -p1 -b .sqlite-check
 
 %build
 rm -f ./configure
@@ -209,6 +210,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Mar 17 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.8
+- fix sqlite detection in upstream configure checks, second part
+  of #182240
+
 * Wed Mar  8 2006 Bill Nottingham <notting@redhat.com> - 1.0-0.beta2.7
 - fix scriplet noise some more
 
