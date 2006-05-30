@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta7.1
+Release: 0.beta8.1
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.beta7
+%define upstream 1.0.beta8
 
 Source: %{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -212,8 +212,13 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu May 04 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta8.1
+- upgrade to latest upstream beta release (beta8)
+- contains a security fix in mbox handling
+
 * Thu May 04 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta7.1
 - upgrade to latest upstream beta release
+- fixed BR 173048
 
 * Fri Mar 17 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta2.8
 - fix sqlite detection in upstream configure checks, second part
