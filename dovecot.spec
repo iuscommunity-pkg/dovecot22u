@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta8.1
+Release: 0.beta8.2
 License: LGPL
 Group: System Environment/Daemons
 
@@ -17,7 +17,7 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-Patch100: dovecot-1.0.beta7-default-settings.patch
+Patch100: dovecot-1.0.beta8-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.beta2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
@@ -212,6 +212,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Jun 08 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta8.2
+- put back pop3_uidl_format default that got lost
+  in the beta2->beta7 upgrade (would cause pop3 to not work
+  at all in many situations)
+
 * Thu May 04 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta8.1
 - upgrade to latest upstream beta release (beta8)
 - contains a security fix in mbox handling
