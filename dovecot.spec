@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta8.2
+Release: 0.beta8.2.1
 License: LGPL
 Group: System Environment/Daemons
 
@@ -212,6 +212,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta8.2.1
+- rebuild
+
 * Thu Jun 08 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.beta8.2
 - put back pop3_uidl_format default that got lost
   in the beta2->beta7 upgrade (would cause pop3 to not work
