@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.beta8.2.1
+Release: 0.rc2%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.beta8
+%define upstream 1.0.rc2
 
 Source: %{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -17,9 +17,9 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-Patch100: dovecot-1.0.beta8-default-settings.patch
+Patch100: dovecot-1.0.rc2-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
-Patch102: dovecot-1.0.beta2-pam-setcred.patch
+Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch104: dovecot-1.0.beta2-lib64.patch
 #Patch105: dovecot-1.0.beta2-sqlite-check.patch
@@ -68,7 +68,7 @@ in either of maildir or mbox formats.
 
 %patch100 -p1 -b .default-settings
 %patch101 -p2 -b .pam-tty
-%patch102 -p2 -b .pam-setcred
+%patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 #%patch104 -p1 -b .lib64
 #%patch105 -p1 -b .sqlite-check
@@ -212,6 +212,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Jul 13 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc2
+- update to latest upstream release candidate
+
 * Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta8.2.1
 - rebuild
 

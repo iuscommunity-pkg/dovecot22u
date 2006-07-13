@@ -1,0 +1,41 @@
+--- dovecot-1.0.rc2/src/auth/passdb-pam.c.pam-setcred	2006-07-13 11:59:00.000000000 +0200
++++ dovecot-1.0.rc2/src/auth/passdb-pam.c	2006-07-13 12:03:41.000000000 +0200
+@@ -187,6 +187,30 @@
+ 	}
+ 
+ #ifdef HAVE_PAM_SETCRED
++#if 0
++/*
++ * This is to fix a bug where dovecot was leaving a lot of temporary
++ * kerberos tickets around and filling up disk space.  If
++ * pam_setcred(pamh, PAM_ESTABLISH_CRED) is called, which creates the
++ * ticket, then a matching pam_setcred(pamh, PAM_DELETE_CRED) also
++ * needs to be called to clean the ticket up. But the only reason to
++ * have a cached ticket on disk is if the service is going to perform
++ * some action during the session that requires access to the ticket
++ * for validation. This implies the pam session is being held open,
++ * which would be more typical pam usage. But the usage here is to
++ * close the pam session immediately after authenticating the user
++ * with pam_end, thus there is no benefit to creating the disk copy of
++ * the ticket. So rather than finding all the early returns before
++ * pam_end is invoked and adding pam_setcred(pamh, PAM_DELETE_CRED) to
++ * each it is more sensible to not create the ticket in the first
++ * place if we're not going to use it and thus not have to worry about
++ * the clean up. Note the way the code is currently structured, with
++ * an immediate call to pam_end() after authentication it implies the
++ * code probably won't work with a file system like AFS which uses the
++ * ticket for file system permissions, but restructuring the code for
++ * this case is beyond the needs of fixing the aforementioned bug.
++ * John Dennis <jdennis@redhat.com>
++ */
+ 	if (module->pam_setcred) {
+ 		if ((status = pam_setcred(pamh, PAM_ESTABLISH_CRED)) !=
+ 		    PAM_SUCCESS) {
+@@ -196,6 +220,7 @@
+ 		}
+ 	}
+ #endif
++#endif
+ 
+ 	if ((status = pam_acct_mgmt(pamh, 0)) != PAM_SUCCESS) {
+ 		*error = t_strdup_printf("pam_acct_mgmt() failed: %s",
