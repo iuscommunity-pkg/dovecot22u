@@ -88,8 +88,7 @@ autoreconf
 %endif
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
-    --with-ldap                  \
-    --with-notify=inotify
+    --with-ldap 
 
 make
 
@@ -214,6 +213,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Thu Jul 13 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc2
 - update to latest upstream release candidate
+- disable inotify for now, doesn't build -- this needs fixing though
 
 * Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.beta8.2.1
 - rebuild
