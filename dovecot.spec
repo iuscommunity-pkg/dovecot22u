@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.rc2.1%{?dist}
+Release: 0.rc2.2%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -137,6 +137,7 @@ do
 done
 
 mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
+mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
 
 %pre
 /usr/sbin/useradd -c "dovecot" -u %{dovecot_uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
@@ -209,9 +210,14 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,root,dovecot) %dir /var/run/dovecot
 %attr(0750,root,dovecot) %dir /var/run/dovecot/login
 %attr(0750,root,dovecot) %{docdir}-%{version}/examples/mkcert.sh
+%attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
 
 %changelog
+* Tue Aug 15 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc2.2
+- include /var/lib/dovecot in the package, prevents startup failure
+  on new installs
+
 * Mon Jul 17 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc2.1
 - reenable inotify and see what happens
 
