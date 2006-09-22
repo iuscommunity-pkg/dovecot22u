@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.rc2.2%{?dist}
+Release: 0.rc7%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc2
+%define upstream 1.0.rc7
 
 Source: %{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -17,7 +17,7 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-Patch100: dovecot-1.0.rc2-default-settings.patch
+Patch100: dovecot-1.0.rc7-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
@@ -153,13 +153,13 @@ fi
 %post
 /sbin/chkconfig --add %{name}
 # create a ssl cert
-if [ -f %{ssldir}/%{name}.pem -a ! -f %{ssldir}/certs/%{name}.pem ]; then
+if [ -f %{ssldir}/%{name}.pem -a ! -e %{ssldir}/certs/%{name}.pem ]; then
     mv  %{ssldir}/%{name}.pem %{ssldir}/certs/%{name}.pem
 else
-    if [ -f /usr/share/ssl/certs/dovecot.pem -a ! -f %{ssldir}/certs/%{name}.pem ]; then
+    if [ -f /usr/share/ssl/certs/dovecot.pem -a ! -e %{ssldir}/certs/%{name}.pem ]; then
         mv /usr/share/ssl/certs/dovecot.pem %{ssldir}/certs/%{name}.pem
     fi
-    if [ -f /usr/share/ssl/private/dovecot.pem -a ! -f %{ssldir}/private/%{name}.pem ]; then
+    if [ -f /usr/share/ssl/private/dovecot.pem -a ! -e %{ssldir}/private/%{name}.pem ]; then
         mv /usr/share/ssl/private/dovecot.pem %{ssldir}/private/%{name}.pem
     fi
 fi
@@ -214,6 +214,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Sep 22 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc7
+- update to latest upstream release candidate, should fix occasional
+  hangs and mbox issues... INBOX. namespace is still broken though
+- do not run over symlinked certificates in new locations on upgrade
+
 * Tue Aug 15 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc2.2
 - include /var/lib/dovecot in the package, prevents startup failure
   on new installs
