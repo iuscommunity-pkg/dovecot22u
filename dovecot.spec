@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.rc7%{?dist}
+Release: 0.1.rc7%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -214,6 +214,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Oct 01 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.1.rc7
+- rebuilt for unwind info generation, broken in gcc-4.1.1-21
+
 * Fri Sep 22 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.rc7
 - update to latest upstream release candidate, should fix occasional
   hangs and mbox issues... INBOX. namespace is still broken though
