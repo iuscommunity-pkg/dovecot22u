@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.1.rc7%{?dist}
+Release: 0.2.rc7%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -22,6 +22,7 @@ Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch104: dovecot-1.0.beta2-lib64.patch
+Patch105: dovecot-1.0.rc7-mkcert-paths.patch
 #Patch105: dovecot-1.0.beta2-sqlite-check.patch
 
 # XXX this patch needs review and forward porting
@@ -71,7 +72,7 @@ in either of maildir or mbox formats.
 %patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 #%patch104 -p1 -b .lib64
-#%patch105 -p1 -b .sqlite-check
+%patch105 -p1 -b .mkcert-paths
 
 %build
 rm -f ./configure
@@ -214,6 +215,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Oct 04 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.2.rc7
+- fix default paths in the example mkcert.sh to match configuration
+  defaults (fixes #183151)
+
 * Sun Oct 01 2006 Jesse Keating <jkeating@redhat.com> - 1.0-0.1.rc7
 - rebuilt for unwind info generation, broken in gcc-4.1.1-21
 
