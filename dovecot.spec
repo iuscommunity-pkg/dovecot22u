@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.2.rc7%{?dist}
+Release: 0.3.rc7%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -53,7 +53,7 @@ BuildRequires: mysql-devel
 %endif
 
 %define docdir %{_docdir}/%{name}
-%define ssldir /etc/pki/%{name}
+%define ssldir %{_sysconfdir}/pki/%{name}
 %define restart_flag /var/run/%{name}-restart-after-rpm-install
 %define dovecot_uid 97
 %define dovecot_gid 97
@@ -117,10 +117,10 @@ chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 	
 # Install dovecot.conf and dovecot-openssl.cnf
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/
+mkdir -p $RPM_BUILD_ROOT/%{ssldir}
 install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
 rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot-example.conf # dovecot seems to install this by itself
-install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf
+install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{ssldir}/dovecot-openssl.cnf
 
 # Install some of our own documentation
 install -p -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
@@ -165,7 +165,7 @@ else
     fi
 fi
 if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
-SSLDIR=%{ssldir} OPENSSLCONFIG=%{_sysconfdir}/pki/dovecot/dovecot-openssl.cnf \
+SSLDIR=%{ssldir} OPENSSLCONFIG=%{ssldir}/dovecot-openssl.cnf \
 	%{docdir}-%{version}/examples/mkcert.sh &> /dev/null
 fi
 
@@ -202,10 +202,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
 %dir %{_libexecdir}/%{name}
-%{_libexecdir}/%{name}/*
-%{_libdir}/%{name}/imap/*
-%{_libdir}/%{name}/lda/*
-%{_libdir}/%{name}/*
+%{_libexecdir}/%{name}
+%{_libdir}/%{name}
 %{_sbindir}/dovecot
 %{_sbindir}/dovecotpw
 %attr(0755,root,dovecot) %dir /var/run/dovecot
@@ -215,6 +213,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Oct 10 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.3.rc7
+- fix few inconsistencies in specfile, fixes #198940
+
 * Wed Oct 04 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.2.rc7
 - fix default paths in the example mkcert.sh to match configuration
   defaults (fixes #183151)
