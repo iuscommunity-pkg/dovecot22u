@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 0.3.rc7%{?dist}
+Release: 1.rc15%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc7
+%define upstream 1.0.rc15
 
 Source: %{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -17,7 +17,7 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-Patch100: dovecot-1.0.rc7-default-settings.patch
+Patch100: dovecot-1.0.rc15-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
@@ -213,6 +213,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Dec 05 2006 Tomas Janousek <tjanouse@redhat.com> - 1.0-1.rc15
+- update to latest upstream, fixes a few bugs, plus a security
+  vulnerability (#216508, CVE-2006-5973)
+
 * Tue Oct 10 2006 Petr Rockai <prockai@redhat.com> - 1.0-0.3.rc7
 - fix few inconsistencies in specfile, fixes #198940
 
