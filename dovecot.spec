@@ -77,7 +77,8 @@ in either of maildir or mbox formats.
 %build
 rm -f ./configure
 libtoolize -f
-autoreconf -i
+cp /usr/share/gettext/config.rpath .
+autoreconf
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
     --with-doc		             \
