@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 1.rc15%{?dist}
+Release: 1.1.rc15%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -39,6 +39,7 @@ BuildRequires: zlib-devel
 BuildRequires: libtool
 BuildRequires: autoconf
 BuildRequires: automake
+BuildRequires: krb5-devel
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
@@ -91,7 +92,8 @@ autoreconf
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
     --with-ldap                  \
-    --with-inotify
+    --with-inotify               \
+    --with-gssapi
 
 make
 
@@ -214,6 +216,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Dec 21 2006 Tomas Janousek <tjanouse@redhat.com> - 1.0-1.1.rc15
+- reenabled GSSAPI (#220377)
+
 * Tue Dec 05 2006 Tomas Janousek <tjanouse@redhat.com> - 1.0-1.rc15
 - update to latest upstream, fixes a few bugs, plus a security
   vulnerability (#216508, CVE-2006-5973)
