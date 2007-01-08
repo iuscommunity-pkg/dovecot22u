@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 1.1.rc15%{?dist}
+Release: 2.rc17%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc15
+%define upstream 1.0.rc17
 
 Source: %{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -78,7 +78,6 @@ in either of maildir or mbox formats.
 %build
 rm -f ./configure
 libtoolize -f
-cp /usr/share/gettext/config.rpath .
 autoreconf
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
@@ -216,6 +215,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Jan 08 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-2.rc17
+- update to latest upstream, fixes a few bugs
+
 * Thu Dec 21 2006 Tomas Janousek <tjanouse@redhat.com> - 1.0-1.1.rc15
 - reenabled GSSAPI (#220377)
 
