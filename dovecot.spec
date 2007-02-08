@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 2.rc17%{?dist}
+Release: 3.rc22%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc17
+%define upstream 1.0.rc22
 
 Source: %{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -215,6 +215,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Feb 08 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-3.rc22
+- update to latest upstream, fixes a few bugs
+
 * Mon Jan 08 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-2.rc17
 - update to latest upstream, fixes a few bugs
 
