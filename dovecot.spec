@@ -1,15 +1,15 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 3.rc22%{?dist}
+Release: 5.rc25%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc22
+%define upstream 1.0.rc25
 
-Source: %{name}-%{upstream}.tar.gz
+Source: http://www.dovecot.org/releases/%{name}-%{upstream}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -21,7 +21,8 @@ Patch100: dovecot-1.0.rc15-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
-Patch104: dovecot-1.0.beta2-lib64.patch
+# 104 not applied
+#Patch104: dovecot-1.0.beta2-lib64.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
 #Patch105: dovecot-1.0.beta2-sqlite-check.patch
 
@@ -43,7 +44,13 @@ BuildRequires: krb5-devel
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
-Prereq: openssl >= 0.9.7f-4, /sbin/chkconfig, /usr/sbin/useradd
+# Explicit Runtime Requirements
+Requires: openssl >= 0.9.7f-4
+# Package includes an initscript service file, needs to require initscripts package
+Requires: initscripts
+Requires(pre): /sbin/chkconfig, /usr/sbin/useradd, /sbin/service, /bin/touch, /bin/rm
+Requires(post): /sbin/chkconfig, /usr/sbin/useradd, /sbin/chkconfig, /bin/mv, /bin/rm
+Requires(preun): /usr/sbin/userdel, /usr/sbin/groupdel, /sbin/chkconfig, /sbin/service
 
 %if %{build_postgres}
 BuildRequires: postgresql-devel
@@ -81,7 +88,7 @@ libtoolize -f
 autoreconf
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
-    --with-doc		             \
+    --with-doc                         \
 %if %{build_postgres}
     --with-pgsql                 \
 %endif
@@ -100,6 +107,10 @@ make
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT/%{_datadir}/%{name}
+#remove the static libs and libtool archives
+find $RPM_BUILD_ROOT/%{_libdir}/%{name}/ -name '*.a' -or -name '*.la' | xargs rm -f
+rm -f $RPM_BUILD_ROOT/%{_libdir}/%{name}/dovecot-config
+
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rc.d/init.d
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/rc.d/init.d/dovecot
 
@@ -125,18 +136,23 @@ rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot-example.conf # dovecot seems to ins
 install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{ssldir}/dovecot-openssl.cnf
 
 # Install some of our own documentation
-install -p -m644 $RPM_SOURCE_DIR/dovecot-REDHAT-FAQ.txt $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
+install -p -m644 %{SOURCE7} $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
+
+# Install the licensing files into the documentation area
+install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/COPYING  $RPM_BUILD_ROOT%{docdir}/COPYING
+install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/COPYING.MIT  $RPM_BUILD_ROOT%{docdir}/COPYING.MIT
+install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/COPYING.LGPL  $RPM_BUILD_ROOT%{docdir}/COPYING.LGPL
 
 mkdir -p $RPM_BUILD_ROOT%{docdir}/examples/
-install -p -m755 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/mkcert.sh $RPM_BUILD_ROOT%{docdir}/examples/mkcert.sh
+install -p -m755 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{name}/mkcert.sh
 for f in `cd $RPM_BUILD_DIR/dovecot-%{upstream}/doc; echo *.conf`; do
-	install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/$f $RPM_BUILD_ROOT%{docdir}/examples/$f;
+     install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/$f $RPM_BUILD_ROOT%{docdir}/examples/$f;
 done
 
 install -p -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
-for f in maildir-migration.txt migrate-folders migrate-users perfect_maildir.pl
+for f in %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6}
 do
-    install -p -m644 $RPM_SOURCE_DIR/$f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
+    install -p -m644 $f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 done
 
 mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
@@ -168,7 +184,7 @@ else
 fi
 if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
 SSLDIR=%{ssldir} OPENSSLCONFIG=%{ssldir}/dovecot-openssl.cnf \
-	%{docdir}-%{version}/examples/mkcert.sh &> /dev/null
+     %{_libexecdir}/%{name}/mkcert.sh &> /dev/null
 fi
 
 if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
@@ -196,25 +212,32 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc %{docdir}-%{version}
+%doc %{docdir}-%{version}  
 %config(noreplace) %{_sysconfdir}/dovecot.conf
 %config %{_sysconfdir}/rc.d/init.d/dovecot
-%config %{_sysconfdir}/pam.d/dovecot
+%config(noreplace) %{_sysconfdir}/pam.d/dovecot
+%dir %{ssldir}
+%dir %{ssldir}/certs
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
-%dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}
 %{_libdir}/%{name}
 %{_sbindir}/dovecot
 %{_sbindir}/dovecotpw
 %attr(0755,root,dovecot) %dir /var/run/dovecot
 %attr(0750,root,dovecot) %dir /var/run/dovecot/login
-%attr(0750,root,dovecot) %{docdir}-%{version}/examples/mkcert.sh
+#%attr(0755,root,dovecot) %{_libexecdir}/%{name}/mkcert.sh
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
 
 %changelog
+* Fri Mar 02 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-5.rc25
+- update to latest upstream
+
+* Sun Feb 25 2007 Jef Spaleta <jspaleta@gmail.com> - 1.0-4.rc22
+- Merge review changes
+
 * Thu Feb 08 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-3.rc22
 - update to latest upstream, fixes a few bugs
 
@@ -559,8 +582,8 @@ rm -rf $RPM_BUILD_ROOT
 - clean up description and %%preun
 - add dovecot user (uid/gid of 97)
 - add some buildrequires
-- move the ssl cert to %{_datadir}/ssl/certs
-- create a dummy ssl cert in %post
+- move the ssl cert to %%{_datadir}/ssl/certs
+- create a dummy ssl cert in %%post
 - own /var/run/dovecot
 - make the config file a source so we get default mbox locks of fcntl
 
