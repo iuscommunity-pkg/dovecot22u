@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 6.rc27%{?dist}
+Release: 7.rc27%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -76,9 +76,11 @@ primarily in mind.  It also contains a small POP3 server.  It supports mail
 in either of maildir or mbox formats.
 
 %package sieve
-Requires: %{name}
+Requires: %{name} = %{version}-%{release}
 Summary: CMU Cieve plugin for dovecot LDA
 Group: System Environment/Daemons
+Version: 1.0.1
+Release: 1%{?dist}
 
 %description sieve
 This package provides the CMU Cieve plugin for dovecot LDA.
@@ -271,6 +273,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Mar 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-7.rc27
+- use dovecot-sieve's version for the package
+
 * Mon Mar 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-6.rc27
 - update to latest upstream
 - added dovecot-sieve
