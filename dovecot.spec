@@ -1,15 +1,18 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 5.rc25%{?dist}
+Release: 6.rc27%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc25
+%define upstream 1.0.rc27
 
-Source: http://www.dovecot.org/releases/%{name}-%{upstream}.tar.gz
+%define sieve_name dovecot-sieve
+%define sieve_upstream 1.0.1
+
+Source: http://dovecot.org/releases/%{name}-%{upstream}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -17,6 +20,7 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
+Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_upstream}.tar.gz
 Patch100: dovecot-1.0.rc15-default-settings.patch
 Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
@@ -71,9 +75,17 @@ Dovecot is an IMAP server for Linux/UNIX-like systems, written with security
 primarily in mind.  It also contains a small POP3 server.  It supports mail 
 in either of maildir or mbox formats.
 
+%package sieve
+Requires: %{name}
+Summary: CMU Cieve plugin for dovecot LDA
+Group: System Environment/Daemons
+
+%description sieve
+This package provides the CMU Cieve plugin for dovecot LDA.
+
 %prep
 
-%setup -q -n %{name}-%{upstream}
+%setup -q -n %{name}-%{upstream} -a 8
 
 %patch100 -p1 -b .default-settings
 %patch101 -p2 -b .pam-tty
@@ -103,13 +115,21 @@ autoreconf
 
 make
 
+cd %{sieve_name}-%{sieve_upstream}
+
+rm -f ./configure
+libtoolize -f
+autoreconf
+%configure                           \
+    INSTALL_DATA="install -c -p -m644" \
+    --with-dovecot=../
+
+make
+
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT/%{_datadir}/%{name}
-#remove the static libs and libtool archives
-find $RPM_BUILD_ROOT/%{_libdir}/%{name}/ -name '*.a' -or -name '*.la' | xargs rm -f
-rm -f $RPM_BUILD_ROOT/%{_libdir}/%{name}/dovecot-config
 
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rc.d/init.d
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/rc.d/init.d/dovecot
@@ -157,6 +177,21 @@ done
 
 mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
+
+# dovecot-sieve
+pushd %{sieve_name}-%{sieve_upstream}
+make install DESTDIR=$RPM_BUILD_ROOT
+popd
+
+#remove the static libs and libtool archives
+find $RPM_BUILD_ROOT/%{_libdir}/%{name}/ -name '*.a' -or -name '*.la' | xargs rm -f
+rm -f $RPM_BUILD_ROOT/%{_libdir}/%{name}/dovecot-config
+
+#prepare the filelist
+(
+    find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -type d | sed -e "s|^|%dir |";
+    find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -! -type d | grep -v 'lib90_cmusieve_plugin.so';
+) | sed -e "s|$RPM_BUILD_ROOT||" >libs.filelist
 
 %pre
 /usr/sbin/useradd -c "dovecot" -u %{dovecot_uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
@@ -210,7 +245,7 @@ fi
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files
+%files -f libs.filelist
 %defattr(-,root,root)
 %doc %{docdir}-%{version}  
 %config(noreplace) %{_sysconfdir}/dovecot.conf
@@ -222,7 +257,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
 %{_libexecdir}/%{name}
-%{_libdir}/%{name}
+%dir %{_libdir}/%{name}
 %{_sbindir}/dovecot
 %{_sbindir}/dovecotpw
 %attr(0755,root,dovecot) %dir /var/run/dovecot
@@ -230,8 +265,16 @@ rm -rf $RPM_BUILD_ROOT
 #%attr(0755,root,dovecot) %{_libexecdir}/%{name}/mkcert.sh
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
+%files sieve
+%defattr(-,root,root)
+%{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
+
 
 %changelog
+* Mon Mar 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-6.rc27
+- update to latest upstream
+- added dovecot-sieve
+
 * Fri Mar 02 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-5.rc25
 - update to latest upstream
 
