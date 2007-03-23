@@ -1,13 +1,13 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Version: 1.0
-Release: 7.rc27%{?dist}
+Release: 8.rc28%{?dist}
 License: LGPL
 Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc27
+%define upstream 1.0.rc28
 
 %define sieve_name dovecot-sieve
 %define sieve_upstream 1.0.1
@@ -80,7 +80,7 @@ Requires: %{name} = %{version}-%{release}
 Summary: CMU Cieve plugin for dovecot LDA
 Group: System Environment/Daemons
 Version: 1.0.1
-Release: 1%{?dist}
+Release: 1.8%{?dist}
 
 %description sieve
 This package provides the CMU Cieve plugin for dovecot LDA.
@@ -154,7 +154,7 @@ chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 # Install dovecot.conf and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT/%{ssldir}
 install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/dovecot-example.conf $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot.conf
-rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot-example.conf # dovecot seems to install this by itself
+rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/dovecot-*example.conf # dovecot seems to install this by itself
 install -p -m644 $RPM_BUILD_DIR/dovecot-%{upstream}/doc/dovecot-openssl.cnf $RPM_BUILD_ROOT/%{ssldir}/dovecot-openssl.cnf
 
 # Install some of our own documentation
@@ -273,6 +273,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Mar 23 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-8.rc28
+- update to latest upstream
+
 * Mon Mar 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-7.rc27
 - use dovecot-sieve's version for the package
 
