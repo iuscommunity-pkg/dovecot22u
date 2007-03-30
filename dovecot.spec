@@ -1,7 +1,13 @@
+%define pkg_version 1.0
+%define my_release 8.1
+%define pkg_release %{my_release}.rc28%{?dist}
+%define pkg_sieve_version 1.0.1
+%define pkg_sieve_release %{my_release}%{?dist}
+
 Summary: Dovecot Secure imap server
 Name: dovecot
-Version: 1.0
-Release: 8.rc28%{?dist}
+Version: %{pkg_version}
+Release: %{pkg_release}
 License: LGPL
 Group: System Environment/Daemons
 
@@ -9,6 +15,7 @@ Group: System Environment/Daemons
 %define build_mysql 1
 %define upstream 1.0.rc28
 
+%define build_sieve 1
 %define sieve_name dovecot-sieve
 %define sieve_upstream 1.0.1
 
@@ -75,19 +82,24 @@ Dovecot is an IMAP server for Linux/UNIX-like systems, written with security
 primarily in mind.  It also contains a small POP3 server.  It supports mail 
 in either of maildir or mbox formats.
 
+%if %{build_sieve}
 %package sieve
 Requires: %{name} = %{version}-%{release}
 Summary: CMU Cieve plugin for dovecot LDA
 Group: System Environment/Daemons
-Version: 1.0.1
-Release: 1.8%{?dist}
+Version: %{pkg_sieve_version}
+Release: %{pkg_sieve_release}
 
 %description sieve
 This package provides the CMU Cieve plugin for dovecot LDA.
+%endif
+
+%define version %{pkg_version}
+%define release %{pkg_release}
 
 %prep
 
-%setup -q -n %{name}-%{upstream} -a 8
+%setup -q -n %{name}-%{upstream}
 
 %patch100 -p1 -b .default-settings
 %patch101 -p2 -b .pam-tty
@@ -95,6 +107,10 @@ This package provides the CMU Cieve plugin for dovecot LDA.
 %patch103 -p1 -b .mkcert-permissions
 #%patch104 -p1 -b .lib64
 %patch105 -p1 -b .mkcert-paths
+
+%if %{build_sieve}
+%setup -q -n %{name}-%{upstream} -D -T -a 8
+%endif
 
 %build
 rm -f ./configure
@@ -117,6 +133,7 @@ autoreconf
 
 make
 
+%if %{build_sieve}
 cd %{sieve_name}-%{sieve_upstream}
 
 rm -f ./configure
@@ -127,6 +144,7 @@ autoreconf
     --with-dovecot=../
 
 make
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -180,10 +198,12 @@ done
 mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
 
+%if %{build_sieve}
 # dovecot-sieve
 pushd %{sieve_name}-%{sieve_upstream}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
+%endif
 
 #remove the static libs and libtool archives
 find $RPM_BUILD_ROOT/%{_libdir}/%{name}/ -name '*.a' -or -name '*.la' | xargs rm -f
@@ -267,12 +287,17 @@ rm -rf $RPM_BUILD_ROOT
 #%attr(0755,root,dovecot) %{_libexecdir}/%{name}/mkcert.sh
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
+%if %{build_sieve}
 %files sieve
 %defattr(-,root,root)
 %{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
+%endif
 
 
 %changelog
+* Fri Mar 30 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-8.1.rc28
+- spec file cleanup (fixes docs path)
+
 * Fri Mar 23 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-8.rc28
 - update to latest upstream
 
