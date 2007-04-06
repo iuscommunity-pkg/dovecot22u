@@ -1,6 +1,6 @@
 %define pkg_version 1.0
-%define my_release 8.1
-%define pkg_release %{my_release}.rc28%{?dist}
+%define my_release 9
+%define pkg_release %{my_release}.rc30%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
 
@@ -13,7 +13,7 @@ Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc28
+%define upstream 1.0.rc30
 
 %define build_sieve 1
 %define sieve_name dovecot-sieve
@@ -295,6 +295,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Apr 06 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-9.rc30
+- update to latest upstream
+
 * Fri Mar 30 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-8.1.rc28
 - spec file cleanup (fixes docs path)
 
