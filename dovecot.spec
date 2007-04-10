@@ -1,6 +1,8 @@
+%define upstream 1.0.rc31
+%define sieve_upstream 1.0.1
 %define pkg_version 1.0
-%define my_release 9
-%define pkg_release %{my_release}.rc30%{?dist}
+%define my_release 10
+%define pkg_release %{my_release}.rc31%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
 
@@ -13,11 +15,9 @@ Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
-%define upstream 1.0.rc30
 
 %define build_sieve 1
 %define sieve_name dovecot-sieve
-%define sieve_upstream 1.0.1
 
 Source: http://dovecot.org/releases/%{name}-%{upstream}.tar.gz
 Source1: dovecot.init
@@ -295,6 +295,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Apr 10 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-10.rc31
+- update to latest upstream
+
 * Fri Apr 06 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0-9.rc30
 - update to latest upstream
 
