@@ -1,7 +1,7 @@
 %define upstream 1.0.0
 %define sieve_upstream 1.0.1
 %define pkg_version 1.0.0
-%define my_release 11
+%define my_release 11.1
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -29,7 +29,7 @@ Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_upstream}.tar.gz
 Patch100: dovecot-1.0.rc15-default-settings.patch
-Patch101: dovecot-1.0.beta2-pam-tty.patch
+#Patch101: dovecot-1.0.beta2-pam-tty.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 # 104 not applied
@@ -102,7 +102,7 @@ This package provides the CMU Cieve plugin for dovecot LDA.
 %setup -q -n %{name}-%{upstream}
 
 %patch100 -p1 -b .default-settings
-%patch101 -p2 -b .pam-tty
+#%patch101 -p2 -b .pam-tty
 %patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 #%patch104 -p1 -b .lib64
@@ -295,6 +295,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Apr 14 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.0-11.1
+- dovecot-1.0.beta2-pam-tty.patch is no longer needed
+
 * Fri Apr 13 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.0-11
 - update to latest upstream
 
