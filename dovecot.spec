@@ -1,7 +1,7 @@
 %define upstream 1.0.0
 %define sieve_upstream 1.0.1
 %define pkg_version 1.0.0
-%define my_release 11.1
+%define my_release 11.7
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -15,6 +15,7 @@ Group: System Environment/Daemons
 
 %define build_postgres 1
 %define build_mysql 1
+%define build_sqlite 1
 
 %define build_sieve 1
 %define sieve_name dovecot-sieve
@@ -35,6 +36,7 @@ Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 # 104 not applied
 #Patch104: dovecot-1.0.beta2-lib64.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
+Patch106: dovecot-1.0.rc32-split.patch
 #Patch105: dovecot-1.0.beta2-sqlite-check.patch
 
 # XXX this patch needs review and forward porting
@@ -71,6 +73,10 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 %endif
 
+%if %{build_sqlite}
+BuildRequires: sqlite-devel
+%endif
+
 %define docdir %{_docdir}/%{name}
 %define ssldir %{_sysconfdir}/pki/%{name}
 %define restart_flag /var/run/%{name}-restart-after-rpm-install
@@ -81,6 +87,7 @@ BuildRequires: mysql-devel
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
 primarily in mind.  It also contains a small POP3 server.  It supports mail 
 in either of maildir or mbox formats.
+
 
 %if %{build_sieve}
 %package sieve
@@ -94,8 +101,38 @@ Release: %{pkg_sieve_release}
 This package provides the CMU Cieve plugin for dovecot LDA.
 %endif
 
+
 %define version %{pkg_version}
 %define release %{pkg_release}
+
+
+%if %{build_postgres}
+%package pgsql
+Requires: %{name} = %{version}-%{release}
+Summary: Postgres SQL backend for dovecot
+Group: System Environment/Daemons
+%description pgsql
+This package provides the Postgres SQL backend for dovecot-auth etc.
+%endif
+
+%if %{build_mysql}
+%package mysql
+Requires: %{name} = %{version}-%{release}
+Summary: MySQL backend for dovecot
+Group: System Environment/Daemons
+%description mysql
+This package provides the MySQL backend for dovecot-auth etc.
+%endif
+
+%if %{build_sqlite}
+%package sqlite
+Requires: %{name} = %{version}-%{release}
+Summary: SQLite backend for dovecot
+Group: System Environment/Daemons
+%description sqlite
+This package provides the SQLite backend for dovecot-auth etc.
+%endif
+
 
 %prep
 
@@ -108,6 +145,8 @@ This package provides the CMU Cieve plugin for dovecot LDA.
 #%patch104 -p1 -b .lib64
 %patch105 -p1 -b .mkcert-paths
 
+%patch106 -p1 -b .split
+
 %if %{build_sieve}
 %setup -q -n %{name}-%{upstream} -D -T -a 8
 %endif
@@ -115,7 +154,7 @@ This package provides the CMU Cieve plugin for dovecot LDA.
 %build
 rm -f ./configure
 libtoolize -f
-autoreconf
+autoreconf -i
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
     --with-doc                         \
@@ -125,6 +164,10 @@ autoreconf
 %if %{build_mysql}
     --with-mysql                 \
 %endif
+%if %{build_sqlite}
+    --with-sqlite                \
+%endif
+    --with-dynamic-sql           \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
     --with-ldap                  \
@@ -212,7 +255,8 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/%{name}/dovecot-config
 #prepare the filelist
 (
     find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -type d | sed -e "s|^|%dir |";
-    find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -! -type d | grep -v 'lib90_cmusieve_plugin.so';
+    find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -! -type d | \
+	grep -v 'lib90_cmusieve_plugin.so\|libdriver_.*.so';
 ) | sed -e "s|$RPM_BUILD_ROOT||" >libs.filelist
 
 %pre
@@ -293,8 +337,28 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
 %endif
 
+%if %{build_mysql}
+%files mysql
+%{_libdir}/%{name}/sql/libdriver_mysql.so
+%endif
+
+%if %{build_postgres}
+%files pgsql
+%{_libdir}/%{name}/sql/libdriver_pgsql.so
+%endif
+
+%if %{build_sqlite}
+%files sqlite
+%{_libdir}/%{name}/sql/libdriver_sqlite.so
+%endif
 
 %changelog
+* Fri Jun 08 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.0-11.7
+- specfile merge from 145241 branch
+    - new sql split patch
+    - support for not building all sql modules
+    - split sql libraries to separate packages
+
 * Sat Apr 14 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.0-11.1
 - dovecot-1.0.beta2-pam-tty.patch is no longer needed
 
