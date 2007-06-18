@@ -1,7 +1,7 @@
-%define upstream 1.0.0
+%define upstream 1.0.1
 %define sieve_upstream 1.0.1
-%define pkg_version 1.0.0
-%define my_release 11.7
+%define pkg_version 1.0.1
+%define my_release 12.5
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -353,6 +353,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Jun 18 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.1-12.5
+- update to latest upstream
+
 * Fri Jun 08 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.0-11.7
 - specfile merge from 145241 branch
     - new sql split patch
