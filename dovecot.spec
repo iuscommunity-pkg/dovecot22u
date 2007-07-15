@@ -1,7 +1,7 @@
-%define upstream 1.0.1
+%define upstream 1.0.2
 %define sieve_upstream 1.0.1
-%define pkg_version 1.0.1
-%define my_release 12.5
+%define pkg_version 1.0.2
+%define my_release 13.5
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -353,6 +353,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sun Jul 15 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.2-13.5
+- update to latest upstream
+
 * Mon Jun 18 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.1-12.5
 - update to latest upstream
 
