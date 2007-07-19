@@ -1,5 +1,5 @@
---- dovecot-1.0.rc32/src/dict/main.c.split	2007-02-22 15:32:11.000000000 +0100
-+++ dovecot-1.0.rc32/src/dict/main.c	2007-04-13 13:56:55.000000000 +0200
+--- dovecot-1.1.alpha1/src/dict/main.c.split	2007-07-12 03:42:49.000000000 +0200
++++ dovecot-1.1.alpha1/src/dict/main.c	2007-07-19 11:03:11.000000000 +0200
 @@ -22,6 +22,7 @@
  
  static struct io *log_io;
@@ -17,16 +17,16 @@
  
  	restrict_access_by_env(FALSE);
  }
-@@ -100,6 +103,7 @@
- 	dict_sql_unregister();
- 	dict_client_unregister();
+@@ -98,6 +101,7 @@
+ 
+ 	dict_drivers_unregister_all();
  
 +	module_dir_unload(&sql_modules);
  	sql_drivers_deinit();
  	random_deinit();
  	lib_signals_deinit();
---- dovecot-1.0.rc32/src/lib-sql/Makefile.am.split	2007-02-22 22:09:16.000000000 +0100
-+++ dovecot-1.0.rc32/src/lib-sql/Makefile.am	2007-04-13 15:11:18.000000000 +0200
+--- dovecot-1.1.alpha1/src/lib-sql/Makefile.am.split	2007-07-12 03:42:50.000000000 +0200
++++ dovecot-1.1.alpha1/src/lib-sql/Makefile.am	2007-07-19 11:03:11.000000000 +0200
 @@ -1,21 +1,66 @@
  noinst_LIBRARIES = libsql.a
  
@@ -118,9 +118,9 @@
  	echo '}' >>$@
  
  DISTFILES = $(DIST_COMMON) $(dist_sources) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
---- dovecot-1.0.rc32/src/lib-sql/sql-api.h.split	2006-07-01 19:23:52.000000000 +0200
-+++ dovecot-1.0.rc32/src/lib-sql/sql-api.h	2007-04-13 13:56:55.000000000 +0200
-@@ -20,6 +20,8 @@
+--- dovecot-1.1.alpha1/src/lib-sql/sql-api.h.split	2007-07-12 03:42:50.000000000 +0200
++++ dovecot-1.1.alpha1/src/lib-sql/sql-api.h	2007-07-19 11:03:11.000000000 +0200
+@@ -47,6 +47,8 @@
  
  /* register all built-in SQL drivers */
  void sql_drivers_register_all(void);
@@ -129,8 +129,8 @@
  
  void sql_driver_register(const struct sql_db *driver);
  void sql_driver_unregister(const struct sql_db *driver);
---- dovecot-1.0.rc32/src/lib-sql/sql-api.c.split	2006-07-01 19:23:52.000000000 +0200
-+++ dovecot-1.0.rc32/src/lib-sql/sql-api.c	2007-04-13 13:56:55.000000000 +0200
+--- dovecot-1.1.alpha1/src/lib-sql/sql-api.c.split	2007-07-12 03:42:50.000000000 +0200
++++ dovecot-1.1.alpha1/src/lib-sql/sql-api.c	2007-07-19 11:03:11.000000000 +0200
 @@ -2,6 +2,7 @@
  
  #include "lib.h"
@@ -138,8 +138,8 @@
 +#include "module-dir.h"
  #include "sql-api-private.h"
  
- array_t ARRAY_DEFINE(sql_drivers, const struct sql_db *);
-@@ -16,6 +17,12 @@
+ #include <stdlib.h>
+@@ -18,6 +19,12 @@
  	array_free(&sql_drivers);
  }
  
@@ -152,8 +152,8 @@
  void sql_driver_register(const struct sql_db *driver)
  {
  	array_append(&sql_drivers, &driver, 1);
---- dovecot-1.0.rc32/src/auth/main.c.split	2007-03-15 16:48:13.000000000 +0100
-+++ dovecot-1.0.rc32/src/auth/main.c	2007-04-13 13:56:55.000000000 +0200
+--- dovecot-1.1.alpha1/src/auth/main.c.split	2007-07-12 03:42:49.000000000 +0200
++++ dovecot-1.1.alpha1/src/auth/main.c	2007-07-19 11:03:11.000000000 +0200
 @@ -10,6 +10,7 @@
  #include "sql-api.h"
  #include "randgen.h"
@@ -188,11 +188,11 @@
  	sql_drivers_deinit();
  	random_deinit();
  
---- dovecot-1.0.rc32/configure.in.split	2007-04-12 19:16:36.000000000 +0200
-+++ dovecot-1.0.rc32/configure.in	2007-04-13 13:56:55.000000000 +0200
-@@ -225,6 +225,15 @@
- 	fi,
- 	want_sqlite=no)
+--- dovecot-1.1.alpha1/configure.in.split	2007-07-19 05:08:39.000000000 +0200
++++ dovecot-1.1.alpha1/configure.in	2007-07-19 11:05:18.000000000 +0200
+@@ -254,6 +254,15 @@
+ 	want_lucene=no)
+ AM_CONDITIONAL(BUILD_LUCENE, test "$want_lucene" = "yes")
  
 +AC_ARG_WITH(dynamic-sql,
 +[  --with-dynamic-sql    Build SQL modules as shared libs],
@@ -206,7 +206,7 @@
  AC_ARG_WITH(ssl,
  [  --with-ssl=[gnutls|openssl] Build with GNUTLS or OpenSSL (default)],
  	if test x$withval = xno; then
-@@ -1559,12 +1568,12 @@
+@@ -1660,12 +1669,12 @@
  		fi
  		AC_CHECK_HEADER(libpq-fe.h, [
  			if test "$PGSQL_INCLUDE" != ""; then
@@ -222,7 +222,7 @@
  			AC_DEFINE(HAVE_PGSQL,, Build with PostgreSQL support)
  			found_sql_drivers="$found_sql_drivers pgsql"
  
-@@ -1610,12 +1619,12 @@
+@@ -1711,12 +1720,12 @@
  		fi
  		AC_CHECK_HEADER(mysql.h, [
  			if test "$MYSQL_INCLUDE" != ""; then
@@ -238,7 +238,7 @@
  
  			AC_CHECK_LIB(mysqlclient, mysql_ssl_set, [
  				AC_DEFINE(HAVE_MYSQL_SSL,, Define if your MySQL library has SSL functions)
-@@ -1646,13 +1655,18 @@
+@@ -1747,13 +1756,18 @@
  if test $want_sqlite = yes; then
  	AC_CHECK_LIB(sqlite3, sqlite3_open, [
  		AC_CHECK_HEADER(sqlite3.h, [
@@ -258,7 +258,7 @@
  
  if test "$found_sql_drivers" != "" -o "$want_sql" = "yes"; then
  	if test "$all_sql_drivers" = "yes"; then
-@@ -1716,6 +1730,12 @@
+@@ -1828,6 +1842,12 @@
  AC_SUBST(AUTH_LIBS)
  AC_SUBST(SQL_CFLAGS)
  AC_SUBST(SQL_LIBS)
@@ -269,9 +269,9 @@
 +AC_SUBST(SQLITE_CFLAGS)
 +AC_SUBST(SQLITE_LIBS)
  
- dnl **
- dnl ** Index file compatibility flags
-@@ -1783,17 +1803,27 @@
+ AC_SUBST(DICT_LIBS)
+ AC_SUBST(dict_drivers)
+@@ -1899,17 +1919,27 @@
  dnl ** SQL drivers
  dnl **
  
@@ -299,7 +299,7 @@
  
  dnl **
  dnl ** Plugins
-@@ -1873,4 +1903,8 @@
+@@ -1996,7 +2026,11 @@
  echo "Building with GSSAPI support ........ : $have_gssapi"
  echo "Building with user database modules . :$userdb"
  echo "Building with password lookup modules :$passdb"
@@ -309,3 +309,6 @@
 +else
 +	echo "Building with SQL drivers ............:$sql_drivers"
 +fi
+ 
+ echo
+ echo "NOTE: This is the UNSTABLE development branch of Dovecot."

@@ -1,8 +1,8 @@
-%define upstream 1.0.2
+%define upstream 1.1.alpha1
 %define sieve_upstream 1.0.1
-%define pkg_version 1.0.2
-%define my_release 13.5
-%define pkg_release %{my_release}%{?dist}
+%define pkg_version 1.1
+%define my_release 14.5
+%define pkg_release %{my_release}.alpha1%{?dist}
 %define pkg_sieve_version 1.0.1
 %define pkg_sieve_release %{my_release}%{?dist}
 
@@ -17,7 +17,7 @@ Group: System Environment/Daemons
 %define build_mysql 1
 %define build_sqlite 1
 
-%define build_sieve 1
+%define build_sieve 0
 %define sieve_name dovecot-sieve
 
 Source: http://dovecot.org/releases/%{name}-%{upstream}.tar.gz
@@ -29,15 +29,11 @@ Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_upstream}.tar.gz
-Patch100: dovecot-1.0.rc15-default-settings.patch
-#Patch101: dovecot-1.0.beta2-pam-tty.patch
+Patch100: dovecot-1.1.alpha1-default-settings.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
-# 104 not applied
-#Patch104: dovecot-1.0.beta2-lib64.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
-Patch106: dovecot-1.0.rc32-split.patch
-#Patch105: dovecot-1.0.beta2-sqlite-check.patch
+Patch106: dovecot-1.1.alpha1-split.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -139,10 +135,8 @@ This package provides the SQLite backend for dovecot-auth etc.
 %setup -q -n %{name}-%{upstream}
 
 %patch100 -p1 -b .default-settings
-#%patch101 -p2 -b .pam-tty
 %patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
-#%patch104 -p1 -b .lib64
 %patch105 -p1 -b .mkcert-paths
 
 %patch106 -p1 -b .split
@@ -353,6 +347,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jul 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-14.5.alpha1
+- update to latest upstream beta
+- don't build dovecot-sieve, it's only for 1.0
+
 * Sun Jul 15 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.2-13.5
 - update to latest upstream
 
