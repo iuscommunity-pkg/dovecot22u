@@ -54,6 +54,7 @@ BuildRequires: libtool
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: krb5-devel
+BuildRequires: byacc
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
