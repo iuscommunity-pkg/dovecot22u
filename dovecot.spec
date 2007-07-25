@@ -36,6 +36,7 @@ Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
 Patch106: dovecot-1.1.alpha1-split.patch
+Patch107: dovecot-1.1-unicodedata.patch
 Patch200: dovecot-%{dovecot_hg}.patch
 
 # XXX this patch needs review and forward porting
@@ -56,8 +57,6 @@ BuildRequires: krb5-devel
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
-# wget is needed to download unicode map
-BuildRequires: wget
 # Explicit Runtime Requirements
 Requires: openssl >= 0.9.7f-4
 # Package includes an initscript service file, needs to require initscripts package
@@ -143,6 +142,7 @@ This package provides the SQLite backend for dovecot-auth etc.
 %patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 %patch105 -p1 -b .mkcert-paths
+%patch107 -p1 -b .unicodedata
 %patch200 -p1 -b .%{dovecot_hg}
 
 %patch106 -p1 -b .split
