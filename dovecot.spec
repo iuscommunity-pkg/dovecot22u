@@ -56,6 +56,8 @@ BuildRequires: krb5-devel
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
+# wget is needed to download unicode map
+BuildRequires: wget
 # Explicit Runtime Requirements
 Requires: openssl >= 0.9.7f-4
 # Package includes an initscript service file, needs to require initscripts package
