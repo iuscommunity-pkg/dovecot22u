@@ -1,10 +1,12 @@
+%define dovecot_hg a744ae38a9e1
+%define sieve_hg 131e25f6862b
 %define upstream 1.1.alpha1
-%define sieve_upstream 1.0.1
+%define sieve_upstream 1.1-%{sieve_hg}
 %define pkg_version 1.1
-%define my_release 14.5
-%define pkg_release %{my_release}.alpha1%{?dist}
-%define pkg_sieve_version 1.0.1
-%define pkg_sieve_release %{my_release}%{?dist}
+%define my_release 14.6
+%define pkg_release %{my_release}.hg.%{dovecot_hg}%{?dist}
+%define pkg_sieve_version 1.1
+%define pkg_sieve_release %{my_release}.hg.%{sieve_hg}%{?dist}
 
 Summary: Dovecot Secure imap server
 Name: dovecot
@@ -17,7 +19,7 @@ Group: System Environment/Daemons
 %define build_mysql 1
 %define build_sqlite 1
 
-%define build_sieve 0
+%define build_sieve 1
 %define sieve_name dovecot-sieve
 
 Source: http://dovecot.org/releases/%{name}-%{upstream}.tar.gz
@@ -34,6 +36,7 @@ Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
 Patch106: dovecot-1.1.alpha1-split.patch
+Patch200: dovecot-%{dovecot_hg}.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -138,6 +141,7 @@ This package provides the SQLite backend for dovecot-auth etc.
 %patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 %patch105 -p1 -b .mkcert-paths
+%patch200 -p1 -b .%{dovecot_hg}
 
 %patch106 -p1 -b .split
 
@@ -347,6 +351,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Jul 25 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-14.6.hg.a744ae38a9e1
+- update to a744ae38a9e1 from hg
+- update dovecot-sieve to 131e25f6862b from hg and enable it again
+
 * Thu Jul 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-14.5.alpha1
 - update to latest upstream beta
 - don't build dovecot-sieve, it's only for 1.0

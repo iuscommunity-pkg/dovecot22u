@@ -1,0 +1,4503 @@
+diff --git a/NEWS b/NEWS
+index 2251856..954db2b 100644
+--- a/NEWS
++++ b/NEWS
+@@ -15,7 +15,7 @@ v1.1.UNSTABLE
+ 	  It's similar to REFERENCES, but it doesn't do base subject merging
+ 	  and it sorts the threads by their newest message.
+ 	+ When saving messages, update cache file immediately with the data
+-	  that we expect client to fetch later. Maildir-only currently.
++	  that we expect client to fetch later.
+ 	+ NFS attribute and data caches are are flushed whenever needed.
+ 	  See mail_nfs_storage and mail_nfs_index settings.
+ 	+ Mailbox list indexes. Mailbox metadata is stored there, so STATUS
+diff --git a/configure.in b/configure.in
+index 156e9d7..3f93ca6 100644
+--- a/configure.in
++++ b/configure.in
+@@ -82,7 +82,7 @@ AC_ARG_WITH(passwd,
+ 	fi,
+ 	want_passwd=yes)
+ 
+-AC_ARG_WITH(passwd,
++AC_ARG_WITH(nss,
+ [  --with-nss              Build with NSS module support (default)],
+ 	if test x$withval = xno; then
+ 		want_nss=no
+diff --git a/doc/dovecot-ldap-example.conf b/doc/dovecot-ldap-example.conf
+index 334ae8f..62ec866 100644
+--- a/doc/dovecot-ldap-example.conf
++++ b/doc/dovecot-ldap-example.conf
+@@ -106,7 +106,8 @@ base = uid=someone, dc=foo, dc=bar, dc=org
+ # userdb prefetch instead of userdb ldap in dovecot.conf. In that case you'll
+ # also have to include user_attrs in pass_attrs field prefixed with "userdb_"
+ # string. For example:
+-#pass_attrs = uid=user,userPassword=password,homeDirectory=userdb_home,uidNumber=userdb_uid,gidNumber=userdb_gid
++#pass_attrs = uid=user,userPassword=password,\
++#  homeDirectory=userdb_home,uidNumber=userdb_uid,gidNumber=userdb_gid
+ 
+ # Filter for password lookups
+ #pass_filter = (&(objectClass=posixAccount)(uid=%u))
+diff --git a/doc/dovecot-sql-example.conf b/doc/dovecot-sql-example.conf
+index bfc4b82..55fc998 100644
+--- a/doc/dovecot-sql-example.conf
++++ b/doc/dovecot-sql-example.conf
+@@ -88,7 +88,9 @@
+ #   password_query = SELECT concat(userid, '@', domain) AS user, password FROM users WHERE userid = '%n' AND domain = '%d'
+ #   password_query = SELECT pw AS password FROM users WHERE userid = '%u' AND active = 'Y'
+ #
+-#password_query = SELECT userid as user, password FROM users WHERE userid = '%u'
++#password_query = \
++#  SELECT userid as user, password \
++#  FROM users WHERE userid = '%u'
+ 
+ # Query to retrieve the user information.
+ #
+@@ -114,4 +116,7 @@
+ # userdb prefetch instead of userdb sql in dovecot.conf. In that case you'll
+ # also have to return userdb fields in password_query prefixed with "userdb_"
+ # string. For example:
+-#password_query = SELECT userid as user, password, home as userdb_home, uid as userdb_uid, gid as userdb_gid FROM users WHERE userid = '%u'
++#password_query = \
++#  SELECT userid as user, password, \
++#  home as userdb_home, uid as userdb_uid, gid as userdb_gid \
++#  FROM users WHERE userid = '%u'
+diff --git a/src/auth/auth-client-connection.c b/src/auth/auth-client-connection.c
+index d596854..e913a2e 100644
+--- a/src/auth/auth-client-connection.c
++++ b/src/auth/auth-client-connection.c
+@@ -275,10 +275,9 @@ auth_client_connection_create(struct auth_master_listener *listener, int fd)
+ 
+ 	conn->fd = fd;
+ 	conn->input =
+-		i_stream_create_file(fd, default_pool,
+-				     AUTH_CLIENT_MAX_LINE_LENGTH, FALSE);
++		i_stream_create_file(fd, AUTH_CLIENT_MAX_LINE_LENGTH, FALSE);
+ 	conn->output =
+-		o_stream_create_file(fd, default_pool, (size_t)-1, FALSE);
++		o_stream_create_file(fd, (size_t)-1, FALSE);
+ 	o_stream_set_flush_callback(conn->output, auth_client_output, conn);
+ 	conn->io = io_add(fd, IO_READ, auth_client_input, conn);
+ 
+diff --git a/src/auth/auth-master-connection.c b/src/auth/auth-master-connection.c
+index d18c70e..ddfe029 100644
+--- a/src/auth/auth-master-connection.c
++++ b/src/auth/auth-master-connection.c
+@@ -242,10 +242,8 @@ auth_master_connection_create(struct auth_master_listener *listener, int fd)
+ 	conn->listener = listener;
+ 	conn->refcount = 1;
+ 	conn->fd = fd;
+-	conn->input = i_stream_create_file(fd, default_pool,
+-					   MAX_INBUF_SIZE, FALSE);
+-	conn->output = o_stream_create_file(fd, default_pool,
+-					    (size_t)-1, FALSE);
++	conn->input = i_stream_create_file(fd, MAX_INBUF_SIZE, FALSE);
++	conn->output = o_stream_create_file(fd, (size_t)-1, FALSE);
+ 	o_stream_set_flush_callback(conn->output, master_output, conn);
+ 	conn->io = io_add(fd, IO_READ, master_input, conn);
+ 
+diff --git a/src/auth/auth-worker-client.c b/src/auth/auth-worker-client.c
+index 2fca127..58ba197 100644
+--- a/src/auth/auth-worker-client.c
++++ b/src/auth/auth-worker-client.c
+@@ -468,10 +468,9 @@ auth_worker_client_create(struct auth *auth, int fd)
+ 	client->auth = auth;
+ 	client->fd = fd;
+ 	client->input =
+-		i_stream_create_file(fd, default_pool,
+-				     AUTH_WORKER_MAX_LINE_LENGTH, FALSE);
++		i_stream_create_file(fd, AUTH_WORKER_MAX_LINE_LENGTH, FALSE);
+ 	client->output =
+-		o_stream_create_file(fd, default_pool, (size_t)-1, FALSE);
++		o_stream_create_file(fd, (size_t)-1, FALSE);
+ 	o_stream_set_flush_callback(client->output, auth_worker_output, client);
+ 	client->io = io_add(fd, IO_READ, auth_worker_input, client);
+ 
+diff --git a/src/auth/auth-worker-server.c b/src/auth/auth-worker-server.c
+index 537650b..b36c61e 100644
+--- a/src/auth/auth-worker-server.c
++++ b/src/auth/auth-worker-server.c
+@@ -79,10 +79,9 @@ static struct auth_worker_connection *auth_worker_create(void)
+ 
+ 	conn = i_new(struct auth_worker_connection, 1);
+ 	conn->fd = fd;
+-	conn->input = i_stream_create_file(fd, default_pool,
+-					   AUTH_WORKER_MAX_LINE_LENGTH, FALSE);
+-	conn->output =
+-		o_stream_create_file(fd, default_pool, (size_t)-1, FALSE);
++	conn->input = i_stream_create_file(fd, AUTH_WORKER_MAX_LINE_LENGTH,
++					   FALSE);
++	conn->output = o_stream_create_file(fd, (size_t)-1, FALSE);
+ 	conn->io = io_add(fd, IO_READ, worker_input, conn);
+ 	conn->requests = buffer_create_dynamic(default_pool, 128);
+ 
+diff --git a/src/auth/db-ldap.c b/src/auth/db-ldap.c
+index 7b564d1..363461c 100644
+--- a/src/auth/db-ldap.c
++++ b/src/auth/db-ldap.c
+@@ -52,9 +52,11 @@ struct db_ldap_result_iterate_context {
+ 
+ 	char *attr, **vals;
+ 	const char *name, *value, *template, *val_1_arr[2];
++	const char *const *static_attrs;
+ 	BerElement *ber;
+ 
+ 	string_t *var, *debug;
++	unsigned int value_idx;
+ };
+ 
+ #define DEF_STR(name) DEF_STRUCT_STR(name, ldap_settings)
+@@ -102,9 +104,9 @@ struct ldap_settings default_ldap_settings = {
+ 	MEMBER(scope) "subtree",
+ 	MEMBER(base) NULL,
+ 	MEMBER(ldap_version) 2,
+-	MEMBER(user_attrs) "uid,homeDirectory,,,uidNumber,gidNumber",
++	MEMBER(user_attrs) "homeDirectory=home,uidNumber=uid,gidNumber=gid",
+ 	MEMBER(user_filter) "(&(objectClass=posixAccount)(uid=%u))",
+-	MEMBER(pass_attrs) "uid,userPassword",
++	MEMBER(pass_attrs) "uid=user,userPassword=password",
+ 	MEMBER(pass_filter) "(&(objectClass=posixAccount)(uid=%u))",
+ 	MEMBER(default_pass_scheme) "crypt"
+ };
+@@ -618,10 +620,10 @@ static void ldap_conn_close(struct ldap_connection *conn, bool flush_requests)
+ 
+ void db_ldap_set_attrs(struct ldap_connection *conn, const char *attrlist,
+ 		       char ***attr_names_r, struct hash_table *attr_map,
+-		       const char *const default_attr_map[],
+ 		       const char *skip_attr)
+ {
+ 	const char *const *attr;
++	string_t *static_data;
+ 	char *name, *value, *p;
+ 	unsigned int i, j, size;
+ 
+@@ -630,6 +632,7 @@ void db_ldap_set_attrs(struct ldap_connection *conn, const char *attrlist,
+ 
+ 	t_push();
+ 	attr = t_strsplit(attrlist, ",");
++	static_data = t_str_new(128);
+ 
+ 	/* @UNSAFE */
+ 	for (size = 0; attr[size] != NULL; size++) ;
+@@ -637,13 +640,17 @@ void db_ldap_set_attrs(struct ldap_connection *conn, const char *attrlist,
+ 
+ 	for (i = j = 0; i < size; i++) {
+ 		p = strchr(attr[i], '=');
+-		if (p == NULL) {
+-			name = p_strdup(conn->pool, attr[i]);
+-			value = *default_attr_map == NULL ? name :
+-				p_strdup(conn->pool, *default_attr_map);
+-		} else {
++		if (p == NULL)
++			name = value = p_strdup(conn->pool, attr[i]);
++		else if (p != attr[i]) {
+ 			name = p_strdup_until(conn->pool, attr[i], p);
+ 			value = p_strdup(conn->pool, p + 1);
++		} else {
++			/* =<static key>=<static value> */
++			if (str_len(static_data) > 0)
++				str_append_c(static_data, ',');
++			str_append(static_data, p + 1);
++			continue;
+ 		}
+ 
+ 		if (*name != '\0' &&
+@@ -651,9 +658,10 @@ void db_ldap_set_attrs(struct ldap_connection *conn, const char *attrlist,
+ 			hash_insert(attr_map, name, value);
+ 			(*attr_names_r)[j++] = name;
+ 		}
+-
+-		if (*default_attr_map != NULL)
+-			default_attr_map++;
++	}
++	if (str_len(static_data) > 0) {
++		hash_insert(attr_map, "",
++			    p_strdup(conn->pool, str_c(static_data)));
+ 	}
+ 	t_pop();
+ }
+@@ -709,6 +717,7 @@ db_ldap_result_iterate_init(struct ldap_connection *conn, LDAPMessage *entry,
+ 			    struct hash_table *attr_map)
+ {
+ 	struct db_ldap_result_iterate_context *ctx;
++	const char *static_data;
+ 
+ 	ctx = t_new(struct db_ldap_result_iterate_context, 1);
+ 	ctx->conn = conn;
+@@ -716,6 +725,10 @@ db_ldap_result_iterate_init(struct ldap_connection *conn, LDAPMessage *entry,
+ 	ctx->auth_request = auth_request;
+ 	ctx->attr_map = attr_map;
+ 
++	static_data = hash_lookup(attr_map, "");
++	if (static_data != NULL)
++		ctx->static_attrs = t_strsplit(static_data, ",");
++
+ 	if (auth_request->auth->verbose_debug)
+ 		ctx->debug = t_str_new(256);
+ 
+@@ -764,12 +777,13 @@ db_ldap_result_change_attr(struct db_ldap_result_iterate_context *ctx)
+ 	ctx->vals = ldap_get_values(ctx->conn->ld, ctx->entry,
+ 				    ctx->attr);
+ 	ctx->value = ctx->vals[0];
++	ctx->value_idx = 0;
+ }
+ 
+ static void
+ db_ldap_result_return_value(struct db_ldap_result_iterate_context *ctx)
+ {
+-	bool first = ctx->value == ctx->vals[0];
++	bool first = ctx->value_idx == 0;
+ 
+ 	if (ctx->template != NULL) {
+ 		ctx->var_table[0].value = ctx->value;
+@@ -791,6 +805,8 @@ db_ldap_result_return_value(struct db_ldap_result_iterate_context *ctx)
+ 
+ static bool db_ldap_result_int_next(struct db_ldap_result_iterate_context *ctx)
+ {
++	const char *p;
++
+ 	while (ctx->attr != NULL) {
+ 		if (ctx->vals == NULL) {
+ 			/* a new attribute */
+@@ -798,7 +814,7 @@ static bool db_ldap_result_int_next(struct db_ldap_result_iterate_context *ctx)
+ 		} else {
+ 			/* continuing existing attribute */
+ 			if (ctx->value != NULL)
+-				ctx->value++;
++				ctx->value = ctx->vals[++ctx->value_idx];
+ 		}
+ 
+ 		if (ctx->value != NULL) {
+@@ -812,6 +828,19 @@ static bool db_ldap_result_int_next(struct db_ldap_result_iterate_context *ctx)
+ 						ctx->ber);
+ 	}
+ 
++	if (ctx->static_attrs != NULL && *ctx->static_attrs != NULL) {
++		p = strchr(*ctx->static_attrs, '=');
++		if (p == NULL) {
++			ctx->name = *ctx->static_attrs;
++			ctx->value = "";
++		} else {
++			ctx->name = t_strdup_until(*ctx->static_attrs, p);
++			ctx->value = p + 1;
++		}
++		ctx->static_attrs++;
++		return TRUE;
++	}
++
+ 	db_ldap_result_iterate_finish(ctx);
+ 	return FALSE;
+ }
+diff --git a/src/auth/db-ldap.h b/src/auth/db-ldap.h
+index 621e8b9..36823c2 100644
+--- a/src/auth/db-ldap.h
++++ b/src/auth/db-ldap.h
+@@ -99,7 +99,6 @@ void db_ldap_search(struct ldap_connection *conn, struct ldap_request *request,
+ 
+ void db_ldap_set_attrs(struct ldap_connection *conn, const char *attrlist,
+ 		       char ***attr_names_r, struct hash_table *attr_map,
+-		       const char *const default_attr_map[],
+ 		       const char *skip_attr);
+ 
+ struct ldap_connection *db_ldap_init(const char *config_path);
+diff --git a/src/auth/db-passwd-file.c b/src/auth/db-passwd-file.c
+index 74c1f3d..27ac55e 100644
+--- a/src/auth/db-passwd-file.c
++++ b/src/auth/db-passwd-file.c
+@@ -183,7 +183,7 @@ static bool passwd_file_open(struct passwd_file *pw)
+ 	pw->users = hash_create(default_pool, pw->pool, 100,
+ 				str_hash, (hash_cmp_callback_t *)strcmp);
+ 
+-	input = i_stream_create_file(pw->fd, default_pool, 4096, FALSE);
++	input = i_stream_create_file(pw->fd, 4096, FALSE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		if (*line == '\0' || *line == ':' || *line == '#')
+ 			continue; /* no username or comment */
+diff --git a/src/auth/passdb-ldap.c b/src/auth/passdb-ldap.c
+index 45db512..1d43851 100644
+--- a/src/auth/passdb-ldap.c
++++ b/src/auth/passdb-ldap.c
+@@ -15,10 +15,6 @@
+ #include <ldap.h>
+ #include <stdlib.h>
+ 
+-static const char *default_attr_map[] = {
+-	"user", "password", NULL
+-};
+-
+ struct ldap_passdb_module {
+ 	struct passdb_module module;
+ 
+@@ -434,7 +430,7 @@ passdb_ldap_preinit(struct auth_passdb *auth_passdb, const char *args)
+ 	if (conn->set.auth_bind_userdn != NULL)
+ 		conn->set.auth_bind = TRUE;
+ 	db_ldap_set_attrs(conn, conn->set.pass_attrs, &conn->pass_attr_names,
+-			  conn->pass_attr_map, default_attr_map,
++			  conn->pass_attr_map,
+ 			  conn->set.auth_bind ? "password" : NULL);
+ 	module->module.cache_key =
+ 		auth_cache_parse_key(auth_passdb->auth->pool,
+diff --git a/src/auth/userdb-ldap.c b/src/auth/userdb-ldap.c
+index 3a8d2f5..170add0 100644
+--- a/src/auth/userdb-ldap.c
++++ b/src/auth/userdb-ldap.c
+@@ -26,10 +26,6 @@ struct userdb_ldap_request {
+         userdb_callback_t *userdb_callback;
+ };
+ 
+-static const char *default_attr_map[] = {
+-	"", "home", "mail", "system_user", "uid", "gid", NULL
+-};
+-
+ static void
+ ldap_query_get_result(struct ldap_connection *conn, LDAPMessage *entry,
+ 		      struct auth_request *auth_request)
+@@ -37,6 +33,8 @@ ldap_query_get_result(struct ldap_connection *conn, LDAPMessage *entry,
+ 	struct db_ldap_result_iterate_context *ldap_iter;
+ 	const char *name, *const *values;
+ 
++	auth_request_init_userdb_reply(auth_request);
++
+ 	ldap_iter = db_ldap_result_iterate_init(conn, entry, auth_request,
+ 						conn->user_attr_map);
+ 	while (db_ldap_result_iterate_next_all(ldap_iter, &name, &values)) {
+@@ -139,7 +137,7 @@ userdb_ldap_preinit(struct auth_userdb *auth_userdb, const char *args)
+ 			    (hash_cmp_callback_t *)strcmp);
+ 
+ 	db_ldap_set_attrs(conn, conn->set.user_attrs, &conn->user_attr_names,
+-			  conn->user_attr_map, default_attr_map, NULL);
++			  conn->user_attr_map, NULL);
+ 	module->module.cache_key =
+ 		auth_cache_parse_key(auth_userdb->auth->pool,
+ 				     conn->set.user_filter);
+diff --git a/src/deliver/auth-client.c b/src/deliver/auth-client.c
+index 083a70e..8a865bd 100644
+--- a/src/deliver/auth-client.c
++++ b/src/deliver/auth-client.c
+@@ -179,10 +179,8 @@ static struct auth_connection *auth_connection_new(const char *auth_socket)
+ 
+ 	conn = i_new(struct auth_connection, 1);
+ 	conn->fd = fd;
+-	conn->input =
+-		i_stream_create_file(fd, default_pool, MAX_INBUF_SIZE, FALSE);
+-	conn->output =
+-		o_stream_create_file(fd, default_pool, MAX_OUTBUF_SIZE, FALSE);
++	conn->input = i_stream_create_file(fd, MAX_INBUF_SIZE, FALSE);
++	conn->output = o_stream_create_file(fd, MAX_OUTBUF_SIZE, FALSE);
+ 	conn->io = io_add(fd, IO_READ, auth_input, conn);
+ 	return conn;
+ }
+diff --git a/src/deliver/deliver.c b/src/deliver/deliver.c
+index 42bb812..e38a621 100644
+--- a/src/deliver/deliver.c
++++ b/src/deliver/deliver.c
+@@ -229,7 +229,7 @@ static void config_file_init(const char *path)
+ 		i_fatal_status(EX_CONFIG, "open(%s) failed: %m", path);
+ 
+ 	t_push();
+-	input = i_stream_create_file(fd, default_pool, 1024, TRUE);
++	input = i_stream_create_file(fd, 1024, TRUE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		/* @UNSAFE: line is modified */
+ 
+@@ -417,7 +417,7 @@ static struct istream *create_mbox_stream(int fd, const char *envelope_sender)
+ 	envelope_sender = address_sanitize(envelope_sender);
+ 	mbox_hdr = mbox_from_create(envelope_sender, ioloop_time);
+ 
+-	input = i_stream_create_file(fd, default_pool, 4096, FALSE);
++	input = i_stream_create_file(fd, 4096, FALSE);
+ 	input_filter =
+ 		i_stream_create_header_filter(input,
+ 					      HEADER_FILTER_EXCLUDE |
+@@ -428,14 +428,12 @@ static struct istream *create_mbox_stream(int fd, const char *envelope_sender)
+ 					      NULL);
+ 	i_stream_unref(&input);
+ 
+-	input_list[0] = i_stream_create_from_data(default_pool, mbox_hdr,
+-						  strlen(mbox_hdr));
++	input_list[0] = i_stream_create_from_data(mbox_hdr, strlen(mbox_hdr));
+ 	input_list[1] = input_filter;
+-	input_list[2] = i_stream_create_from_data(default_pool, "\n", 1);
++	input_list[2] = i_stream_create_from_data("\n", 1);
+ 	input_list[3] = NULL;
+ 
+-	input = i_stream_create_seekable(input_list, default_pool,
+-					 MAIL_MAX_MEMORY_BUFFER,
++	input = i_stream_create_seekable(input_list, MAIL_MAX_MEMORY_BUFFER,
+ 					 "/tmp/dovecot.deliver.");
+ 	i_stream_unref(&input_list[0]);
+ 	i_stream_unref(&input_list[1]);
+@@ -754,28 +752,46 @@ int main(int argc, char *argv[])
+ 	if (mail_set_seq(mail, 1) < 0)
+ 		i_fatal("mail_set_seq() failed");
+ 
++	storage = NULL;
+ 	default_mailbox_name = mailbox;
+-	if (deliver_mail != NULL)
+-		(void)deliver_mail(ns, &storage, mail, destination, mailbox);
++	if (deliver_mail == NULL)
++		ret = -1;
++	else {
++		if (deliver_mail(ns, &storage, mail,
++				 destination, mailbox) <= 0) {
++			/* if message was saved, don't bounce it even though
++			   the script failed later. */
++			ret = saved_mail ? 0 : -1;
++		} else {
++			/* success. message may or may not have been saved. */
++			ret = 0;
++		}
++	}
+ 
+-	if (!saved_mail && !tried_default_save) {
++	if (ret < 0 && !tried_default_save) {
+ 		/* plugins didn't handle this. save into the default mailbox. */
+ 		i_stream_seek(input, 0);
+-		(void)deliver_save(ns, &storage, mailbox, mail, 0, NULL);
++		ret = deliver_save(ns, &storage, mailbox, mail, 0, NULL);
+ 	}
+-	if (!saved_mail && strcasecmp(mailbox, "INBOX") != 0) {
++	if (ret < 0 && strcasecmp(mailbox, "INBOX") != 0) {
+ 		/* still didn't work. try once more to save it
+ 		   to INBOX. */
+ 		i_stream_seek(input, 0);
+-		(void)deliver_save(ns, &storage, "INBOX", mail, 0, NULL);
++		ret = deliver_save(ns, &storage, "INBOX", mail, 0, NULL);
+ 	}
+ 
+-	if (!saved_mail) {
++	if (ret < 0 ) {
+ 		const char *error_string, *msgid;
+ 		enum mail_error error;
+ 		int ret;
+ 
+-		error_string = mail_storage_get_last_error(ns->storage, &error);
++		if (storage == NULL) {
++			/* This shouldn't happen */
++			i_error("BUG: Saving failed for unknown storage");
++			return EX_TEMPFAIL;
++		}
++
++		error_string = mail_storage_get_last_error(storage, &error);
+ 		if (error != MAIL_ERROR_NOSPACE ||
+ 		    getenv("QUOTA_FULL_TEMPFAIL") != NULL) {
+ 			/* Saving to INBOX should always work unless
+diff --git a/src/deliver/duplicate.c b/src/deliver/duplicate.c
+index bb6f5d5..a724cc9 100644
+--- a/src/deliver/duplicate.c
++++ b/src/deliver/duplicate.c
+@@ -94,7 +94,7 @@ static int duplicate_read(struct duplicate_file *file)
+ 	}
+ 
+ 	/* <timestamp> <id_size> <user_size> <id> <user> */
+-	input = i_stream_create_file(fd, default_pool, 4096, FALSE);
++	input = i_stream_create_file(fd, 4096, FALSE);
+ 
+ 	change_count = 0;
+ 	while (i_stream_read_data(input, &data, &size, sizeof(stamp) +
+@@ -218,7 +218,7 @@ void duplicate_flush(void)
+ 	if (duplicate_file == NULL || !file->changed || file->new_fd == -1)
+ 		return;
+ 
+-	output = o_stream_create_file(file->new_fd, default_pool, 4096, FALSE);
++	output = o_stream_create_file(file->new_fd, 4096, FALSE);
+ 	iter = hash_iterate_init(file->hash);
+ 	while (hash_iterate(iter, &key, &value)) {
+ 		struct duplicate *d = value;
+diff --git a/src/dict/dict-server.c b/src/dict/dict-server.c
+index 1fa9609..6acf34b 100644
+--- a/src/dict/dict-server.c
++++ b/src/dict/dict-server.c
+@@ -446,9 +446,9 @@ dict_client_connection_init(struct dict_server *server, int fd)
+ 	conn = i_new(struct dict_client_connection, 1);
+ 	conn->server = server;
+ 	conn->fd = fd;
+-	conn->input = i_stream_create_file(fd, default_pool,
+-					   DICT_CLIENT_MAX_LINE_LENGTH, FALSE);
+-	conn->output = o_stream_create_file(fd, default_pool, 128*1024, FALSE);
++	conn->input = i_stream_create_file(fd, DICT_CLIENT_MAX_LINE_LENGTH,
++					   FALSE);
++	conn->output = o_stream_create_file(fd, 128*1024, FALSE);
+ 	conn->io = io_add(fd, IO_READ, dict_client_connection_input, conn);
+ 	return conn;
+ }
+diff --git a/src/imap-login/client.c b/src/imap-login/client.c
+index 6fa0e76..e984ce9 100644
+--- a/src/imap-login/client.c
++++ b/src/imap-login/client.c
+@@ -68,10 +68,8 @@ static void client_set_title(struct imap_client *client)
+ 
+ static void client_open_streams(struct imap_client *client, int fd)
+ {
+-	client->input = i_stream_create_file(fd, default_pool,
+-					     MAX_INBUF_SIZE, FALSE);
+-	client->output = o_stream_create_file(fd, default_pool, MAX_OUTBUF_SIZE,
+-					      FALSE);
++	client->input = i_stream_create_file(fd, MAX_INBUF_SIZE, FALSE);
++	client->output = o_stream_create_file(fd, MAX_OUTBUF_SIZE, FALSE);
+ 	client->parser = imap_parser_create(client->input, client->output,
+ 					    MAX_IMAP_LINE);
+ }
+diff --git a/src/imap/client.c b/src/imap/client.c
+index 1036e9e..99df764 100644
+--- a/src/imap/client.c
++++ b/src/imap/client.c
+@@ -30,10 +30,9 @@ struct client *client_create(int fd_in, int fd_out,
+ 	client = i_new(struct client, 1);
+ 	client->fd_in = fd_in;
+ 	client->fd_out = fd_out;
+-	client->input = i_stream_create_file(fd_in, default_pool,
+-					     imap_max_line_length, FALSE);
+-	client->output = o_stream_create_file(fd_out, default_pool,
+-					      (size_t)-1, FALSE);
++	client->input =
++		i_stream_create_file(fd_in, imap_max_line_length, FALSE);
++	client->output = o_stream_create_file(fd_out, (size_t)-1, FALSE);
+ 
+ 	o_stream_set_flush_callback(client->output, _client_output, client);
+ 
+diff --git a/src/imap/cmd-append.c b/src/imap/cmd-append.c
+index ccbce56..2f1ec5f 100644
+--- a/src/imap/cmd-append.c
++++ b/src/imap/cmd-append.c
+@@ -186,7 +186,7 @@ static bool cmd_append_cancel(struct cmd_append_context *ctx, bool nonsync)
+ 
+ 	/* we have to read the nonsynced literal so we don't treat the message
+ 	   data as commands. */
+-	ctx->input = i_stream_create_limit(default_pool, ctx->client->input,
++	ctx->input = i_stream_create_limit(ctx->client->input,
+ 					   ctx->client->input->v_offset,
+ 					   ctx->msg_size);
+ 
+@@ -317,7 +317,7 @@ static bool cmd_append_continue_parsing(struct client_command_context *cmd)
+ 	}
+ 
+ 	/* save the mail */
+-	ctx->input = i_stream_create_limit(default_pool, client->input,
++	ctx->input = i_stream_create_limit(client->input,
+ 					   client->input->v_offset,
+ 					   ctx->msg_size);
+ 	ret = mailbox_save_init(ctx->t, flags, keywords,
+diff --git a/src/imap/imap-fetch-body.c b/src/imap/imap-fetch-body.c
+index 392b4a3..23712d0 100644
+--- a/src/imap/imap-fetch-body.c
++++ b/src/imap/imap-fetch-body.c
+@@ -280,7 +280,7 @@ static int fetch_stream(struct imap_fetch_context *ctx,
+ 	if (size->physical_size == size->virtual_size &&
+ 	    ctx->cur_mail->has_no_nuls) {
+ 		/* no need to kludge with CRs, we can use sendfile() */
+-		input = i_stream_create_limit(default_pool, ctx->cur_input,
++		input = i_stream_create_limit(ctx->cur_input,
+ 					      ctx->cur_input->v_offset,
+ 					      ctx->cur_size);
+ 		i_stream_unref(&ctx->cur_input);
+diff --git a/src/lib-auth/auth-server-connection.c b/src/lib-auth/auth-server-connection.c
+index 3f5d5c0..3ba6111 100644
+--- a/src/lib-auth/auth-server-connection.c
++++ b/src/lib-auth/auth-server-connection.c
+@@ -226,10 +226,9 @@ auth_server_connection_new(struct auth_client *client, const char *path)
+ 	conn->path = p_strdup(pool, path);
+ 	conn->fd = fd;
+ 	conn->io = io_add(fd, IO_READ, auth_client_input, conn);
+-	conn->input = i_stream_create_file(fd, default_pool,
+-					   AUTH_CLIENT_MAX_LINE_LENGTH, FALSE);
+-	conn->output = o_stream_create_file(fd, default_pool, (size_t)-1,
+-					    FALSE);
++	conn->input = i_stream_create_file(fd, AUTH_CLIENT_MAX_LINE_LENGTH,
++					   FALSE);
++	conn->output = o_stream_create_file(fd, (size_t)-1, FALSE);
+ 	conn->requests = hash_create(default_pool, pool, 100, NULL, NULL);
+ 	conn->auth_mechs_buf = buffer_create_dynamic(default_pool, 256);
+ 
+diff --git a/src/lib-charset/charset-iconv.c b/src/lib-charset/charset-iconv.c
+index 955cf5d..da6aa48 100644
+--- a/src/lib-charset/charset-iconv.c
++++ b/src/lib-charset/charset-iconv.c
+@@ -1,7 +1,8 @@
+-/* Copyright (C) 2002 Timo Sirainen */
++/* Copyright (C) 2002-2007 Timo Sirainen */
+ 
+ #include "lib.h"
+ #include "buffer.h"
++#include "unichar.h"
+ #include "charset-utf8.h"
+ 
+ #ifdef HAVE_ICONV
+@@ -11,31 +12,28 @@
+ 
+ struct charset_translation {
+ 	iconv_t cd;
++	enum charset_flags flags;
+ };
+ 
+-struct charset_translation *charset_to_utf8_begin(const char *charset,
+-						  bool *unknown_charset)
++int charset_to_utf8_begin(const char *charset, enum charset_flags flags,
++			  struct charset_translation **t_r)
+ {
+ 	struct charset_translation *t;
+ 	iconv_t cd;
+ 
+-	if (unknown_charset != NULL)
+-		*unknown_charset = FALSE;
+-
+ 	if (charset_is_utf8(charset))
+ 		cd = (iconv_t)-1;
+ 	else {
+ 		cd = iconv_open("UTF-8", charset);
+-		if (cd == (iconv_t)-1) {
+-			if (unknown_charset != NULL)
+-				*unknown_charset = TRUE;
+-			return NULL;
+-		}
++		if (cd == (iconv_t)-1)
++			return -1;
+ 	}
+ 
+ 	t = i_new(struct charset_translation, 1);
+ 	t->cd = cd;
+-	return t;
++	t->flags = flags;
++	*t_r = t;
++	return 0;
+ }
+ 
+ void charset_to_utf8_end(struct charset_translation **_t)
+@@ -55,70 +53,90 @@ void charset_to_utf8_reset(struct charset_translation *t)
+ 		(void)iconv(t->cd, NULL, NULL, NULL, NULL);
+ }
+ 
+-enum charset_result
+-charset_to_ucase_utf8(struct charset_translation *t,
+-		      const unsigned char *src, size_t *src_size,
+-		      buffer_t *dest)
++static bool
++charset_to_utf8_try(struct charset_translation *t,
++		    const unsigned char *src, size_t *src_size, buffer_t *dest,
++		    enum charset_result *result)
+ {
+ 	ICONV_CONST char *ic_srcbuf;
+-	char *ic_destbuf;
+-	size_t srcleft, destpos, destleft, size;
+-        enum charset_result ret;
+-
+-	destpos = buffer_get_used_size(dest);
+-	destleft = buffer_get_size(dest) - destpos;
++	char tmpbuf[8192], *ic_destbuf;
++	size_t srcleft, destleft;
++	bool dtcase = (t->flags & CHARSET_FLAG_DECOMP_TITLECASE) != 0;
++	bool ret = TRUE;
+ 
+ 	if (t->cd == (iconv_t)-1) {
+ 		/* no translation needed - just copy it to outbuf uppercased */
+-		if (*src_size > destleft)
+-			*src_size = destleft;
+-		_charset_utf8_ucase(src, *src_size, dest, destpos);
+-		return CHARSET_RET_OK;
++		*result = CHARSET_RET_OK;
++		if (!dtcase) {
++			buffer_append(dest, src, *src_size);
++			return TRUE;
++		}
++
++		if (uni_utf8_to_decomposed_titlecase(src, *src_size, dest) < 0)
++			*result = CHARSET_RET_INVALID_INPUT;
++		return TRUE;
++	}
++	if (!dtcase) {
++		destleft = buffer_get_size(dest) - dest->used;
++		if (destleft < *src_size) {
++			/* The buffer is most likely too small to hold the
++			   output, so increase it at least to the input size. */
++			destleft = *src_size;
++		}
++		ic_destbuf = buffer_append_space_unsafe(dest, destleft);
++	} else {
++		destleft = sizeof(tmpbuf);
++		ic_destbuf = tmpbuf;
+ 	}
+ 
+-	size = destleft;
+ 	srcleft = *src_size;
+ 	ic_srcbuf = (ICONV_CONST char *) src;
+-	ic_destbuf = buffer_append_space_unsafe(dest, destleft);
+ 
+ 	if (iconv(t->cd, &ic_srcbuf, &srcleft,
+ 		  &ic_destbuf, &destleft) != (size_t)-1)
+-		ret = CHARSET_RET_OK;
+-	else if (errno == E2BIG)
+-		ret = CHARSET_RET_OUTPUT_FULL;
+-	else if (errno == EINVAL)
+-		ret = CHARSET_RET_INCOMPLETE_INPUT;
++		*result = CHARSET_RET_OK;
++	else if (errno == E2BIG) {
++		/* set result just to avoid compiler warning */
++		*result = CHARSET_RET_INCOMPLETE_INPUT;
++		ret = FALSE;
++	} else if (errno == EINVAL)
++		*result = CHARSET_RET_INCOMPLETE_INPUT;
+ 	else {
+ 		/* should be EILSEQ */
+-		return CHARSET_RET_INVALID_INPUT;
++		*result = CHARSET_RET_INVALID_INPUT;
++		return TRUE;
+ 	}
+-	size -= destleft;
++	*src_size -= srcleft;
+ 
+-	/* give back the memory we didn't use */
+-	buffer_set_used_size(dest, buffer_get_used_size(dest) - destleft);
++	if (!dtcase) {
++		/* give back the memory we didn't use */
++		buffer_set_used_size(dest, dest->used - destleft);
++	} else {
++		size_t tmpsize = sizeof(tmpbuf) - destleft;
+ 
+-	*src_size -= srcleft;
+-	_charset_utf8_ucase((unsigned char *) ic_destbuf - size, size,
+-			    dest, destpos);
++		/* we just converted data to UTF-8, it can't be invalid */
++		if (uni_utf8_to_decomposed_titlecase(tmpbuf, tmpsize, dest) < 0)
++			i_unreached();
++	}
+ 	return ret;
+ }
+ 
+ enum charset_result
+-charset_to_ucase_utf8_full(struct charset_translation *t,
+-			   const unsigned char *src, size_t *src_size,
+-			   buffer_t *dest)
++charset_to_utf8(struct charset_translation *t,
++		const unsigned char *src, size_t *src_size, buffer_t *dest)
+ {
+-	enum charset_result ret;
++	enum charset_result result;
+ 	size_t pos, used, size;
++	bool ret;
+ 
+ 	for (pos = 0;;) {
+ 		size = *src_size - pos;
+-		ret = charset_to_ucase_utf8(t, src + pos, &size, dest);
++		ret = charset_to_utf8_try(t, src + pos, &size, dest, &result);
+ 		pos += size;
+ 
+-		if (ret != CHARSET_RET_OUTPUT_FULL) {
++		if (ret) {
+ 			*src_size = pos;
+-			return ret;
++			return result;
+ 		}
+ 
+ 		/* force buffer to grow */
+@@ -129,89 +147,4 @@ charset_to_ucase_utf8_full(struct charset_translation *t,
+ 	}
+ }
+ 
+-static const char *
+-charset_to_utf8_string_int(const char *charset, bool *unknown_charset,
+-			   const unsigned char *data, size_t size,
+-			   size_t *utf8_size_r, bool ucase)
+-{
+-	iconv_t cd;
+-	ICONV_CONST char *inbuf;
+-	char *outbuf, *outpos;
+-	size_t inleft, outleft, outsize, pos;
+-
+-	if (charset == NULL || charset_is_utf8(charset)) {
+-		if (unknown_charset != NULL)
+-			*unknown_charset = FALSE;
+-
+-		if (!ucase) {
+-			if (utf8_size_r != NULL)
+-				*utf8_size_r = size;
+-			return t_strndup(data, size);
+-		}
+-
+-		return _charset_utf8_ucase_strdup(data, size, utf8_size_r);
+-	}
+-
+-	cd = iconv_open("UTF-8", charset);
+-	if (cd == (iconv_t)-1) {
+-		if (unknown_charset != NULL)
+-			*unknown_charset = TRUE;
+-		return NULL;
+-	}
+-
+-	if (unknown_charset != NULL)
+-		*unknown_charset = FALSE;
+-
+-	inbuf = (ICONV_CONST char *) data;
+-	inleft = size;
+-
+-	outsize = outleft = inleft * 2;
+-	outbuf = outpos = t_buffer_get(outsize + 1);
+-
+-	while (iconv(cd, &inbuf, &inleft, &outpos, &outleft) == (size_t)-1) {
+-		if (errno != E2BIG) {
+-			/* invalid data */
+-			iconv_close(cd);
+-			return NULL;
+-		}
+-
+-		/* output buffer too small, grow it */
+-		pos = outsize - outleft;
+-		outsize *= 2;
+-		outleft = outsize - pos;
+-
+-		outbuf = t_buffer_reget(outbuf, outsize + 1);
+-		outpos = outbuf + pos;
+-	}
+-
+-	if (utf8_size_r != NULL)
+-		*utf8_size_r = (size_t) (outpos - outbuf);
+-	*outpos++ = '\0';
+-	t_buffer_alloc((size_t) (outpos - outbuf));
+-
+-	if (ucase)
+-		str_ucase(outbuf); /* FIXME: utf8 */
+-
+-	iconv_close(cd);
+-	return outbuf;
+-}
+-
+-const char *
+-charset_to_utf8_string(const char *charset, bool *unknown_charset,
+-		       const unsigned char *data, size_t size,
+-		       size_t *utf8_size_r)
+-{
+-	return charset_to_utf8_string_int(charset, unknown_charset,
+-					  data, size, utf8_size_r, FALSE);
+-}
+-
+-const char *
+-charset_to_ucase_utf8_string(const char *charset, bool *unknown_charset,
+-			     const unsigned char *data, size_t size,
+-			     size_t *utf8_size_r)
+-{
+-	return charset_to_utf8_string_int(charset, unknown_charset,
+-					  data, size, utf8_size_r, TRUE);
+-}
+-
+ #endif
+diff --git a/src/lib-charset/charset-utf8.c b/src/lib-charset/charset-utf8.c
+index 3917ebb..71c6963 100644
+--- a/src/lib-charset/charset-utf8.c
++++ b/src/lib-charset/charset-utf8.c
+@@ -2,6 +2,7 @@
+ 
+ #include "lib.h"
+ #include "buffer.h"
++#include "unichar.h"
+ #include "charset-utf8.h"
+ 
+ #include <ctype.h>
+@@ -14,59 +15,30 @@ bool charset_is_utf8(const char *charset)
+ 		strcasecmp(charset, "UTF8") == 0;
+ }
+ 
+-void _charset_utf8_ucase(const unsigned char *src, size_t src_size,
+-			 buffer_t *dest, size_t destpos)
+-{
+-	char *destbuf;
+-	size_t i;
+-
+-	destbuf = buffer_get_space_unsafe(dest, destpos, src_size);
+-	for (i = 0; i < src_size; i++)
+-		destbuf[i] = i_toupper(src[i]); /* FIXME: utf8 */
+-}
+-
+-const char *_charset_utf8_ucase_strdup(const unsigned char *data, size_t size,
+-				       size_t *utf8_size_r)
+-{
+-	buffer_t *dest;
+-
+-	dest = buffer_create_dynamic(pool_datastack_create(), size);
+-	_charset_utf8_ucase(data, size, dest, 0);
+-	if (utf8_size_r != NULL)
+-		*utf8_size_r = buffer_get_used_size(dest);
+-	buffer_append_c(dest, '\0');
+-	return buffer_free_without_data(dest);
+-}
+-
+-
+ #ifndef HAVE_ICONV
+ 
+-#include <ctype.h>
+-
+ struct charset_translation {
+-	int dummy;
++	enum charset_flags flags;
+ };
+ 
+-static struct charset_translation ascii_translation, utf8_translation;
++static struct charset_translation raw_translation = { 0 };
++static struct charset_translation tc_translation = {
++	CHARSET_FLAG_DECOMP_TITLECASE
++};
+ 
+-struct charset_translation *charset_to_utf8_begin(const char *charset,
+-						  bool *unknown_charset)
++int charset_to_utf8_begin(const char *charset, enum charset_flags flags,
++			  struct charset_translation **t_r)
+ {
+-	if (unknown_charset != NULL)
+-		*unknown_charset = FALSE;
+-
+-	if (strcasecmp(charset, "us-ascii") == 0 ||
+-	    strcasecmp(charset, "ascii") == 0)
+-		return &ascii_translation;
+-
+-	if (strcasecmp(charset, "UTF-8") == 0 ||
+-	    strcasecmp(charset, "UTF8") == 0)
+-		return &utf8_translation;
++	if (charset_is_utf8(charset)) {
++		if ((flags & CHARSET_FLAG_DECOMP_TITLECASE) != 0)
++			*t_r = &tc_translation;
++		else
++			*t_r = &raw_translation;
++		return 0;
++	}
+ 
+ 	/* no support for charsets that need translation */
+-	if (unknown_charset != NULL)
+-		*unknown_charset = TRUE;
+-	return NULL;
++	return -1;
+ }
+ 
+ void charset_to_utf8_end(struct charset_translation **t __attr_unused__)
+@@ -78,57 +50,16 @@ void charset_to_utf8_reset(struct charset_translation *t __attr_unused__)
+ }
+ 
+ enum charset_result
+-charset_to_ucase_utf8(struct charset_translation *t __attr_unused__,
+-		      const unsigned char *src, size_t *src_size,
+-		      buffer_t *dest)
++charset_to_utf8(struct charset_translation *t,
++		const unsigned char *src, size_t *src_size, buffer_t *dest)
+ {
+-	size_t destpos, destleft;
+-
+-	destpos = buffer_get_used_size(dest);
+-	destleft = buffer_get_size(dest) - destpos;
+-
+-	/* no translation needed - just copy it to outbuf uppercased */
+-	if (*src_size > destleft)
+-		*src_size = destleft;
+-	_charset_utf8_ucase(src, *src_size, dest, destpos);
+-	return CHARSET_RET_OK;
+-}
+-
+-const char *
+-charset_to_utf8_string(const char *charset, bool *unknown_charset,
+-		       const unsigned char *data, size_t size,
+-		       size_t *utf8_size_r)
+-{
+-	if (charset == NULL || strcasecmp(charset, "us-ascii") == 0 ||
+-	    strcasecmp(charset, "ascii") == 0 ||
+-	    strcasecmp(charset, "UTF-8") == 0 ||
+-	    strcasecmp(charset, "UTF8") == 0) {
+-		if (unknown_charset != NULL)
+-			*unknown_charset = FALSE;
+-		if (utf8_size_r != NULL)
+-			*utf8_size_r = size;
+-		return t_strndup(data, size);
+-	} else {
+-		if (unknown_charset != NULL)
+-			*unknown_charset = TRUE;
+-		return NULL;
+-	}
+-}
+-
+-const char *
+-charset_to_ucase_utf8_string(const char *charset, bool *unknown_charset,
+-			     const unsigned char *data, size_t size,
+-			     size_t *utf8_size_r)
+-{
+-	if (charset == NULL || charset_is_utf8(charset)) {
+-		if (unknown_charset != NULL)
+-			*unknown_charset = FALSE;
+-		return _charset_utf8_ucase_strdup(data, size, utf8_size_r);
+-	} else {
+-		if (unknown_charset != NULL)
+-			*unknown_charset = TRUE;
+-		return NULL;
++	if ((t->flags & CHARSET_FLAG_DECOMP_TITLECASE) == 0)
++		buffer_append(dest, src, *src_size);
++	else {
++		if (uni_utf8_to_decomposed_titlecase(src, *src_size, dest) < 0)
++			return CHARSET_RET_INVALID_INPUT;
+ 	}
++	return CHARSET_RET_OK;
+ }
+ 
+ #endif
+diff --git a/src/lib-charset/charset-utf8.h b/src/lib-charset/charset-utf8.h
+index 0476df9..c603edb 100644
+--- a/src/lib-charset/charset-utf8.h
++++ b/src/lib-charset/charset-utf8.h
+@@ -1,51 +1,32 @@
+ #ifndef __CHARSET_UTF8_H
+ #define __CHARSET_UTF8_H
+ 
++struct charset_translation;
++
++enum charset_flags {
++	/* Translate the output to decomposed titlecase */
++	CHARSET_FLAG_DECOMP_TITLECASE	= 0x01
++};
++
+ enum charset_result {
+ 	CHARSET_RET_OK = 1,
+-	CHARSET_RET_OUTPUT_FULL = 0,
+ 	CHARSET_RET_INCOMPLETE_INPUT = -1,
+ 	CHARSET_RET_INVALID_INPUT = -2
+ };
+ 
+-/* Begin translation to UTF-8. */
+-struct charset_translation *charset_to_utf8_begin(const char *charset,
+-						  bool *unknown_charset);
+-
++/* Begin translation to UTF-8. Returns -1 if charset is unknown. */
++int charset_to_utf8_begin(const char *charset, enum charset_flags flags,
++			  struct charset_translation **t_r);
+ void charset_to_utf8_end(struct charset_translation **t);
+-
+ void charset_to_utf8_reset(struct charset_translation *t);
+ 
+ /* Returns TRUE if charset is UTF-8 or ASCII */
+ bool charset_is_utf8(const char *charset);
+ 
+ /* Translate src to UTF-8. src_size is updated to contain the number of
+-   characters actually translated from src. Note that dest buffer is used
+-   only up to its current size, for growing it automatically use
+-   charset_to_ucase_utf8_full(). */
+-enum charset_result
+-charset_to_ucase_utf8(struct charset_translation *t,
+-		      const unsigned char *src, size_t *src_size,
+-		      buffer_t *dest);
++   characters actually translated from src. */
+ enum charset_result
+-charset_to_ucase_utf8_full(struct charset_translation *t,
+-			   const unsigned char *src, size_t *src_size,
+-			   buffer_t *dest);
+-
+-/* Simple wrappers for above functions. If utf8_size is non-NULL, it's set
+-   to same as strlen(returned data). */
+-const char *
+-charset_to_utf8_string(const char *charset, bool *unknown_charset,
+-		       const unsigned char *data, size_t size,
+-		       size_t *utf8_size_r);
+-const char *
+-charset_to_ucase_utf8_string(const char *charset, bool *unknown_charset,
+-			     const unsigned char *data, size_t size,
+-			     size_t *utf8_size_r);
+-
+-void _charset_utf8_ucase(const unsigned char *src, size_t src_size,
+-			 buffer_t *dest, size_t destpos);
+-const char *_charset_utf8_ucase_strdup(const unsigned char *data, size_t size,
+-				       size_t *utf8_size_r);
++charset_to_utf8(struct charset_translation *t,
++		const unsigned char *src, size_t *src_size, buffer_t *dest);
+ 
+ #endif
+diff --git a/src/lib-dict/dict-client.c b/src/lib-dict/dict-client.c
+index 5064b6f..0fb8446 100644
+--- a/src/lib-dict/dict-client.c
++++ b/src/lib-dict/dict-client.c
+@@ -244,10 +244,8 @@ static int client_dict_connect(struct client_dict *dict)
+ 	/* Dictionary lookups are blocking */
+ 	net_set_nonblock(dict->fd, FALSE);
+ 
+-	dict->input = i_stream_create_file(dict->fd, default_pool,
+-					   (size_t)-1, FALSE);
+-	dict->output = o_stream_create_file(dict->fd, default_pool,
+-					    4096, FALSE);
++	dict->input = i_stream_create_file(dict->fd, (size_t)-1, FALSE);
++	dict->output = o_stream_create_file(dict->fd, 4096, FALSE);
+ 	dict->transaction_id_counter = 0;
+ 
+ 	t_push();
+diff --git a/src/lib-dict/dict-sql.c b/src/lib-dict/dict-sql.c
+index 2386c13..c440026 100644
+--- a/src/lib-dict/dict-sql.c
++++ b/src/lib-dict/dict-sql.c
+@@ -48,7 +48,7 @@ static int sql_dict_read_config(struct sql_dict *dict, const char *path)
+ 		return -1;
+ 	}
+ 
+-	input = i_stream_create_file(fd, default_pool, (size_t)-1, FALSE);
++	input = i_stream_create_file(fd, (size_t)-1, FALSE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		while (*line == ' ') line++;
+ 		value = strchr(line, '=');
+diff --git a/src/lib-imap/imap-base-subject.c b/src/lib-imap/imap-base-subject.c
+index 1e41413..41806b2 100644
+--- a/src/lib-imap/imap-base-subject.c
++++ b/src/lib-imap/imap-base-subject.c
+@@ -9,39 +9,6 @@
+ #include "message-header-decode.h"
+ #include "imap-base-subject.h"
+ 
+-static bool header_decode(const unsigned char *data, size_t size,
+-			  const char *charset, void *context)
+-{
+-	buffer_t *buf = context;
+-        struct charset_translation *t;
+-	unsigned char *buf_data;
+-	size_t pos, used_size;
+-
+-	pos = buffer_get_used_size(buf);
+-	if (charset == NULL) {
+-		/* It's ASCII. */
+-		buffer_append(buf, data, size);
+-	} else {
+-		t = charset_to_utf8_begin(charset, NULL);
+-		if (t != NULL) {
+-			(void)charset_to_ucase_utf8(t, data, &size, buf);
+-                        charset_to_utf8_end(&t);
+-		}
+-	}
+-
+-	if (size > 0) {
+-		/* @UNSAFE: uppercase it. Current draft specifies that we
+-		   should touch only ASCII. */
+-		buf_data = buffer_get_modifiable_data(buf, &used_size);
+-		for (; pos < used_size; pos++) {
+-			if (buf_data[pos] >= 'a' && buf_data[pos] <= 'z')
+-				buf_data[pos] = buf_data[pos] - 'a' + 'A';
+-		}
+-	}
+-
+-	return TRUE;
+-}
+-
+ static void pack_whitespace(buffer_t *buf)
+ {
+ 	char *data, *dest;
+@@ -246,8 +213,8 @@ const char *imap_get_base_subject_cased(pool_t pool, const char *subject,
+ 	/* (1) Convert any RFC 2047 encoded-words in the subject to
+ 	   UTF-8.  Convert all tabs and continuations to space.
+ 	   Convert all multiple spaces to a single space. */
+-	message_header_decode((const unsigned char *)subject, subject_len,
+-			      header_decode, buf);
++	message_header_decode_utf8((const unsigned char *)subject, subject_len,
++				   buf, TRUE);
+ 	buffer_append_c(buf, '\0');
+ 
+ 	pack_whitespace(buf);
+diff --git a/src/lib-imap/imap-bodystructure.c b/src/lib-imap/imap-bodystructure.c
+index b346722..3eaed30 100644
+--- a/src/lib-imap/imap-bodystructure.c
++++ b/src/lib-imap/imap-bodystructure.c
+@@ -5,7 +5,6 @@
+ #include "istream.h"
+ #include "str.h"
+ #include "message-parser.h"
+-#include "message-content-parser.h"
+ #include "rfc822-parser.h"
+ #include "imap-parser.h"
+ #include "imap-quote.h"
+@@ -20,7 +19,6 @@
+ 
+ struct message_part_body_data {
+ 	pool_t pool;
+-	string_t *str; /* temporary */
+ 	const char *content_type, *content_subtype;
+ 	const char *content_type_params;
+ 	const char *content_transfer_encoding;
+@@ -32,65 +30,111 @@ struct message_part_body_data {
+ 	const char *content_language;
+ 
+ 	struct message_part_envelope_data *envelope;
+-
+-	unsigned int charset_found:1;
+ };
+ 
+-static void parse_content_type(const unsigned char *value, size_t value_len,
+-			       void *context)
++static void parse_content_type(struct message_part_body_data *data,
++			       struct message_header_line *hdr)
+ {
+-        struct message_part_body_data *data = context;
+-	size_t i;
++	struct rfc822_parser_context parser;
++	const char *key, *value;
++	string_t *str;
++	unsigned int i;
++	bool charset_found = FALSE;
++
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
++	(void)rfc822_skip_lwsp(&parser);
+ 
+-	for (i = 0; i < value_len; i++) {
+-		if (value[i] == '/')
++	str = t_str_new(256);
++	if (rfc822_parse_content_type(&parser, str) < 0)
++		return;
++
++	/* Save content type and subtype */
++	value = str_c(str);
++	for (i = 0; value[i] != '\0'; i++) {
++		if (value[i] == '/') {
++			data->content_subtype =
++				imap_quote(data->pool, str_data(str) + i + 1,
++					   str_len(str) - (i + 1));
+ 			break;
++		}
+ 	}
++	data->content_type =
++		imap_quote(data->pool, str_data(str), i);
+ 
+-	if (i == value_len)
+-		data->content_type = imap_quote(data->pool, value, value_len);
+-	else {
+-		data->content_type = imap_quote(data->pool, value, i);
++	/* parse parameters and save them */
++	str_truncate(str, 0);
++	while (rfc822_parse_content_param(&parser, &key, &value) > 0) {
++		if (strcasecmp(key, "charset") == 0)
++			charset_found = TRUE;
+ 
+-		i++;
+-		data->content_subtype =
+-			imap_quote(data->pool, value+i, value_len-i);
++		str_append_c(str, ' ');
++		imap_quote_append_string(str, key, TRUE);
++		str_append_c(str, ' ');
++		imap_quote_append_string(str, value, TRUE);
++	}
++
++	if (!charset_found &&
++	    strcasecmp(data->content_type, "\"text\"") == 0) {
++		/* set a default charset */
++		str_append_c(str, ' ');
++		str_append(str, DEFAULT_CHARSET);
++	}
++	if (str_len(str) > 0) {
++		data->content_type_params =
++			p_strdup(data->pool, str_c(str) + 1);
+ 	}
+ }
+ 
+-static void parse_save_params_list(const unsigned char *name, size_t name_len,
+-				   const unsigned char *value, size_t value_len,
+-				   bool value_quoted __attr_unused__,
+-				   void *context)
++static void parse_content_transfer_encoding(struct message_part_body_data *data,
++					    struct message_header_line *hdr)
+ {
+-        struct message_part_body_data *data = context;
+-
+-	if (str_len(data->str) != 0)
+-		str_append_c(data->str, ' ');
++	struct rfc822_parser_context parser;
++	string_t *str;
+ 
+-	if (name_len == 7 && memcasecmp(name, "charset", 7) == 0)
+-		data->charset_found = TRUE;
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
++	(void)rfc822_skip_lwsp(&parser);
+ 
+-	imap_quote_append(data->str, name, name_len, TRUE);
+-	str_append_c(data->str, ' ');
+-	imap_quote_append(data->str, value, value_len, TRUE);
++	t_push();
++	str = t_str_new(256);
++	if (rfc822_parse_mime_token(&parser, str) >= 0) {
++		data->content_transfer_encoding =
++			imap_quote(data->pool, str_data(str), str_len(str));
++	}
++	t_pop();
+ }
+ 
+-static void parse_content_transfer_encoding(const unsigned char *value,
+-					    size_t value_len, void *context)
++static void parse_content_disposition(struct message_part_body_data *data,
++				      struct message_header_line *hdr)
+ {
+-        struct message_part_body_data *data = context;
++	struct rfc822_parser_context parser;
++	const char *key, *value;
++	string_t *str;
+ 
+-	data->content_transfer_encoding =
+-		imap_quote(data->pool, value, value_len);
+-}
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
++	(void)rfc822_skip_lwsp(&parser);
+ 
+-static void parse_content_disposition(const unsigned char *value,
+-				      size_t value_len, void *context)
+-{
+-        struct message_part_body_data *data = context;
++	t_push();
++	str = t_str_new(256);
++	if (rfc822_parse_mime_token(&parser, str) < 0) {
++		t_pop();
++		return;
++	}
++	data->content_disposition =
++		imap_quote(data->pool, str_data(str), str_len(str));
+ 
+-	data->content_disposition = imap_quote(data->pool, value, value_len);
++	/* parse parameters and save them */
++	str_truncate(str, 0);
++	while (rfc822_parse_content_param(&parser, &key, &value) > 0) {
++		str_append_c(str, ' ');
++		imap_quote_append_string(str, key, TRUE);
++		str_append_c(str, ' ');
++		imap_quote_append_string(str, value, TRUE);
++	}
++	if (str_len(str) > 0) {
++		data->content_disposition_params =
++			p_strdup(data->pool, str_c(str) + 1);
++	}
++	t_pop();
+ }
+ 
+ static void parse_content_language(const unsigned char *value, size_t value_len,
+@@ -164,27 +208,13 @@ static void parse_content_header(struct message_part_body_data *d,
+ 	case 't':
+ 	case 'T':
+ 		if (strcasecmp(name, "Type") == 0 && d->content_type == NULL) {
+-			d->str = str_new(default_pool, 256);
+-			message_content_parse_header(value, value_len,
+-						     parse_content_type,
+-						     parse_save_params_list, d);
+-			if (!d->charset_found &&
+-			    strncasecmp(d->content_type, "\"text\"", 6) == 0) {
+-				/* set a default charset */
+-				if (str_len(d->str) != 0)
+-					str_append_c(d->str, ' ');
+-				str_append(d->str, DEFAULT_CHARSET);
+-			}
+-			d->content_type_params =
+-				p_strdup_empty(pool, str_c(d->str));
+-			str_free(&d->str);
++			t_push();
++			parse_content_type(d, hdr);
++			t_pop();
+ 		}
+ 		if (strcasecmp(name, "Transfer-Encoding") == 0 &&
+-		    d->content_transfer_encoding == NULL) {
+-			message_content_parse_header(value, value_len,
+-				parse_content_transfer_encoding,
+-				null_parse_content_param_callback, d);
+-		}
++		    d->content_transfer_encoding == NULL)
++			parse_content_transfer_encoding(d, hdr);
+ 		break;
+ 
+ 	case 'l':
+@@ -202,15 +232,8 @@ static void parse_content_header(struct message_part_body_data *d,
+ 				imap_quote(pool, value, value_len);
+ 		}
+ 		if (strcasecmp(name, "Disposition") == 0 &&
+-		    d->content_disposition_params == NULL) {
+-			d->str = str_new(default_pool, 256);
+-			message_content_parse_header(value, value_len,
+-						     parse_content_disposition,
+-						     parse_save_params_list, d);
+-			d->content_disposition_params =
+-				p_strdup_empty(pool, str_c(d->str));
+-			str_free(&d->str);
+-		}
++		    d->content_disposition_params == NULL)
++			parse_content_disposition(d, hdr);
+ 		break;
+ 	}
+ }
+@@ -672,8 +695,7 @@ bool imap_body_parse_from_bodystructure(const char *bodystructure,
+ 	const struct imap_arg *args;
+ 	int ret;
+ 
+-	input = i_stream_create_from_data(pool_datastack_create(),
+-					  bodystructure, strlen(bodystructure));
++	input = i_stream_create_from_data(bodystructure, strlen(bodystructure));
+ 	(void)i_stream_read(input);
+ 
+ 	parser = imap_parser_create(input, NULL, (size_t)-1);
+diff --git a/src/lib-imap/imap-envelope.c b/src/lib-imap/imap-envelope.c
+index f2c670b..892368d 100644
+--- a/src/lib-imap/imap-envelope.c
++++ b/src/lib-imap/imap-envelope.c
+@@ -380,8 +380,7 @@ bool imap_envelope_parse(const char *envelope, enum imap_envelope_field field,
+ 
+ 	i_assert(field < IMAP_ENVELOPE_FIELDS);
+ 
+-	input = i_stream_create_from_data(pool_datastack_create(), envelope,
+-					  strlen(envelope));
++	input = i_stream_create_from_data(envelope, strlen(envelope));
+ 	parser = imap_parser_create(input, NULL, (size_t)-1);
+ 
+ 	(void)i_stream_read(input);
+diff --git a/src/lib-index/mail-cache-compress.c b/src/lib-index/mail-cache-compress.c
+index 7916142..fe15217 100644
+--- a/src/lib-index/mail-cache-compress.c
++++ b/src/lib-index/mail-cache-compress.c
+@@ -138,7 +138,7 @@ mail_cache_copy(struct mail_cache *cache, struct mail_index_transaction *trans,
+ 	}
+ 
+ 	cache_view = mail_cache_view_open(cache, view);
+-	output = o_stream_create_file(fd, default_pool, 0, FALSE);
++	output = o_stream_create_file(fd, 0, FALSE);
+ 
+ 	memset(&hdr, 0, sizeof(hdr));
+ 	hdr.version = MAIL_CACHE_VERSION;
+diff --git a/src/lib-index/mailbox-list-index-sync.c b/src/lib-index/mailbox-list-index-sync.c
+index e8a89f2..d586a42 100644
+--- a/src/lib-index/mailbox-list-index-sync.c
++++ b/src/lib-index/mailbox-list-index-sync.c
+@@ -850,8 +850,7 @@ mailbox_list_index_sync_write(struct mailbox_list_index_sync_ctx *ctx)
+ 	int ret = 0;
+ 
+ 	if (ctx->index->mmap_base == NULL) {
+-		ctx->output = o_stream_create_file(ctx->index->fd, default_pool,
+-						   0, FALSE);
++		ctx->output = o_stream_create_file(ctx->index->fd, 0, FALSE);
+ 		ctx->output_buf = buffer_create_dynamic(default_pool, 4096);
+ 		o_stream_seek(ctx->output, ctx->hdr.used_space);
+ 	}
+diff --git a/src/lib-mail/Makefile.am b/src/lib-mail/Makefile.am
+index 668dd5a..6cd4c87 100644
+--- a/src/lib-mail/Makefile.am
++++ b/src/lib-mail/Makefile.am
+@@ -7,7 +7,6 @@ AM_CPPFLAGS = \
+ libmail_a_SOURCES = \
+ 	istream-header-filter.c \
+ 	message-address.c \
+-	message-content-parser.c \
+ 	message-date.c \
+ 	message-decoder.c \
+ 	message-header-decode.c \
+@@ -25,7 +24,6 @@ headers = \
+ 	istream-header-filter.h \
+ 	mail-types.h \
+ 	message-address.h \
+-	message-content-parser.h \
+ 	message-date.h \
+ 	message-decoder.h \
+ 	message-header-decode.h \
+diff --git a/src/lib-mail/istream-header-filter.c b/src/lib-mail/istream-header-filter.c
+index 402942b..9b14784 100644
+--- a/src/lib-mail/istream-header-filter.c
++++ b/src/lib-mail/istream-header-filter.c
+@@ -329,24 +329,22 @@ i_stream_create_header_filter(struct istream *input,
+ 			      header_filter_callback *callback, void *context)
+ {
+ 	struct header_filter_istream *mstream;
+-	pool_t pool;
+ 	unsigned int i;
+ 
+ 	i_assert((flags & (HEADER_FILTER_INCLUDE|HEADER_FILTER_EXCLUDE)) != 0);
+ 
+-	pool = pool_alloconly_create("header filter stream", 4096);
+-	mstream = p_new(pool, struct header_filter_istream, 1);
+-	mstream->pool = pool;
++	mstream = i_new(struct header_filter_istream, 1);
++	mstream->pool = pool_alloconly_create("header filter stream", 4096);
+ 
+ 	mstream->input = input;
+ 	i_stream_ref(mstream->input);
+ 
+ 	mstream->headers = headers_count == 0 ? NULL :
+-		p_new(pool, const char *, headers_count);
++		p_new(mstream->pool, const char *, headers_count);
+ 	for (i = 0; i < headers_count; i++) 
+-		mstream->headers[i] = p_strdup(pool, headers[i]);
++		mstream->headers[i] = p_strdup(mstream->pool, headers[i]);
+ 	mstream->headers_count = headers_count;
+-	mstream->hdr_buf = buffer_create_dynamic(pool, 1024);
++	mstream->hdr_buf = buffer_create_dynamic(mstream->pool, 1024);
+ 
+ 	mstream->callback = callback;
+ 	mstream->context = context;
+@@ -366,5 +364,5 @@ i_stream_create_header_filter(struct istream *input,
+ 
+ 	mstream->istream.istream.blocking = input->blocking;
+ 	mstream->istream.istream.seekable = input->seekable;
+-	return _i_stream_create(&mstream->istream, pool, -1, 0);
++	return _i_stream_create(&mstream->istream, -1, 0);
+ }
+diff --git a/src/lib-mail/message-content-parser.c b/src/lib-mail/message-content-parser.c
+deleted file mode 100644
+index 38cb876..0000000
+--- a/src/lib-mail/message-content-parser.c
++++ /dev/null
+@@ -1,78 +0,0 @@
+-/* Copyright (C) 2002-2005 Timo Sirainen */
+-
+-#include "lib.h"
+-#include "str.h"
+-#include "rfc822-parser.h"
+-#include "message-content-parser.h"
+-
+-parse_content_callback_t *null_parse_content_callback = NULL;
+-parse_content_param_callback_t *null_parse_content_param_callback = NULL;
+-
+-void message_content_parse_header(const unsigned char *data, size_t size,
+-				  parse_content_callback_t *callback,
+-				  parse_content_param_callback_t *param_cb,
+-				  void *context)
+-{
+-	struct rfc822_parser_context parser;
+-	string_t *str;
+-	size_t key_len;
+-	bool quoted_string;
+-
+-	rfc822_parser_init(&parser, data, size, NULL);
+-
+-	t_push();
+-	str = t_str_new(256);
+-
+-	/* get content type */
+-        (void)rfc822_skip_lwsp(&parser);
+-	if (rfc822_parse_mime_token(&parser, str) > 0) {
+-		if (*parser.data == '/') {
+-			parser.data++;
+-			str_append_c(str, '/');
+-			(void)rfc822_parse_mime_token(&parser, str);
+-		}
+-	}
+-
+-	if (callback != NULL)
+-		callback(str_data(str), str_len(str), context);
+-
+-	if (param_cb == NULL) {
+-		/* we don't care about parameters */
+-		t_pop();
+-		return;
+-	}
+-
+-	while (parser.data != parser.end && *parser.data == ';') {
+-		parser.data++;
+-		(void)rfc822_skip_lwsp(&parser);
+-
+-		str_truncate(str, 0);
+-		if (rfc822_parse_mime_token(&parser, str) <= 0)
+-			break;
+-
+-		/* <token> "=" <token> | <quoted-string> */
+-		if (str_len(str) == 0 || *parser.data != '=')
+-			break;
+-		parser.data++;
+-		if (rfc822_skip_lwsp(&parser) <= 0)
+-			break;
+-
+-		quoted_string = parser.data != parser.end &&
+-			*parser.data == '"';
+-		key_len = str_len(str);
+-		if (quoted_string) {
+-			if (rfc822_parse_quoted_string(&parser, str) < 0)
+-				break;
+-		} else {
+-			if (rfc822_parse_mime_token(&parser, str) < 0)
+-				break;
+-		}
+-
+-		param_cb(str_data(str), key_len,
+-			 str_data(str) + key_len, str_len(str) - key_len,
+-			 quoted_string, context);
+-
+-		str_truncate(str, 0);
+-	}
+-	t_pop();
+-}
+diff --git a/src/lib-mail/message-content-parser.h b/src/lib-mail/message-content-parser.h
+deleted file mode 100644
+index 018bf1e..0000000
+--- a/src/lib-mail/message-content-parser.h
++++ /dev/null
+@@ -1,21 +0,0 @@
+-#ifndef __MESSAGE_CONTENT_PARSER_H
+-#define __MESSAGE_CONTENT_PARSER_H
+-
+-/* NOTE: name and value aren't \0-terminated. */
+-typedef void parse_content_callback_t(const unsigned char *value,
+-				      size_t value_len, void *context);
+-typedef void parse_content_param_callback_t(const unsigned char *name,
+-					    size_t name_len,
+-					    const unsigned char *value,
+-					    size_t value_len,
+-					    bool value_quoted, void *context);
+-
+-extern parse_content_callback_t *null_parse_content_callback;
+-extern parse_content_param_callback_t *null_parse_content_param_callback;
+-
+-void message_content_parse_header(const unsigned char *data, size_t size,
+-				  parse_content_callback_t *callback,
+-				  parse_content_param_callback_t *param_cb,
+-				  void *context);
+-
+-#endif
+diff --git a/src/lib-mail/message-decoder.c b/src/lib-mail/message-decoder.c
+index dbfae9c..5b23bb5 100644
+--- a/src/lib-mail/message-decoder.c
++++ b/src/lib-mail/message-decoder.c
+@@ -2,12 +2,13 @@
+ 
+ #include "lib.h"
+ #include "buffer.h"
+-#include "strescape.h"
+ #include "base64.h"
++#include "str.h"
++#include "unichar.h"
+ #include "charset-utf8.h"
+ #include "quoted-printable.h"
++#include "rfc822-parser.h"
+ #include "message-parser.h"
+-#include "message-content-parser.h"
+ #include "message-header-decode.h"
+ #include "message-decoder.h"
+ 
+@@ -41,14 +42,16 @@ struct message_decoder_context {
+ 	char *content_charset;
+ 	enum content_type content_type;
+ 
++	unsigned int dtcase:1;
+ 	unsigned int charset_utf8:1;
+ };
+ 
+-struct message_decoder_context *message_decoder_init_ucase(void)
++struct message_decoder_context *message_decoder_init(bool dtcase)
+ {
+ 	struct message_decoder_context *ctx;
+ 
+ 	ctx = i_new(struct message_decoder_context, 1);
++	ctx->dtcase = dtcase;
+ 	ctx->buf = buffer_create_dynamic(default_pool, 8192);
+ 	ctx->buf2 = buffer_create_dynamic(default_pool, 8192);
+ 	return ctx;
+@@ -69,72 +72,68 @@ void message_decoder_deinit(struct message_decoder_context **_ctx)
+ 	i_free(ctx);
+ }
+ 
+-static bool
+-message_decode_header_callback(const unsigned char *data, size_t size,
+-			       const char *charset, void *context)
++static void
++parse_content_transfer_encoding(struct message_decoder_context *ctx,
++				struct message_header_line *hdr)
+ {
+-	struct message_decoder_context *ctx = context;
+-	struct charset_translation *t;
+-	bool unknown_charset;
+-
+-	if (charset == NULL || charset_is_utf8(charset)) {
+-		/* ASCII / UTF-8 */
+-		_charset_utf8_ucase(data, size, ctx->buf, ctx->buf->used);
+-		return TRUE;
+-	}
+-
+-	t = charset_to_utf8_begin(charset, &unknown_charset);
+-	if (unknown_charset) {
+-		/* let's just ignore this part */
+-		return TRUE;
+-	}
+-
+-	/* ignore any errors */
+-	(void)charset_to_ucase_utf8_full(t, data, &size, ctx->buf);
+-	charset_to_utf8_end(&t);
+-	return TRUE;
+-}
++	struct rfc822_parser_context parser;
++	string_t *value;
+ 
+-static void parse_content_encoding(const unsigned char *value, size_t value_len,
+-				   void *context)
+-{
+-	struct message_decoder_context *ctx = context;
++	t_push();
++	value = t_str_new(64);
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
+ 
+-	ctx->content_type = CONTENT_TYPE_UNKNOWN;
++	(void)rfc822_skip_lwsp(&parser);
++	(void)rfc822_parse_mime_token(&parser, value);
+ 
+-	switch (value_len) {
++	switch (str_len(value)) {
+ 	case 4:
+-		if (memcasecmp(value, "7bit", 4) == 0 ||
+-		    memcasecmp(value, "8bit", 4) == 0)
++		if (memcasecmp(str_data(value), "7bit", 4) == 0 ||
++		    memcasecmp(str_data(value), "8bit", 4) == 0)
+ 			ctx->content_type = CONTENT_TYPE_BINARY;
+ 		break;
+ 	case 6:
+-		if (memcasecmp(value, "base64", 6) == 0)
++		if (memcasecmp(str_data(value), "base64", 6) == 0)
+ 			ctx->content_type = CONTENT_TYPE_BASE64;
+-		else if (memcasecmp(value, "binary", 6) == 0)
++		else if (memcasecmp(str_data(value), "binary", 6) == 0)
+ 			ctx->content_type = CONTENT_TYPE_BINARY;
+ 		break;
+ 	case 16:
+-		if (memcasecmp(value, "quoted-printable", 16) == 0)
++		if (memcasecmp(str_data(value), "quoted-printable", 16) == 0)
+ 			ctx->content_type = CONTENT_TYPE_QP;
+ 		break;
+ 	}
++	t_pop();
+ }
+ 
+ static void
+-parse_content_type_param(const unsigned char *name, size_t name_len,
+-			 const unsigned char *value, size_t value_len,
+-			 bool value_quoted, void *context)
++parse_content_type(struct message_decoder_context *ctx,
++		   struct message_header_line *hdr)
+ {
+-	struct message_decoder_context *ctx = context;
+-
+-	if (name_len == 7 && memcasecmp(name, "charset", 7) == 0 &&
+-	    ctx->content_charset == NULL) {
+-		ctx->content_charset = i_strndup(value, value_len);
+-		if (value_quoted) str_unescape(ctx->content_charset);
++	struct rfc822_parser_context parser;
++	const char *key, *value;
++	string_t *str;
++
++	if (ctx->content_charset != NULL)
++		return;
++
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
++	(void)rfc822_skip_lwsp(&parser);
++	t_push();
++	str = t_str_new(64);
++	if (rfc822_parse_content_type(&parser, str) <= 0) {
++		t_pop();
++		return;
++	}
+ 
+-		ctx->charset_utf8 = charset_is_utf8(ctx->content_charset);
++	while (rfc822_parse_content_param(&parser, &key, &value) > 0) {
++		if (strcasecmp(key, "charset") == 0) {
++			ctx->content_charset = i_strdup(value);
++			ctx->charset_utf8 = charset_is_utf8(value);
++			break;
++		}
+ 	}
++	t_pop();
+ }
+ 
+ static bool message_decode_header(struct message_decoder_context *ctx,
+@@ -149,37 +148,32 @@ static bool message_decode_header(struct message_decoder_context *ctx,
+ 	}
+ 
+ 	if (hdr->name_len == 12 &&
+-	    strcasecmp(hdr->name, "Content-Type") == 0) {
+-		message_content_parse_header(hdr->full_value,
+-					     hdr->full_value_len,
+-					     null_parse_content_callback,
+-					     parse_content_type_param, ctx);
+-	}
++	    strcasecmp(hdr->name, "Content-Type") == 0)
++		parse_content_type(ctx, hdr);
+ 	if (hdr->name_len == 25 &&
+-	    strcasecmp(hdr->name, "Content-Transfer-Encoding") == 0) {
+-		message_content_parse_header(hdr->full_value,
+-					     hdr->full_value_len,
+-					     parse_content_encoding,
+-					     null_parse_content_param_callback,
+-					     ctx);
+-	}
++	    strcasecmp(hdr->name, "Content-Transfer-Encoding") == 0)
++		parse_content_transfer_encoding(ctx, hdr);
+ 
+ 	buffer_set_used_size(ctx->buf, 0);
+-	message_header_decode(hdr->full_value, hdr->full_value_len,
+-			      message_decode_header_callback, ctx);
++	message_header_decode_utf8(hdr->full_value, hdr->full_value_len,
++				   ctx->buf, ctx->dtcase);
+ 	value_len = ctx->buf->used;
+ 
+-	_charset_utf8_ucase((const unsigned char *)hdr->name, hdr->name_len,
+-			    ctx->buf, ctx->buf->used);
+-	buffer_append_c(ctx->buf, '\0');
++	if (ctx->dtcase) {
++		(void)uni_utf8_to_decomposed_titlecase(hdr->name, hdr->name_len,
++						       ctx->buf);
++		buffer_append_c(ctx->buf, '\0');
++	}
+ 
+ 	ctx->hdr = *hdr;
+ 	ctx->hdr.full_value = ctx->buf->data;
+ 	ctx->hdr.full_value_len = value_len;
+ 	ctx->hdr.value_len = 0;
+-	ctx->hdr.name = CONST_PTR_OFFSET(ctx->buf->data,
+-					 ctx->hdr.full_value_len);
+-	ctx->hdr.name_len = ctx->buf->used - 1 - value_len;
++	if (ctx->dtcase) {
++		ctx->hdr.name = CONST_PTR_OFFSET(ctx->buf->data,
++						 ctx->hdr.full_value_len);
++		ctx->hdr.name_len = ctx->buf->used - 1 - value_len;
++	}
+ 
+ 	output->hdr = &ctx->hdr;
+ 	return TRUE;
+@@ -199,8 +193,7 @@ static void translation_buf_decode(struct message_decoder_context *ctx,
+ 	memcpy(trans_buf + ctx->translation_size, data, skip);
+ 
+ 	pos = *size;
+-	(void)charset_to_ucase_utf8_full(ctx->charset_trans,
+-					 *data, &pos, ctx->buf2);
++	(void)charset_to_utf8(ctx->charset_trans, *data, &pos, ctx->buf2);
+ 
+ 	i_assert(pos > ctx->translation_size);
+ 	skip = (ctx->translation_size + skip) - pos;
+@@ -219,14 +212,13 @@ static bool message_decode_body(struct message_decoder_context *ctx,
+ 	unsigned char new_buf[MAX_ENCODING_BUF_SIZE+1];
+ 	const unsigned char *data = NULL;
+ 	size_t pos, size = 0, skip = 0;
+-	bool unknown_charset;
+ 	int ret;
+ 
+ 	if (ctx->charset_trans == NULL && !ctx->charset_utf8) {
+-		ctx->charset_trans =
+-			charset_to_utf8_begin(ctx->content_charset != NULL ?
+-					      ctx->content_charset : "UTF-8",
+-					      &unknown_charset);
++		if (charset_to_utf8_begin(ctx->content_charset != NULL ?
++					  ctx->content_charset : "UTF-8",
++					  ctx->dtcase, &ctx->charset_trans) < 0)
++			ctx->charset_trans = NULL;
+ 	}
+ 
+ 	if (ctx->encoding_size != 0) {
+@@ -304,10 +296,16 @@ static bool message_decode_body(struct message_decoder_context *ctx,
+ 	}
+ 
+ 	if (ctx->charset_utf8) {
+-		buffer_set_used_size(ctx->buf2, 0);
+-		_charset_utf8_ucase(data, size, ctx->buf2, ctx->buf2->used);
+-		output->data = ctx->buf2->data;
+-		output->size = ctx->buf2->used;
++		if (ctx->dtcase) {
++			buffer_set_used_size(ctx->buf2, 0);
++			(void)uni_utf8_to_decomposed_titlecase(data, size,
++							       ctx->buf);
++			output->data = ctx->buf2->data;
++			output->size = ctx->buf2->used;
++		} else {
++			output->data = data;
++			output->size = size;
++		}
+ 	} else if (ctx->charset_trans == NULL) {
+ 		output->data = data;
+ 		output->size = size;
+@@ -317,8 +315,8 @@ static bool message_decode_body(struct message_decoder_context *ctx,
+ 			translation_buf_decode(ctx, &data, &size);
+ 
+ 		pos = size;
+-		(void)charset_to_ucase_utf8_full(ctx->charset_trans,
+-						 data, &pos, ctx->buf2);
++		(void)charset_to_utf8(ctx->charset_trans,
++				      data, &pos, ctx->buf2);
+ 		if (pos != size) {
+ 			ctx->translation_size = size - pos;
+ 			i_assert(ctx->translation_size <=
+diff --git a/src/lib-mail/message-decoder.h b/src/lib-mail/message-decoder.h
+index 7fb6371..043cf3e 100644
+--- a/src/lib-mail/message-decoder.h
++++ b/src/lib-mail/message-decoder.h
+@@ -5,8 +5,9 @@ struct message_block;
+ 
+ /* Decode message's contents as UTF-8, both the headers and the MIME bodies.
+    The bodies are decoded from quoted-printable and base64 formats if needed.
+-   The data is returned uppercased. */
+-struct message_decoder_context *message_decoder_init_ucase(void);
++   If dtcase=TRUE, the data is returned through
++   uni_utf8_to_decomposed_titlecase(). */
++struct message_decoder_context *message_decoder_init(bool dtcase);
+ void message_decoder_deinit(struct message_decoder_context **ctx);
+ 
+ /* Decode input and return decoded output. Headers are returned only in their
+diff --git a/src/lib-mail/message-header-decode.c b/src/lib-mail/message-header-decode.c
+index 19f5e2e..b8fb50a 100644
+--- a/src/lib-mail/message-header-decode.c
++++ b/src/lib-mail/message-header-decode.c
+@@ -3,6 +3,8 @@
+ #include "lib.h"
+ #include "base64.h"
+ #include "buffer.h"
++#include "unichar.h"
++#include "charset-utf8.h"
+ #include "quoted-printable.h"
+ #include "message-header-decode.h"
+ 
+@@ -113,3 +115,58 @@ void message_header_decode(const unsigned char *data, size_t size,
+ 	}
+ 	t_pop();
+ }
++
++struct decode_utf8_context {
++	buffer_t *dest;
++	unsigned int changed:1;
++	unsigned int called:1;
++	unsigned int dtcase:1;
++};
++
++static bool
++decode_utf8_callback(const unsigned char *data, size_t size,
++		     const char *charset, void *context)
++{
++	struct decode_utf8_context *ctx = context;
++	struct charset_translation *t;
++
++	/* one call with charset=NULL means nothing changed */
++	if (!ctx->called && charset == NULL)
++		ctx->called = TRUE;
++	else
++		ctx->changed = TRUE;
++
++	if (charset == NULL || charset_is_utf8(charset)) {
++		/* ASCII / UTF-8 */
++		if (ctx->dtcase) {
++			(void)uni_utf8_to_decomposed_titlecase(data, size,
++							       ctx->dest);
++		} else {
++			buffer_append(ctx->dest, data, size);
++		}
++		return TRUE;
++	}
++
++	if (charset_to_utf8_begin(charset, ctx->dtcase, &t) < 0) {
++		/* let's just ignore this part */
++		return TRUE;
++	}
++
++	/* ignore any errors */
++	(void)charset_to_utf8(t, data, &size, ctx->dest);
++	charset_to_utf8_end(&t);
++	return TRUE;
++}
++
++bool message_header_decode_utf8(const unsigned char *data, size_t size,
++				buffer_t *dest, bool dtcase)
++{
++	struct decode_utf8_context ctx;
++	size_t used = dest->used;
++
++	memset(&ctx, 0, sizeof(ctx));
++	ctx.dest = dest;
++	ctx.dtcase = dtcase;
++	message_header_decode(data, size, decode_utf8_callback, &ctx);
++	return ctx.changed || (dest->used - used != size);
++}
+diff --git a/src/lib-mail/message-header-decode.h b/src/lib-mail/message-header-decode.h
+index 6a1e9f2..b765523 100644
+--- a/src/lib-mail/message-header-decode.h
++++ b/src/lib-mail/message-header-decode.h
+@@ -13,4 +13,10 @@ void message_header_decode(const unsigned char *data, size_t size,
+ 			   message_header_decode_callback_t *callback,
+ 			   void *context);
+ 
++/* Append decoded RFC2047 header as UTF-8 to given buffer. If dtcase=TRUE,
++   the header is appended through uni_utf8_to_decomposed_titlecase().
++   Returns TRUE if output changed in any way from input. */
++bool message_header_decode_utf8(const unsigned char *data, size_t size,
++				buffer_t *dest, bool dtcase);
++
+ #endif
+diff --git a/src/lib-mail/message-parser.c b/src/lib-mail/message-parser.c
+index 4443773..670be66 100644
+--- a/src/lib-mail/message-parser.c
++++ b/src/lib-mail/message-parser.c
+@@ -1,9 +1,9 @@
+ /* Copyright (C) 2002-2006 Timo Sirainen */
+ 
+ #include "lib.h"
++#include "str.h"
+ #include "istream.h"
+-#include "strescape.h"
+-#include "message-content-parser.h"
++#include "rfc822-parser.h"
+ #include "message-parser.h"
+ 
+ /* RFC-2046 requires boundaries are max. 70 chars + "--" prefix + "--" suffix.
+@@ -388,49 +388,46 @@ static int parse_next_body_to_eof(struct message_parser_ctx *ctx,
+ 	return 1;
+ }
+ 
+-static void
+-parse_content_type(const unsigned char *value, size_t value_len, void *context)
++static void parse_content_type(struct message_parser_ctx *ctx,
++			       struct message_header_line *hdr)
+ {
+-	struct message_parser_ctx *ctx = context;
+-	const char *str;
++	struct rfc822_parser_context parser;
++	const char *key, *value;
++	string_t *content_type;
+ 
+-	if (ctx->part_seen_content_type || value_len == 0)
++	if (ctx->part_seen_content_type)
+ 		return;
+ 	ctx->part_seen_content_type = TRUE;
+ 
+-	t_push();
+-	str = t_strndup(value, value_len);
+-	if (strcasecmp(str, "message/rfc822") == 0)
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
++	(void)rfc822_skip_lwsp(&parser);
++
++	content_type = t_str_new(64);
++	if (rfc822_parse_content_type(&parser, content_type) < 0)
++		return;
++
++	if (strcasecmp(str_c(content_type), "message/rfc822") == 0)
+ 		ctx->part->flags |= MESSAGE_PART_FLAG_MESSAGE_RFC822;
+-	else if (strncasecmp(str, "text", 4) == 0 &&
+-		 (str[4] == '/' || str[4] == '\0'))
++	else if (strncasecmp(str_c(content_type), "text", 4) == 0 &&
++		 (str_len(content_type) == 4 ||
++		  str_data(content_type)[4] == '/'))
+ 		ctx->part->flags |= MESSAGE_PART_FLAG_TEXT;
+-	else if (strncasecmp(str, "multipart/", 10) == 0) {
++	else if (strncasecmp(str_c(content_type), "multipart/", 10) == 0) {
+ 		ctx->part->flags |= MESSAGE_PART_FLAG_MULTIPART;
+ 
+-		if (strcasecmp(str+10, "digest") == 0)
++		if (strcasecmp(str_c(content_type)+10, "digest") == 0)
+ 			ctx->part->flags |= MESSAGE_PART_FLAG_MULTIPART_DIGEST;
+ 	}
+-	t_pop();
+-}
+-
+-static void
+-parse_content_type_param(const unsigned char *name, size_t name_len,
+-			 const unsigned char *value, size_t value_len,
+-			 bool value_quoted, void *context)
+-{
+-	struct message_parser_ctx *ctx = context;
+-	char *boundary;
+ 
+ 	if ((ctx->part->flags & MESSAGE_PART_FLAG_MULTIPART) == 0 ||
+-	    name_len != 8 || memcasecmp(name, "boundary", 8) != 0)
++	    ctx->last_boundary != NULL)
+ 		return;
+ 
+-	if (ctx->last_boundary == NULL) {
+-		boundary = p_strndup(ctx->parser_pool, value, value_len);
+-		if (value_quoted)
+-			str_unescape(boundary);
+-		ctx->last_boundary = boundary;
++	while (rfc822_parse_content_param(&parser, &key, &value) > 0) {
++		if (strcasecmp(key, "boundary") == 0) {
++			ctx->last_boundary = p_strdup(ctx->parser_pool, value);
++			break;
++		}
+ 	}
+ }
+ 
+@@ -463,10 +460,9 @@ static int parse_next_header(struct message_parser_ctx *ctx,
+ 			if (hdr->continues)
+ 				hdr->use_full_value = TRUE;
+ 			else {
+-				message_content_parse_header(hdr->full_value,
+-						hdr->full_value_len,
+-						parse_content_type,
+-						parse_content_type_param, ctx);
++				t_push();
++				parse_content_type(ctx, hdr);
++				t_pop();
+ 			}
+ 		}
+ 
+diff --git a/src/lib-mail/message-search.c b/src/lib-mail/message-search.c
+index db3b4da..c8be4f2 100644
+--- a/src/lib-mail/message-search.c
++++ b/src/lib-mail/message-search.c
+@@ -3,11 +3,12 @@
+ #include "lib.h"
+ #include "buffer.h"
+ #include "istream.h"
++#include "str.h"
+ #include "str-find.h"
+ #include "charset-utf8.h"
++#include "rfc822-parser.h"
+ #include "message-decoder.h"
+ #include "message-parser.h"
+-#include "message-content-parser.h"
+ #include "message-search.h"
+ 
+ struct message_search_context {
+@@ -25,45 +26,34 @@ struct message_search_context {
+ 	unsigned int content_type_text:1; /* text/any or message/any */
+ };
+ 
+-static void parse_content_type(const unsigned char *value, size_t value_len,
+-			       void *context)
+-{
+-	struct message_search_context *ctx = context;
+-	const char *str;
+-
+-	t_push();
+-	str = t_strndup(value, value_len);
+-	ctx->content_type_text =
+-		strncasecmp(str, "text/", 5) == 0 ||
+-		strncasecmp(str, "message/", 8) == 0;
+-	t_pop();
+-}
+-
+ int message_search_init(pool_t pool, const char *key, const char *charset,
+ 			enum message_search_flags flags,
+ 			struct message_search_context **ctx_r)
+ {
+ 	struct message_search_context *ctx;
+-	bool unknown_charset;
++	struct charset_translation *t;
++	string_t *key_utf8;
+ 	size_t key_len;
+ 
+-	/* get the key uppercased */
++	if (charset_to_utf8_begin(charset, TRUE, &t) < 0)
++		return 0;
++
+ 	t_push();
+-	key = charset_to_ucase_utf8_string(charset, &unknown_charset,
+-					   (const unsigned char *)key,
+-					   strlen(key), &key_len);
+-	if (key == NULL) {
++	key_utf8 = t_str_new(I_MAX(128, key_len*2));
++	key_len = strlen(key);
++	if (charset_to_utf8(t, (const unsigned char *)key, &key_len,
++			    key_utf8) != CHARSET_RET_OK) {
+ 		t_pop();
+-		return unknown_charset ? 0 : -1;
++		return -1;
+ 	}
+ 
+ 	ctx = *ctx_r = p_new(pool, struct message_search_context, 1);
+ 	ctx->pool = pool;
+-	ctx->key = p_strdup(pool, key);
+-	ctx->key_len = key_len;
++	ctx->key = p_strdup(pool, str_c(key_utf8));
++	ctx->key_len = str_len(key_utf8);
+ 	ctx->key_charset = p_strdup(pool, charset);
+ 	ctx->flags = flags;
+-	ctx->decoder = message_decoder_init_ucase();
++	ctx->decoder = message_decoder_init(TRUE);
+ 	ctx->str_find_ctx = str_find_init(pool, ctx->key);
+ 	t_pop();
+ 	return 1;
+@@ -81,6 +71,25 @@ void message_search_deinit(struct message_search_context **_ctx)
+ 	p_free(ctx->pool, ctx);
+ }
+ 
++static void parse_content_type(struct message_search_context *ctx,
++			       struct message_header_line *hdr)
++{
++	struct rfc822_parser_context parser;
++	string_t *content_type;
++
++	t_push();
++	rfc822_parser_init(&parser, hdr->full_value, hdr->full_value_len, NULL);
++	(void)rfc822_skip_lwsp(&parser);
++
++	content_type = t_str_new(64);
++	if (rfc822_parse_content_type(&parser, content_type) >= 0) {
++		ctx->content_type_text =
++			strncasecmp(str_c(content_type), "text/", 5) == 0 ||
++			strncasecmp(str_c(content_type), "message/", 8) == 0;
++	}
++	t_pop();
++}
++
+ static void handle_header(struct message_search_context *ctx,
+ 			  struct message_header_line *hdr)
+ {
+@@ -90,9 +99,7 @@ static void handle_header(struct message_search_context *ctx,
+ 			hdr->use_full_value = TRUE;
+ 			return;
+ 		}
+-		message_content_parse_header(hdr->full_value,
+-					     hdr->full_value_len,
+-					     parse_content_type, NULL, ctx);
++		parse_content_type(ctx, hdr);
+ 	}
+ }
+ 
+diff --git a/src/lib-mail/rfc822-parser.c b/src/lib-mail/rfc822-parser.c
+index 2d2d4d6..94f075f 100644
+--- a/src/lib-mail/rfc822-parser.c
++++ b/src/lib-mail/rfc822-parser.c
+@@ -2,6 +2,7 @@
+ 
+ #include "lib.h"
+ #include "str.h"
++#include "strescape.h"
+ #include "rfc822-parser.h"
+ 
+ /*
+@@ -308,7 +309,7 @@ rfc822_parse_domain_literal(struct rfc822_parser_context *ctx, string_t *str)
+ 		} else if (*ctx->data == ']') {
+ 			ctx->data++;
+ 			str_append_n(str, start, ctx->data - start);
+-			return ctx->data != ctx->end;
++			return rfc822_skip_lwsp(ctx);
+ 		}
+ 	}
+ 
+@@ -329,13 +330,77 @@ int rfc822_parse_domain(struct rfc822_parser_context *ctx, string_t *str)
+ 	if (rfc822_skip_lwsp(ctx) <= 0)
+ 		return -1;
+ 
+-	if (*ctx->data == '[') {
+-		if (rfc822_parse_domain_literal(ctx, str) < 0)
+-			return -1;
++	if (*ctx->data == '[')
++		return rfc822_parse_domain_literal(ctx, str);
++	else
++		return rfc822_parse_dot_atom(ctx, str);
++}
++
++int rfc822_parse_content_type(struct rfc822_parser_context *ctx, string_t *str)
++{
++	if (rfc822_skip_lwsp(ctx) <= 0)
++		return -1;
++
++	/* get main type */
++	if (rfc822_parse_mime_token(ctx, str) <= 0)
++		return -1;
++
++	/* skip over "/" */
++	if (*ctx->data != '/')
++		return -1;
++	ctx->data++;
++	if (rfc822_skip_lwsp(ctx) <= 0)
++		return -1;
++	str_append_c(str, '/');
++
++	/* get subtype */
++	return rfc822_parse_mime_token(ctx, str);
++}
++
++int rfc822_parse_content_param(struct rfc822_parser_context *ctx,
++			       const char **key_r, const char **value_r)
++{
++	string_t *tmp;
++	size_t value_pos;
++	int ret;
++
++	/* .. := *(";" parameter)
++	   parameter := attribute "=" value
++	   attribute := token
++	   value := token / quoted-string
++	*/
++	*key_r = NULL;
++	*value_r = NULL;
++
++	if (ctx->data == ctx->end)
++		return 0;
++	if (*ctx->data != ';')
++		return -1;
++	ctx->data++;
++
++	if (rfc822_skip_lwsp(ctx) <= 0)
++		return -1;
++
++	tmp = t_str_new(64);
++	if (rfc822_parse_mime_token(ctx, tmp) <= 0)
++		return -1;
++	str_append_c(tmp, '\0');
++	value_pos = str_len(tmp);
++
++	if (*ctx->data != '=')
++		return -1;
++	ctx->data++;
++
++	if ((ret = rfc822_skip_lwsp(ctx)) <= 0) {
++		/* broken / no value */
++	} else if (*ctx->data == '"') {
++		ret = rfc822_parse_quoted_string(ctx, tmp);
++		str_unescape(str_c_modifiable(tmp) + value_pos);
+ 	} else {
+-		if (rfc822_parse_dot_atom(ctx, str) < 0)
+-			return -1;
++		ret = rfc822_parse_mime_token(ctx, tmp);
+ 	}
+ 
+-	return ctx->data != ctx->end;
++	*key_r = str_c(tmp);
++	*value_r = *key_r + value_pos;
++	return ret < 0 ? -1 : 1;
+ }
+diff --git a/src/lib-mail/rfc822-parser.h b/src/lib-mail/rfc822-parser.h
+index ba5b148..0ec54f4 100644
+--- a/src/lib-mail/rfc822-parser.h
++++ b/src/lib-mail/rfc822-parser.h
+@@ -6,10 +6,17 @@ struct rfc822_parser_context {
+ 	string_t *last_comment;
+ };
+ 
++/* Parse given data using RFC 822 token parser. */
+ void rfc822_parser_init(struct rfc822_parser_context *ctx,
+ 			const unsigned char *data, size_t size,
+ 			string_t *last_comment);
+ 
++/* The functions below return 1 = more data available, 0 = no more data
++   available (but a value might have been returned now), -1 = invalid input.
++
++   LWSP is automatically skipped after value, but not before it. So typically
++   you begin with skipping LWSP and then start using the parse functions. */
++
+ /* Parse comment. Assumes parser's data points to '(' */
+ int rfc822_skip_comment(struct rfc822_parser_context *ctx);
+ /* Skip LWSP if there is any */
+@@ -29,4 +36,12 @@ int rfc822_parse_phrase(struct rfc822_parser_context *ctx, string_t *str);
+ /* dot-atom / domain-literal */
+ int rfc822_parse_domain(struct rfc822_parser_context *ctx, string_t *str);
+ 
++/* Parse Content-Type header's type/subtype. */
++int rfc822_parse_content_type(struct rfc822_parser_context *ctx, string_t *str);
++/* For Content-Type style parameter parsing. Expect ";" key "=" value.
++   value is unescaped if needed. The returned strings are allocated from data
++   stack. Returns 1 = key/value set, 0 = no more data, -1 = invalid input. */
++int rfc822_parse_content_param(struct rfc822_parser_context *ctx,
++			       const char **key_r, const char **value_r);
++
+ #endif
+diff --git a/src/lib-settings/settings.c b/src/lib-settings/settings.c
+index 9608c47..c9d45cb 100644
+--- a/src/lib-settings/settings.c
++++ b/src/lib-settings/settings.c
+@@ -1,6 +1,7 @@
+-/* Copyright (C) 2002 Timo Sirainen */
++/* Copyright (C) 2002-2007 Timo Sirainen */
+ 
+ #include "lib.h"
++#include "str.h"
+ #include "istream.h"
+ #include "strescape.h"
+ #include "settings.h"
+@@ -71,6 +72,7 @@ bool settings_read(const char *path, const char *section,
+ 	struct istream *input;
+ 	const char *errormsg, *next_section, *name;
+ 	char *line, *key, *p, quote;
++	string_t *full_line;
+ 	size_t len;
+ 	int fd, linenum, last_section_line = 0, skip, sections, root_section;
+ 
+@@ -90,8 +92,9 @@ bool settings_read(const char *path, const char *section,
+ 		next_section = t_strcut(section, '/');
+ 	}
+ 
++	full_line = t_str_new(512);
+ 	linenum = 0; sections = 0; root_section = 0; errormsg = NULL;
+-	input = i_stream_create_file(fd, default_pool, 2048, TRUE);
++	input = i_stream_create_file(fd, 2048, TRUE);
+ 	for (;;) {
+ 		line = i_stream_read_next_line(input);
+ 		if (line == NULL) {
+@@ -140,6 +143,17 @@ bool settings_read(const char *path, const char *section,
+ 			len--;
+ 		line[len] = '\0';
+ 
++		if (len > 0 && line[len-1] == '\\') {
++			/* continues in next line */
++			line[len-1] = '\0';
++			str_append(full_line, line);
++			continue;
++		}
++		if (str_len(full_line) > 0) {
++			str_append(full_line, line);
++			line = str_c_modifiable(full_line);
++		}
++
+ 		/* a) key = value
+ 		   b) section_type [section_name] {
+ 		   c) } */
+@@ -246,6 +260,7 @@ bool settings_read(const char *path, const char *section,
+ 				path, linenum, errormsg);
+ 			break;
+ 		}
++		str_truncate(full_line, 0);
+ 	}
+ 
+ 	i_stream_destroy(&input);
+diff --git a/src/lib-storage/index/cydir/cydir-mail.c b/src/lib-storage/index/cydir/cydir-mail.c
+index db2eee7..d995615 100644
+--- a/src/lib-storage/index/cydir/cydir-mail.c
++++ b/src/lib-storage/index/cydir/cydir-mail.c
+@@ -84,7 +84,7 @@ static uoff_t cydir_mail_get_physical_size(struct mail *_mail)
+ 		return data->physical_size;
+ 
+ 	if (cydir_mail_stat(_mail, &st) < 0)
+-		return (time_t)-1;
++		return (uoff_t)-1;
+ 
+ 	data->physical_size = data->virtual_size = st.st_size;
+ 	index_mail_cache_add(mail, MAIL_CACHE_PHYSICAL_FULL_SIZE,
+@@ -113,8 +113,7 @@ cydir_mail_get_stream(struct mail *_mail, struct message_size *hdr_size,
+ 			return NULL;
+ 		}
+ 		mail->data.stream =
+-			i_stream_create_file(fd, default_pool,
+-					     MAIL_READ_BLOCK_SIZE, TRUE);
++			i_stream_create_file(fd, MAIL_READ_BLOCK_SIZE, TRUE);
+ 	}
+ 
+ 	return index_mail_init_stream(mail, hdr_size, body_size);
+diff --git a/src/lib-storage/index/cydir/cydir-save.c b/src/lib-storage/index/cydir/cydir-save.c
+index 53f9f7c..07b4321 100644
+--- a/src/lib-storage/index/cydir/cydir-save.c
++++ b/src/lib-storage/index/cydir/cydir-save.c
+@@ -85,8 +85,8 @@ int cydir_save_init(struct mailbox_transaction_context *_t,
+ 	path = cydir_get_save_path(ctx, ctx->mail_count);
+ 	ctx->fd = open(path, O_WRONLY | O_CREAT | O_EXCL, 0660);
+ 	if (ctx->fd != -1) {
+-		output = o_stream_create_file(ctx->fd, default_pool, 0, FALSE);
+-		ctx->output = o_stream_create_crlf(default_pool, output);
++		output = o_stream_create_file(ctx->fd, 0, FALSE);
++		ctx->output = o_stream_create_crlf(output);
+ 		o_stream_unref(&output);
+ 
+ 		if (received_date != (time_t)-1) {
+diff --git a/src/lib-storage/index/cydir/cydir-storage.c b/src/lib-storage/index/cydir/cydir-storage.c
+index 994dcc6..f5975b6 100644
+--- a/src/lib-storage/index/cydir/cydir-storage.c
++++ b/src/lib-storage/index/cydir/cydir-storage.c
+@@ -347,7 +347,8 @@ static void cydir_notify_changes(struct mailbox *box)
+ 		index_mailbox_check_add(&mbox->ibox, mbox->path);
+ }
+ 
+-static int cydir_list_iter_is_mailbox(struct mailbox_list_iterate_context *ctx,
++static int cydir_list_iter_is_mailbox(struct mailbox_list_iterate_context *ctx
++				      			__attr_unused__,
+ 				      const char *dir, const char *fname,
+ 				      enum mailbox_list_file_type type,
+ 				      enum mailbox_info_flags *flags)
+@@ -359,9 +360,9 @@ static int cydir_list_iter_is_mailbox(struct mailbox_list_iterate_context *ctx,
+ 	/* try to avoid stat() with these checks */
+ 	if (type != MAILBOX_LIST_FILE_TYPE_DIR &&
+ 	    type != MAILBOX_LIST_FILE_TYPE_SYMLINK &&
+-	    type != MAILBOX_LIST_FILE_TYPE_UNKNOWN &&
+-	    (ctx->flags & MAILBOX_LIST_ITER_RETURN_NO_FLAGS) != 0) {
++	    type != MAILBOX_LIST_FILE_TYPE_UNKNOWN) {
+ 		/* it's a file */
++		*flags |= MAILBOX_NOSELECT | MAILBOX_NOINFERIORS;
+ 		return 0;
+ 	}
+ 
+@@ -376,7 +377,8 @@ static int cydir_list_iter_is_mailbox(struct mailbox_list_iterate_context *ctx,
+ 			ret = 0;
+ 		}
+ 	} else {
+-		/* non-selectable, but may contain subdirs */
++		/* non-selectable. probably either access denied, or symlink
++		   destination not found. don't bother logging errors. */
+ 		*flags |= MAILBOX_NOSELECT;
+ 	}
+ 	t_pop();
+diff --git a/src/lib-storage/index/dbox/dbox-file.c b/src/lib-storage/index/dbox/dbox-file.c
+index 7eba324..6d4ca35 100644
+--- a/src/lib-storage/index/dbox/dbox-file.c
++++ b/src/lib-storage/index/dbox/dbox-file.c
+@@ -132,8 +132,7 @@ int dbox_file_seek(struct dbox_mailbox *mbox, uint32_t file_seq, uoff_t offset,
+ 		}
+ 
+ 		mbox->file->input =
+-			i_stream_create_file(mbox->file->fd, default_pool,
+-					     65536, FALSE);
++			i_stream_create_file(mbox->file->fd, 65536, FALSE);
+ 
+ 		if (dbox_file_read_header(mbox, mbox->file) < 0)
+ 			return -1;
+diff --git a/src/lib-storage/index/dbox/dbox-mail.c b/src/lib-storage/index/dbox/dbox-mail.c
+index d59dd27..659b001 100644
+--- a/src/lib-storage/index/dbox/dbox-mail.c
++++ b/src/lib-storage/index/dbox/dbox-mail.c
+@@ -229,8 +229,7 @@ dbox_mail_get_stream(struct mail *_mail,
+ 
+ 		offset += mbox->file->mail_header_size;
+ 		mail->data.stream =
+-			i_stream_create_limit(default_pool, mbox->file->input,
+-					      offset,
++			i_stream_create_limit(mbox->file->input, offset,
+ 					      mbox->file->seeked_mail_size);
+ 	}
+ 
+diff --git a/src/lib-storage/index/dbox/dbox-sync-expunge.c b/src/lib-storage/index/dbox/dbox-sync-expunge.c
+index 2cf3ed5..b7eb66c 100644
+--- a/src/lib-storage/index/dbox/dbox-sync-expunge.c
++++ b/src/lib-storage/index/dbox/dbox-sync-expunge.c
+@@ -145,7 +145,7 @@ static int dbox_sync_expunge_copy(struct dbox_sync_context *ctx,
+ 
+ 		/* try again with another file name */
+ 	}
+-	output = o_stream_create_file(fd, default_pool, 0, FALSE);
++	output = o_stream_create_file(fd, 0, FALSE);
+ 	lock_path = file_dotlock_get_lock_path(dotlock);
+ 
+ 	memset(&dest_entry, 0, sizeof(dest_entry));
+@@ -190,7 +190,7 @@ static int dbox_sync_expunge_copy(struct dbox_sync_context *ctx,
+ 		/* copy the mail */
+ 		full_size = mbox->file->mail_header_size +
+ 			mbox->file->seeked_mail_size;
+-		input = i_stream_create_limit(default_pool, mbox->file->input,
++		input = i_stream_create_limit(mbox->file->input,
+ 					      mbox->file->seeked_offset,
+ 					      full_size);
+ 		bytes = o_stream_send_istream(output, input);
+diff --git a/src/lib-storage/index/dbox/dbox-uidlist.c b/src/lib-storage/index/dbox/dbox-uidlist.c
+index 3d7e1ad..c9fd1d4 100644
+--- a/src/lib-storage/index/dbox/dbox-uidlist.c
++++ b/src/lib-storage/index/dbox/dbox-uidlist.c
+@@ -353,7 +353,7 @@ static int dbox_uidlist_read(struct dbox_uidlist *uidlist)
+ 	uidlist->ino = st.st_ino;
+ 	uidlist->mtime = st.st_mtime;
+ 
+-	input = i_stream_create_file(uidlist->fd, default_pool, 65536, FALSE);
++	input = i_stream_create_file(uidlist->fd, 65536, FALSE);
+ 
+ 	/* read header: <version> <uidvalidity> <next-uid>.
+ 	   Note that <next-uid> may be updated by UID lines, so it can't be
+@@ -559,7 +559,7 @@ static int dbox_uidlist_full_rewrite(struct dbox_uidlist *uidlist)
+ 		return 0;
+ 	}
+ 
+-	output = o_stream_create_file(uidlist->lock_fd, default_pool, 0, FALSE);
++	output = o_stream_create_file(uidlist->lock_fd, 0, FALSE);
+ 
+ 	t_push();
+ 	str = t_str_new(256);
+@@ -739,7 +739,7 @@ static int dbox_uidlist_append_changes(struct dbox_uidlist_append_ctx *ctx)
+ 			"lseek(%s) failed: %m", ctx->uidlist->path);
+ 		return -1;
+ 	}
+-	output = o_stream_create_file(ctx->uidlist->fd, default_pool, 0, FALSE);
++	output = o_stream_create_file(ctx->uidlist->fd, 0, FALSE);
+ 
+ 	uid_start = ctx->uidlist->last_uid + 1;
+ 
+@@ -967,9 +967,8 @@ dbox_file_append(struct dbox_uidlist_append_ctx *ctx,
+ 	file->path = i_strdup(path);
+ 	file->fd = fd;
+ 
+-	file->input = i_stream_create_file(file->fd, default_pool,
+-					   65536, FALSE);
+-	file->output = o_stream_create_file(file->fd, default_pool, 0, FALSE);
++	file->input = i_stream_create_file(file->fd, 65536, FALSE);
++	file->output = o_stream_create_file(file->fd, 0, FALSE);
+ 	if ((uoff_t)st->st_size < sizeof(struct dbox_file_header)) {
+ 		if (dbox_file_write_header(mbox, file) < 0) {
+ 			dbox_file_close(file);
+@@ -1152,7 +1151,7 @@ int dbox_uidlist_append_locked(struct dbox_uidlist_append_ctx *ctx,
+ 
+ 	/* we'll always use CRLF linefeeds for mails (but not the header,
+ 	   so don't do this before dbox_file_write_header()) */
+-	output = o_stream_create_crlf(default_pool, file->output);
++	output = o_stream_create_crlf(file->output);
+ 	o_stream_unref(&file->output);
+ 	file->output = output;
+ 
+diff --git a/src/lib-storage/index/index-mail-headers.c b/src/lib-storage/index/index-mail-headers.c
+index 81879c1..bcf69f1 100644
+--- a/src/lib-storage/index/index-mail-headers.c
++++ b/src/lib-storage/index/index-mail-headers.c
+@@ -7,6 +7,7 @@
+ #include "str.h"
+ #include "message-date.h"
+ #include "message-parser.h"
++#include "message-header-decode.h"
+ #include "istream-tee.h"
+ #include "istream-header-filter.h"
+ #include "imap-envelope.h"
+@@ -349,9 +350,9 @@ struct istream *index_mail_cache_parse_init(struct mail *_mail,
+ 
+ 	i_assert(mail->data.parser_ctx == NULL);
+ 
+-	tee = tee_i_stream_create(input, default_pool);
+-	input = tee_i_stream_create_child(tee, default_pool);
+-	input2 = tee_i_stream_create_child(tee, default_pool);
++	tee = tee_i_stream_create(input);
++	input = tee_i_stream_create_child(tee);
++	input2 = tee_i_stream_create_child(tee);
+ 
+ 	index_mail_parse_header_init(mail, NULL);
+ 	mail->data.parser_ctx =
+@@ -547,9 +548,9 @@ index_mail_get_parsed_header(struct index_mail *mail, unsigned int field_idx)
+ 	return array_idx(&header_values, 0);
+ }
+ 
+-const char *const *index_mail_get_headers(struct mail *_mail, const char *field)
++static const char *const *
++index_mail_get_raw_headers(struct index_mail *mail, const char *field)
+ {
+-	struct index_mail *mail = (struct index_mail *)_mail;
+ 	const char *headers[2], *value;
+ 	struct mailbox_header_lookup_ctx *headers_ctx;
+ 	unsigned char *data;
+@@ -620,11 +621,62 @@ const char *const *index_mail_get_headers(struct mail *_mail, const char *field)
+ 	return array_idx(&header_values, 0);
+ }
+ 
+-const char *index_mail_get_first_header(struct mail *mail, const char *field)
++static const char *const *
++index_mail_headers_decode(struct index_mail *mail, const char *const *list,
++			  unsigned int max_count)
++{
++	const char **decoded_list;
++	unsigned int i, count;
++	buffer_t *buf;
++
++	count = strarray_length(list);
++	if (count > max_count)
++		count = max_count;
++	decoded_list = p_new(mail->data_pool, const char *, count + 1);
++
++	t_push();
++	buf = buffer_create_dynamic(pool_datastack_create(), 512);
++
++	for (i = 0; i < count; i++) {
++		buffer_set_used_size(buf, 0);
++		if (!message_header_decode_utf8((const unsigned char *)list[i],
++						strlen(list[i]), buf, FALSE))
++			decoded_list[i] = list[i];
++		else {
++			decoded_list[i] = p_strndup(mail->data_pool,
++						    buf->data, buf->used);
++		}
++	}
++	t_pop();
++	return decoded_list;
++}
++
++const char *const *index_mail_get_headers(struct mail *_mail, const char *field,
++					  bool decode_to_utf8)
+ {
+-	const char *const *list = index_mail_get_headers(mail, field);
++	struct index_mail *mail = (struct index_mail *)_mail;
++	const char *const *list;
++
++	list = index_mail_get_raw_headers(mail, field);
++	if (!decode_to_utf8 || list == NULL || *list == NULL)
++		return list;
++
++	return index_mail_headers_decode(mail, list, (unsigned int)-1);
++}
++
++const char *index_mail_get_first_header(struct mail *_mail, const char *field,
++					bool decode_to_utf8)
++{
++	struct index_mail *mail = (struct index_mail *)_mail;
++	const char *const *list;
++
++	list = index_mail_get_raw_headers(mail, field);
++	if (list == NULL || *list == NULL)
++		return NULL;
+ 
+-	return list == NULL ? NULL : list[0];
++	if (decode_to_utf8)
++		list = index_mail_headers_decode(mail, list, 1);
++	return list[0];
+ }
+ 
+ static void header_cache_callback(struct message_header_line *hdr,
+@@ -658,8 +710,7 @@ index_mail_get_header_stream(struct mail *_mail,
+ 		if (mail->data.filter_stream != NULL)
+ 			i_stream_destroy(&mail->data.filter_stream);
+ 		mail->data.filter_stream =
+-			i_stream_create_from_data(default_pool,
+-						  str_data(dest),
++			i_stream_create_from_data(str_data(dest),
+ 						  str_len(dest));
+ 		return mail->data.filter_stream;
+ 	}
+diff --git a/src/lib-storage/index/index-mail.h b/src/lib-storage/index/index-mail.h
+index acfdbfc..18eed3a 100644
+--- a/src/lib-storage/index/index-mail.h
++++ b/src/lib-storage/index/index-mail.h
+@@ -146,9 +146,11 @@ int index_mail_parse_headers(struct index_mail *mail,
+ 			     struct mailbox_header_lookup_ctx *headers);
+ void index_mail_headers_get_envelope(struct index_mail *mail);
+ 
+-const char *index_mail_get_first_header(struct mail *_mail, const char *field);
++const char *index_mail_get_first_header(struct mail *_mail, const char *field,
++					bool decode_to_utf8);
+ const char *const *
+-index_mail_get_headers(struct mail *_mail, const char *field);
++index_mail_get_headers(struct mail *_mail, const char *field,
++		       bool decode_to_utf8);
+ struct istream *
+ index_mail_get_header_stream(struct mail *_mail,
+ 			     struct mailbox_header_lookup_ctx *headers);
+diff --git a/src/lib-storage/index/index-sort.c b/src/lib-storage/index/index-sort.c
+index 36eb2b3..19b286c 100644
+--- a/src/lib-storage/index/index-sort.c
++++ b/src/lib-storage/index/index-sort.c
+@@ -31,6 +31,7 @@
+ #include "array.h"
+ #include "bsearch-insert-pos.h"
+ #include "str.h"
++#include "unichar.h"
+ #include "message-address.h"
+ #include "imap-base-subject.h"
+ #include "index-storage.h"
+@@ -157,7 +158,7 @@ static const char *get_first_mailbox(struct mail *mail, const char *header)
+ 	struct message_address *addr;
+ 	const char *str;
+ 
+-	str = mail_get_first_header(mail, header);
++	str = mail_get_first_header_utf8(mail, header);
+ 	if (str == NULL)
+ 		return "";
+ 
+@@ -171,6 +172,7 @@ static const char *
+ sort_header_get(enum mail_sort_type sort_type, struct mail *mail, uint32_t seq)
+ {
+ 	const char *str;
++	string_t *buf;
+ 
+ 	mail_set_seq(mail, seq);
+ 	switch (sort_type & MAIL_SORT_MASK) {
+@@ -180,14 +182,21 @@ sort_header_get(enum mail_sort_type sort_type, struct mail *mail, uint32_t seq)
+ 			imap_get_base_subject_cased(pool_datastack_create(),
+ 						    str, NULL);
+ 	case MAIL_SORT_CC:
+-		return get_first_mailbox(mail, "Cc");
++		str = get_first_mailbox(mail, "Cc");
++		break;
+ 	case MAIL_SORT_FROM:
+-		return get_first_mailbox(mail, "From");
++		str = get_first_mailbox(mail, "From");
++		break;
+ 	case MAIL_SORT_TO:
+-		return get_first_mailbox(mail, "To");
++		str = get_first_mailbox(mail, "To");
++		break;
+ 	default:
+ 		i_unreached();
+ 	}
++
++	buf = t_str_new(128);
++	(void)uni_utf8_to_decomposed_titlecase(str, (size_t)-1, buf);
++	return str_c(buf);
+ }
+ 
+ static int sort_node_cmp_type(struct sort_cmp_context *ctx,
+@@ -213,7 +222,7 @@ static int sort_node_cmp_type(struct sort_cmp_context *ctx,
+ 			sort_header_get(sort_type, ctx->mail, n1->seq);
+ 		str2 = sort_header_get(sort_type, ctx->mail, n2->seq);
+ 
+-		ret = strcasecmp(str1, str2);
++		ret = strcmp(str1, str2);
+ 		t_pop();
+ 		break;
+ 	case MAIL_SORT_ARRIVAL:
+@@ -358,9 +367,9 @@ index_sort_add_ids_range(struct mail_search_sort_program *program,
+ 		str = sort_header_get(program->sort_program[0], mail,
+ 				      nodes[i].seq);
+ 
+-		if (i == idx2 && strcasecmp(str, last_str) == 0)
++		if (i == idx2 && strcmp(str, last_str) == 0)
+ 			nodes[i].sort_id = last_id;
+-		else if (strcasecmp(str, str_c(prev_str)) == 0 && prev_id != 0)
++		else if (strcmp(str, str_c(prev_str)) == 0 && prev_id != 0)
+ 			nodes[i].sort_id = prev_id;
+ 		else {
+ 			/* divide the available space so that each message gets
+diff --git a/src/lib-storage/index/maildir/maildir-keywords.c b/src/lib-storage/index/maildir/maildir-keywords.c
+index 8349741..e7194e1 100644
+--- a/src/lib-storage/index/maildir/maildir-keywords.c
++++ b/src/lib-storage/index/maildir/maildir-keywords.c
+@@ -133,7 +133,7 @@ static int maildir_keywords_sync(struct maildir_keywords *mk)
+ 	}
+ 
+ 	maildir_keywords_clear(mk);
+-	input = i_stream_create_file(fd, default_pool, 1024, FALSE);
++	input = i_stream_create_file(fd, 1024, FALSE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		p = strchr(line, ' ');
+ 		if (p == NULL) {
+diff --git a/src/lib-storage/index/maildir/maildir-mail.c b/src/lib-storage/index/maildir/maildir-mail.c
+index fd89bbd..2e397cf 100644
+--- a/src/lib-storage/index/maildir/maildir-mail.c
++++ b/src/lib-storage/index/maildir/maildir-mail.c
+@@ -62,8 +62,7 @@ maildir_open_mail(struct maildir_mailbox *mbox, struct mail *mail,
+ 		return NULL;
+ 	}
+ 
+-	return i_stream_create_file(fd, default_pool,
+-				    MAIL_READ_BLOCK_SIZE, TRUE);
++	return i_stream_create_file(fd, MAIL_READ_BLOCK_SIZE, TRUE);
+ }
+ 
+ static int maildir_mail_stat(struct mail *mail, struct stat *st)
+diff --git a/src/lib-storage/index/maildir/maildir-save.c b/src/lib-storage/index/maildir/maildir-save.c
+index 3a36f82..4d03143 100644
+--- a/src/lib-storage/index/maildir/maildir-save.c
++++ b/src/lib-storage/index/maildir/maildir-save.c
+@@ -377,11 +377,10 @@ int maildir_save_init(struct mailbox_transaction_context *_t,
+ 	ctx->received_date = received_date;
+ 	ctx->input = input;
+ 
+-	output = o_stream_create_file(ctx->fd, system_pool, 0, FALSE);
++	output = o_stream_create_file(ctx->fd, 0, FALSE);
+ 	ctx->output = (ctx->mbox->storage->storage.flags &
+ 		       MAIL_STORAGE_FLAG_SAVE_CRLF) != 0 ?
+-		o_stream_create_crlf(default_pool, output) :
+-		o_stream_create_lf(default_pool, output);
++		o_stream_create_crlf(output) : o_stream_create_lf(output);
+ 	o_stream_unref(&output);
+ 
+ 	flags &= ~MAIL_RECENT;
+diff --git a/src/lib-storage/index/maildir/maildir-uidlist.c b/src/lib-storage/index/maildir/maildir-uidlist.c
+index db87689..9bd8bf5 100644
+--- a/src/lib-storage/index/maildir/maildir-uidlist.c
++++ b/src/lib-storage/index/maildir/maildir-uidlist.c
+@@ -523,7 +523,7 @@ maildir_uidlist_update_read(struct maildir_uidlist *uidlist,
+ 							    st.st_size/8));
+ 	}
+ 
+-	input = i_stream_create_file(fd, default_pool, 4096, FALSE);
++	input = i_stream_create_file(fd, 4096, FALSE);
+ 	i_stream_seek(input, uidlist->last_read_offset);
+ 
+ 	orig_next_uid = uidlist->next_uid;
+@@ -804,7 +804,7 @@ static int maildir_uidlist_write_fd(struct maildir_uidlist *uidlist, int fd,
+ 
+ 	i_assert(fd != -1);
+ 
+-	output = o_stream_create_file(fd, default_pool, 0, FALSE);
++	output = o_stream_create_file(fd, 0, FALSE);
+ 	str = t_str_new(512);
+ 
+ 	if (output->offset == 0) {
+diff --git a/src/lib-storage/index/mbox/istream-raw-mbox.c b/src/lib-storage/index/mbox/istream-raw-mbox.c
+index 6cd8afd..5b57839 100644
+--- a/src/lib-storage/index/mbox/istream-raw-mbox.c
++++ b/src/lib-storage/index/mbox/istream-raw-mbox.c
+@@ -343,14 +343,14 @@ static const struct stat *_stat(struct _istream *stream, bool exact)
+ 	return &stream->statbuf;
+ }
+ 
+-struct istream *i_stream_create_raw_mbox(pool_t pool, struct istream *input,
++struct istream *i_stream_create_raw_mbox(struct istream *input,
+ 					 bool kludge_one_mail_only)
+ {
+ 	struct raw_mbox_istream *rstream;
+ 
+ 	i_stream_ref(input);
+ 
+-	rstream = p_new(pool, struct raw_mbox_istream, 1);
++	rstream = i_new(struct raw_mbox_istream, 1);
+ 
+ 	rstream->one_mail_only = kludge_one_mail_only;
+ 	rstream->input = input;
+@@ -370,7 +370,7 @@ struct istream *i_stream_create_raw_mbox(pool_t pool, struct istream *input,
+ 
+ 	rstream->istream.istream.blocking = input->blocking;
+ 	rstream->istream.istream.seekable = input->seekable;
+-	return _i_stream_create(&rstream->istream, pool, -1,
++	return _i_stream_create(&rstream->istream, -1,
+ 				input->real_stream->abs_start_offset);
+ }
+ 
+diff --git a/src/lib-storage/index/mbox/istream-raw-mbox.h b/src/lib-storage/index/mbox/istream-raw-mbox.h
+index b6a74fa..582f812 100644
+--- a/src/lib-storage/index/mbox/istream-raw-mbox.h
++++ b/src/lib-storage/index/mbox/istream-raw-mbox.h
+@@ -3,7 +3,7 @@
+ 
+ /* Create a mbox stream for parsing mbox. Reading stops before From-line,
+    you'll have to call istream_raw_mbox_next() to get to next message. */
+-struct istream *i_stream_create_raw_mbox(pool_t pool, struct istream *input,
++struct istream *i_stream_create_raw_mbox(struct istream *input,
+ 					 bool kludge_one_mail_only);
+ 
+ /* Return offset to beginning of the "\nFrom"-line. */
+diff --git a/src/lib-storage/index/mbox/mbox-file.c b/src/lib-storage/index/mbox/mbox-file.c
+index cfbe626..f7166a9 100644
+--- a/src/lib-storage/index/mbox/mbox-file.c
++++ b/src/lib-storage/index/mbox/mbox-file.c
+@@ -73,8 +73,7 @@ int mbox_file_open_stream(struct mbox_mailbox *mbox)
+ 		i_assert(mbox->mbox_fd == -1 && mbox->mbox_readonly);
+ 
+ 		mbox->mbox_stream =
+-			i_stream_create_raw_mbox(default_pool,
+-						 mbox->mbox_file_stream,
++			i_stream_create_raw_mbox(mbox->mbox_file_stream,
+ 						 one_mail_only);
+ 		return 0;
+ 	}
+@@ -84,18 +83,16 @@ int mbox_file_open_stream(struct mbox_mailbox *mbox)
+ 			return -1;
+ 	}
+ 
+-	if (mbox->mbox_writeonly) {
++	if (mbox->mbox_writeonly)
++		mbox->mbox_file_stream = i_stream_create_from_data(NULL, 0);
++	else {
+ 		mbox->mbox_file_stream =
+-			i_stream_create_from_data(default_pool, NULL, 0);
+-	} else {
+-		mbox->mbox_file_stream =
+-			i_stream_create_file(mbox->mbox_fd, default_pool,
++			i_stream_create_file(mbox->mbox_fd,
+ 					     MAIL_READ_BLOCK_SIZE, FALSE);
+ 	}
+ 
+ 	mbox->mbox_stream =
+-		i_stream_create_raw_mbox(default_pool, mbox->mbox_file_stream,
+-					 one_mail_only);
++		i_stream_create_raw_mbox(mbox->mbox_file_stream, one_mail_only);
+ 	return 0;
+ }
+ 
+diff --git a/src/lib-storage/index/mbox/mbox-mail.c b/src/lib-storage/index/mbox/mbox-mail.c
+index 79190d9..5fef2e9 100644
+--- a/src/lib-storage/index/mbox/mbox-mail.c
++++ b/src/lib-storage/index/mbox/mbox-mail.c
+@@ -209,7 +209,7 @@ static struct istream *mbox_mail_get_stream(struct mail *_mail,
+ 
+ 		raw_stream = mbox->mbox_stream;
+ 		offset = istream_raw_mbox_get_header_offset(raw_stream);
+-		raw_stream = i_stream_create_limit(default_pool, raw_stream,
++		raw_stream = i_stream_create_limit(raw_stream,
+ 						   offset, (uoff_t)-1);
+ 		data->stream =
+ 			i_stream_create_header_filter(raw_stream,
+diff --git a/src/lib-storage/index/mbox/mbox-save.c b/src/lib-storage/index/mbox/mbox-save.c
+index 2ffd3b0..fa69025 100644
+--- a/src/lib-storage/index/mbox/mbox-save.c
++++ b/src/lib-storage/index/mbox/mbox-save.c
+@@ -321,8 +321,7 @@ mbox_save_init_file(struct mbox_save_context *ctx,
+ 		if (mbox_seek_to_end(ctx, &ctx->append_offset) < 0)
+ 			return -1;
+ 
+-		ctx->output = o_stream_create_file(mbox->mbox_fd, default_pool,
+-						   0, FALSE);
++		ctx->output = o_stream_create_file(mbox->mbox_fd, 0, FALSE);
+ 	}
+ 	return 0;
+ }
+@@ -477,8 +476,8 @@ int mbox_save_init(struct mailbox_transaction_context *_t,
+ 		ctx->body_output =
+ 			(mbox->storage->storage.flags &
+ 			 MAIL_STORAGE_FLAG_SAVE_CRLF) != 0 ?
+-			o_stream_create_crlf(default_pool, ctx->output) :
+-			o_stream_create_lf(default_pool, ctx->output);
++			o_stream_create_crlf(ctx->output) :
++			o_stream_create_lf(ctx->output);
+ 		if (ctx->mail != NULL) {
+ 			input = index_mail_cache_parse_init(ctx->mail,
+ 							    ctx->input);
+diff --git a/src/lib-storage/index/mbox/mbox-sync-rewrite.c b/src/lib-storage/index/mbox/mbox-sync-rewrite.c
+index fa62858..3338bb7 100644
+--- a/src/lib-storage/index/mbox/mbox-sync-rewrite.c
++++ b/src/lib-storage/index/mbox/mbox-sync-rewrite.c
+@@ -26,8 +26,7 @@ int mbox_move(struct mbox_sync_context *sync_ctx,
+ 
+ 	i_stream_sync(sync_ctx->input);
+ 
+-	output = o_stream_create_file(sync_ctx->write_fd, default_pool,
+-				      4096, FALSE);
++	output = o_stream_create_file(sync_ctx->write_fd, 4096, FALSE);
+ 	i_stream_seek(sync_ctx->file_input, source);
+ 	if (o_stream_seek(output, dest) < 0) {
+ 		mbox_set_syscall_error(sync_ctx->mbox,
+@@ -36,8 +35,7 @@ int mbox_move(struct mbox_sync_context *sync_ctx,
+ 		return -1;
+ 	}
+ 
+-	input = i_stream_create_limit(default_pool, sync_ctx->file_input,
+-				      source, size);
++	input = i_stream_create_limit(sync_ctx->file_input, source, size);
+ 	ret = o_stream_send_istream(output, input);
+ 	i_stream_unref(&input);
+ 
+diff --git a/src/lib-storage/list/subscription-file.c b/src/lib-storage/list/subscription-file.c
+index 5aa1ddf..cc24560 100644
+--- a/src/lib-storage/list/subscription-file.c
++++ b/src/lib-storage/list/subscription-file.c
+@@ -16,11 +16,9 @@
+ #define SUBSCRIPTION_FILE_CHANGE_TIMEOUT 30
+ 
+ struct subsfile_list_context {
+-	pool_t pool;
+-
+ 	struct mailbox_list *list;
+ 	struct istream *input;
+-	const char *path;
++	char *path;
+ 
+ 	bool failed;
+ };
+@@ -115,10 +113,10 @@ int subsfile_set_subscribed(struct mailbox_list *list, const char *path,
+ 	}
+ 
+ 	input = fd_in == -1 ? NULL :
+-		i_stream_create_file(fd_in, default_pool,
+-				     list->mailbox_name_max_length+1, TRUE);
+-	output = o_stream_create_file(fd_out, default_pool,
+-				      list->mailbox_name_max_length+1, FALSE);
++		i_stream_create_file(fd_in, list->mailbox_name_max_length+1,
++				     TRUE);
++	output = o_stream_create_file(fd_out, list->mailbox_name_max_length+1,
++				      FALSE);
+ 	found = FALSE;
+ 	while ((line = next_line(list, path, input,
+ 				 &failed, FALSE)) != NULL) {
+@@ -176,14 +174,9 @@ struct subsfile_list_context *
+ subsfile_list_init(struct mailbox_list *list, const char *path)
+ {
+ 	struct subsfile_list_context *ctx;
+-	pool_t pool;
+ 	int fd;
+ 
+-	pool = pool_alloconly_create("subsfile_list",
+-				     list->mailbox_name_max_length + 1024);
+-
+-	ctx = p_new(pool, struct subsfile_list_context, 1);
+-	ctx->pool = pool;
++	ctx = i_new(struct subsfile_list_context, 1);
+ 	ctx->list = list;
+ 
+ 	fd = nfs_safe_open(path, O_RDONLY);
+@@ -193,12 +186,10 @@ subsfile_list_init(struct mailbox_list *list, const char *path)
+ 			ctx->failed = TRUE;
+ 		}
+ 	} else {
+-		ctx->input =
+-			i_stream_create_file(fd, pool,
+-					     list->mailbox_name_max_length+1,
+-					     TRUE);
++		ctx->input = i_stream_create_file(fd,
++					list->mailbox_name_max_length+1, TRUE);
+ 	}
+-	ctx->path = p_strdup(pool, path);
++	ctx->path = i_strdup(path);
+ 	return ctx;
+ }
+ 
+@@ -208,7 +199,8 @@ int subsfile_list_deinit(struct subsfile_list_context *ctx)
+ 
+ 	if (ctx->input != NULL)
+ 		i_stream_destroy(&ctx->input);
+-	pool_unref(ctx->pool);
++	i_free(ctx->path);
++	i_free(ctx);
+ 	return ret;
+ }
+ 
+@@ -247,7 +239,7 @@ const char *subsfile_list_next(struct subsfile_list_context *ctx)
+                         return NULL;
+                 }
+ 
+-		ctx->input = i_stream_create_file(fd, ctx->pool,
++		ctx->input = i_stream_create_file(fd,
+ 					ctx->list->mailbox_name_max_length+1,
+ 					TRUE);
+         }
+diff --git a/src/lib-storage/mail-storage-private.h b/src/lib-storage/mail-storage-private.h
+index 9e81307..ec8ae3e 100644
+--- a/src/lib-storage/mail-storage-private.h
++++ b/src/lib-storage/mail-storage-private.h
+@@ -208,8 +208,10 @@ struct mail_vfuncs {
+ 	uoff_t (*get_virtual_size)(struct mail *mail);
+ 	uoff_t (*get_physical_size)(struct mail *mail);
+ 
+-	const char *(*get_first_header)(struct mail *mail, const char *field);
+-	const char *const *(*get_headers)(struct mail *mail, const char *field);
++	const char *(*get_first_header)(struct mail *mail, const char *field,
++					bool decode_to_utf8);
++	const char *const *(*get_headers)(struct mail *mail, const char *field,
++					  bool decode_to_utf8);
+ 	struct istream *
+ 		(*get_header_stream)(struct mail *mail,
+ 				     struct mailbox_header_lookup_ctx *headers);
+diff --git a/src/lib-storage/mail-storage.h b/src/lib-storage/mail-storage.h
+index 27918ad..2192203 100644
+--- a/src/lib-storage/mail-storage.h
++++ b/src/lib-storage/mail-storage.h
+@@ -424,8 +424,12 @@ uoff_t mail_get_physical_size(struct mail *mail);
+ 
+ /* Get value for single header field */
+ const char *mail_get_first_header(struct mail *mail, const char *field);
++/* Like mail_get_first_header(), but decode MIME encoded words to UTF-8 */
++const char *mail_get_first_header_utf8(struct mail *mail, const char *field);
+ /* Return a NULL-terminated list of values for each found field. */
+ const char *const *mail_get_headers(struct mail *mail, const char *field);
++/* Like mail_get_headers(), but decode MIME encoded words to UTF-8 */
++const char *const *mail_get_headers_utf8(struct mail *mail, const char *field);
+ /* Returns stream containing specified headers. */
+ struct istream *
+ mail_get_header_stream(struct mail *mail,
+diff --git a/src/lib-storage/mail.c b/src/lib-storage/mail.c
+index 61846a0..37566d7 100644
+--- a/src/lib-storage/mail.c
++++ b/src/lib-storage/mail.c
+@@ -93,14 +93,28 @@ const char *mail_get_first_header(struct mail *mail, const char *field)
+ {
+ 	struct mail_private *p = (struct mail_private *)mail;
+ 
+-	return p->v.get_first_header(mail, field);
++	return p->v.get_first_header(mail, field, FALSE);
++}
++
++const char *mail_get_first_header_utf8(struct mail *mail, const char *field)
++{
++	struct mail_private *p = (struct mail_private *)mail;
++
++	return p->v.get_first_header(mail, field, TRUE);
+ }
+ 
+ const char *const *mail_get_headers(struct mail *mail, const char *field)
+ {
+ 	struct mail_private *p = (struct mail_private *)mail;
+ 
+-	return p->v.get_headers(mail, field);
++	return p->v.get_headers(mail, field, FALSE);
++}
++
++const char *const *mail_get_headers_utf8(struct mail *mail, const char *field)
++{
++	struct mail_private *p = (struct mail_private *)mail;
++
++	return p->v.get_headers(mail, field, TRUE);
+ }
+ 
+ struct istream *
+diff --git a/src/lib/Makefile.am b/src/lib/Makefile.am
+index 059fa0a..385d065 100644
+--- a/src/lib/Makefile.am
++++ b/src/lib/Makefile.am
+@@ -1,5 +1,13 @@
+ noinst_LIBRARIES = liblib.a
+ 
++BUILT_SOURCES = unicodemap.c
++
++EXTRA_DIST = unicodemap.c unicodemap.pl
++
++unicodemap.c:
++	test -f UnicodeData.txt || wget http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
++	perl unicodemap.pl < UnicodeData.txt > $@
++
+ liblib_a_SOURCES = \
+ 	backtrace-string.c \
+ 	base64.c \
+diff --git a/src/lib/bsearch-insert-pos.h b/src/lib/bsearch-insert-pos.h
+index 4558ba9..daaa101 100644
+--- a/src/lib/bsearch-insert-pos.h
++++ b/src/lib/bsearch-insert-pos.h
+@@ -1,6 +1,25 @@
+ #ifndef __BSEARCH_INSERT_POS
+ #define __BSEARCH_INSERT_POS
+ 
++/* Binary search template */
++#define BINARY_NUMBER_SEARCH(data, count, value, idx_r) \
++	unsigned int idx, left_idx, right_idx;        \
++						      \
++	idx = 0; left_idx = 0; right_idx = (count);   \
++	while (left_idx < right_idx) {                \
++		idx = (left_idx + right_idx) / 2;     \
++						      \
++		if ((data)[idx] < (value))            \
++			left_idx = idx+1;             \
++		else if ((data)[idx] > (value))       \
++			right_idx = idx;              \
++		else {                                \
++			*(idx_r) = idx;               \
++			return TRUE;                  \
++		}                                     \
++	}                                             \
++	return FALSE
++
+ /* If key is found, returns TRUE and sets idx_r to the position where the key
+    was found. If key isn't found, returns FALSE and sets idx_r to the position
+    where the key should be inserted. */
+diff --git a/src/lib/file-copy.c b/src/lib/file-copy.c
+index 1c0ba00..b7b0256 100644
+--- a/src/lib/file-copy.c
++++ b/src/lib/file-copy.c
+@@ -68,8 +68,8 @@ static int file_copy_to_tmp(const char *srcpath, const char *tmppath,
+ 	/* try to change the group, don't really care if it fails */
+ 	(void)fchown(fd_out, (uid_t)-1, st.st_gid);
+ 
+-	input = i_stream_create_file(fd_in, default_pool, 0, FALSE);
+-	output = o_stream_create_file(fd_out, default_pool, 0, FALSE);
++	input = i_stream_create_file(fd_in, 0, FALSE);
++	output = o_stream_create_file(fd_out, 0, FALSE);
+ 
+ 	while ((ret = o_stream_send_istream(output, input)) > 0) ;
+ 
+diff --git a/src/lib/iostream-internal.h b/src/lib/iostream-internal.h
+index 16572f1..d8f7743 100644
+--- a/src/lib/iostream-internal.h
++++ b/src/lib/iostream-internal.h
+@@ -4,7 +4,6 @@
+ /* This file is private to input stream and output stream implementations */
+ 
+ struct _iostream {
+-	pool_t pool;
+ 	int refcount;
+ 
+ 	void (*close)(struct _iostream *stream);
+@@ -12,7 +11,7 @@ struct _iostream {
+ 	void (*set_max_buffer_size)(struct _iostream *stream, size_t max_size);
+ };
+ 
+-void _io_stream_init(pool_t pool, struct _iostream *stream);
++void _io_stream_init(struct _iostream *stream);
+ void _io_stream_ref(struct _iostream *stream);
+ void _io_stream_unref(struct _iostream *stream);
+ void _io_stream_close(struct _iostream *stream);
+diff --git a/src/lib/iostream.c b/src/lib/iostream.c
+index aafbed5..78aab85 100644
+--- a/src/lib/iostream.c
++++ b/src/lib/iostream.c
+@@ -3,10 +3,8 @@
+ #include "lib.h"
+ #include "iostream-internal.h"
+ 
+-void _io_stream_init(pool_t pool, struct _iostream *stream)
++void _io_stream_init(struct _iostream *stream)
+ {
+-	pool_ref(pool);
+-	stream->pool = pool;
+ 	stream->refcount = 1;
+ }
+ 
+@@ -17,8 +15,6 @@ void _io_stream_ref(struct _iostream *stream)
+ 
+ void _io_stream_unref(struct _iostream *stream)
+ {
+-	pool_t pool;
+-
+ 	i_assert(stream->refcount > 0);
+ 	if (--stream->refcount != 0)
+ 		return;
+@@ -26,9 +22,7 @@ void _io_stream_unref(struct _iostream *stream)
+ 	stream->close(stream);
+ 	stream->destroy(stream);
+ 
+-	pool = stream->pool;
+-        p_free(pool, stream);
+-	pool_unref(pool);
++        i_free(stream);
+ }
+ 
+ void _io_stream_close(struct _iostream *stream)
+diff --git a/src/lib/istream-data.c b/src/lib/istream-data.c
+index becbee3..7e98bb9 100644
+--- a/src/lib/istream-data.c
++++ b/src/lib/istream-data.c
+@@ -24,12 +24,11 @@ static void _seek(struct _istream *stream, uoff_t v_offset,
+ 	stream->istream.v_offset = v_offset;
+ }
+ 
+-struct istream *i_stream_create_from_data(pool_t pool, const void *data,
+-					  size_t size)
++struct istream *i_stream_create_from_data(const void *data, size_t size)
+ {
+ 	struct _istream *stream;
+ 
+-	stream = p_new(pool, struct _istream, 1);
++	stream = i_new(struct _istream, 1);
+ 	stream->buffer = data;
+ 	stream->pos = size;
+ 
+@@ -41,7 +40,7 @@ struct istream *i_stream_create_from_data(pool_t pool, const void *data,
+ 
+ 	stream->istream.blocking = TRUE;
+ 	stream->istream.seekable = TRUE;
+-	(void)_i_stream_create(stream, pool, -1, 0);
++	(void)_i_stream_create(stream, -1, 0);
+ 	stream->statbuf.st_size = size;
+ 	return &stream->istream;
+ }
+diff --git a/src/lib/istream-file.c b/src/lib/istream-file.c
+index 49b5eaf..2d270d6 100644
+--- a/src/lib/istream-file.c
++++ b/src/lib/istream-file.c
+@@ -36,7 +36,7 @@ static void _destroy(struct _iostream *stream)
+ {
+ 	struct _istream *_stream = (struct _istream *) stream;
+ 
+-	p_free(_stream->iostream.pool, _stream->w_buffer);
++	i_free(_stream->w_buffer);
+ }
+ 
+ static ssize_t _read(struct _istream *stream)
+@@ -159,13 +159,13 @@ _stat(struct _istream *stream, bool exact __attr_unused__)
+ 	return &stream->statbuf;
+ }
+ 
+-struct istream *i_stream_create_file(int fd, pool_t pool,
+-				     size_t max_buffer_size, bool autoclose_fd)
++struct istream *i_stream_create_file(int fd, size_t max_buffer_size,
++				     bool autoclose_fd)
+ {
+ 	struct file_istream *fstream;
+ 	struct stat st;
+ 
+-	fstream = p_new(pool, struct file_istream, 1);
++	fstream = i_new(struct file_istream, 1);
+ 	fstream->autoclose_fd = autoclose_fd;
+ 
+ 	fstream->istream.iostream.close = _close;
+@@ -184,5 +184,5 @@ struct istream *i_stream_create_file(int fd, pool_t pool,
+ 		fstream->istream.istream.seekable = TRUE;
+ 	}
+ 
+-	return _i_stream_create(&fstream->istream, pool, fd, 0);
++	return _i_stream_create(&fstream->istream, fd, 0);
+ }
+diff --git a/src/lib/istream-internal.h b/src/lib/istream-internal.h
+index 23ee63f..780cd5d 100644
+--- a/src/lib/istream-internal.h
++++ b/src/lib/istream-internal.h
+@@ -32,8 +32,8 @@ struct _istream {
+ 	string_t *line_str; /* for i_stream_next_line() if w_buffer == NULL */
+ };
+ 
+-struct istream *_i_stream_create(struct _istream *_buf, pool_t pool, int fd,
+-				 uoff_t abs_start_offset);
++struct istream *
++_i_stream_create(struct _istream *_buf, int fd, uoff_t abs_start_offset);
+ 
+ void _i_stream_compress(struct _istream *stream);
+ void _i_stream_grow_buffer(struct _istream *stream, size_t bytes);
+diff --git a/src/lib/istream-limit.c b/src/lib/istream-limit.c
+index 7e77751..e1fec24 100644
+--- a/src/lib/istream-limit.c
++++ b/src/lib/istream-limit.c
+@@ -108,14 +108,14 @@ static const struct stat *_stat(struct _istream *stream, bool exact)
+ 	return &stream->statbuf;
+ }
+ 
+-struct istream *i_stream_create_limit(pool_t pool, struct istream *input,
++struct istream *i_stream_create_limit(struct istream *input,
+ 				      uoff_t v_start_offset, uoff_t v_size)
+ {
+ 	struct limit_istream *lstream;
+ 
+ 	i_stream_ref(input);
+ 
+-	lstream = p_new(pool, struct limit_istream, 1);
++	lstream = i_new(struct limit_istream, 1);
+ 	lstream->input = input;
+ 	lstream->v_start_offset = v_start_offset;
+ 	lstream->v_size = v_size;
+@@ -135,7 +135,7 @@ struct istream *i_stream_create_limit(pool_t pool, struct istream *input,
+ 
+ 	lstream->istream.istream.blocking = input->blocking;
+ 	lstream->istream.istream.seekable = input->seekable;
+-	return _i_stream_create(&lstream->istream, pool, i_stream_get_fd(input),
++	return _i_stream_create(&lstream->istream, i_stream_get_fd(input),
+ 				input->real_stream->abs_start_offset +
+ 				v_start_offset);
+ }
+diff --git a/src/lib/istream-mmap.c b/src/lib/istream-mmap.c
+index 53d47b4..55a378f 100644
+--- a/src/lib/istream-mmap.c
++++ b/src/lib/istream-mmap.c
+@@ -185,7 +185,7 @@ _stat(struct _istream *stream, bool exact __attr_unused__)
+ 	return &stream->statbuf;
+ }
+ 
+-struct istream *i_stream_create_mmap(int fd, pool_t pool, size_t block_size,
++struct istream *i_stream_create_mmap(int fd, size_t block_size,
+ 				     uoff_t start_offset, uoff_t v_size,
+ 				     bool autoclose_fd)
+ {
+@@ -207,7 +207,7 @@ struct istream *i_stream_create_mmap(int fd, pool_t pool, size_t block_size,
+ 		}
+ 	}
+ 
+-	mstream = p_new(pool, struct mmap_istream, 1);
++	mstream = i_new(struct mmap_istream, 1);
+ 	mstream->autoclose_fd = autoclose_fd;
+ 	mstream->v_size = v_size;
+ 
+@@ -220,7 +220,7 @@ struct istream *i_stream_create_mmap(int fd, pool_t pool, size_t block_size,
+ 	mstream->istream.sync = _sync;
+ 	mstream->istream.stat = _stat;
+ 
+-	istream = _i_stream_create(&mstream->istream, pool, fd, start_offset);
++	istream = _i_stream_create(&mstream->istream, fd, start_offset);
+ 	istream->mmaped = TRUE;
+ 	istream->blocking = TRUE;
+ 	istream->seekable = TRUE;
+diff --git a/src/lib/istream-seekable.c b/src/lib/istream-seekable.c
+index b0a95a3..8c60bd1 100644
+--- a/src/lib/istream-seekable.c
++++ b/src/lib/istream-seekable.c
+@@ -17,7 +17,6 @@
+ 
+ struct seekable_istream {
+ 	struct _istream istream;
+-	pool_t pool;
+ 
+ 	size_t max_buffer_size;
+ 	char *temp_prefix;
+@@ -54,8 +53,7 @@ static void _destroy(struct _iostream *stream)
+ 	for (i = 0; sstream->input[i] != NULL; i++)
+ 		i_stream_unref(&sstream->input[i]);
+ 
+-	p_free(sstream->pool, sstream->temp_prefix);
+-	pool_unref(sstream->pool);
++	i_free(sstream->temp_prefix);
+ }
+ 
+ static void _set_max_buffer_size(struct _iostream *stream, size_t max_size)
+@@ -124,8 +122,7 @@ static int copy_to_temp_file(struct seekable_istream *sstream)
+ 
+ 	sstream->fd = fd;
+ 	sstream->fd_input =
+-		i_stream_create_file(fd, sstream->pool,
+-				     sstream->max_buffer_size, TRUE);
++		i_stream_create_file(fd, sstream->max_buffer_size, TRUE);
+ 	return 0;
+ }
+ 
+@@ -296,7 +293,7 @@ static const struct stat *_stat(struct _istream *stream, bool exact)
+ }
+ 
+ struct istream *
+-i_stream_create_seekable(struct istream *input[], pool_t pool,
++i_stream_create_seekable(struct istream *input[],
+ 			 size_t max_buffer_size, const char *temp_prefix)
+ {
+ 	struct seekable_istream *sstream;
+@@ -308,14 +305,12 @@ i_stream_create_seekable(struct istream *input[], pool_t pool,
+ 		i_stream_ref(input[count]);
+ 	i_assert(count != 0);
+ 
+-	pool_ref(pool);
+-	sstream = p_new(pool, struct seekable_istream, 1);
+-	sstream->pool = pool;
+-	sstream->temp_prefix = p_strdup(pool, temp_prefix);
+-	sstream->buffer = buffer_create_dynamic(pool, BUF_INITIAL_SIZE);
++	sstream = i_new(struct seekable_istream, 1);
++	sstream->temp_prefix = i_strdup(temp_prefix);
++	sstream->buffer = buffer_create_dynamic(default_pool, BUF_INITIAL_SIZE);
+         sstream->max_buffer_size = max_buffer_size;
+ 
+-	sstream->input = p_new(pool, struct istream *, count + 1);
++	sstream->input = i_new(struct istream *, count + 1);
+ 	memcpy(sstream->input, input, sizeof(*input) * count);
+ 	sstream->cur_input = sstream->input[0];
+ 
+@@ -332,5 +327,5 @@ i_stream_create_seekable(struct istream *input[], pool_t pool,
+ 	sstream->istream.seek = _seek;
+ 	sstream->istream.stat = _stat;
+ 
+-	return _i_stream_create(&sstream->istream, pool, -1, 0);
++	return _i_stream_create(&sstream->istream, -1, 0);
+ }
+diff --git a/src/lib/istream-seekable.h b/src/lib/istream-seekable.h
+index 2775a07..c9f2a52 100644
+--- a/src/lib/istream-seekable.h
++++ b/src/lib/istream-seekable.h
+@@ -7,7 +7,7 @@
+    temp_prefix is used as path and filename prefix for creating the file.
+    It will be appended by PID, timestamp and 128 bits of weak randomness. */
+ struct istream *
+-i_stream_create_seekable(struct istream *input[], pool_t pool,
++i_stream_create_seekable(struct istream *input[],
+ 			 size_t max_buffer_size, const char *temp_prefix);
+ 
+ #endif
+diff --git a/src/lib/istream-tee.c b/src/lib/istream-tee.c
+index 02cf133..af2f525 100644
+--- a/src/lib/istream-tee.c
++++ b/src/lib/istream-tee.c
+@@ -5,7 +5,6 @@
+ #include "istream-tee.h"
+ 
+ struct tee_istream {
+-	pool_t pool;
+ 	struct istream *input;
+ 	struct tee_child_istream *children;
+ 
+@@ -88,7 +87,7 @@ static void _destroy(struct _iostream *stream)
+ 			      tee->max_read_offset - tee->input->v_offset);
+ 
+ 		i_stream_unref(&tee->input);
+-		p_free(tee->pool, tee);
++		i_free(tee);
+ 	} else {
+ 		tee_streams_skip(tstream->tee);
+ 	}
+@@ -170,24 +169,22 @@ static void _sync(struct _istream *stream)
+ 	return i_stream_sync(tstream->tee->input);
+ }
+ 
+-struct tee_istream *tee_i_stream_create(struct istream *input, pool_t pool)
++struct tee_istream *tee_i_stream_create(struct istream *input)
+ {
+ 	struct tee_istream *tee;
+ 
+-	tee = p_new(pool, struct tee_istream, 1);
+-	tee->pool = pool;
++	tee = i_new(struct tee_istream, 1);
+ 	tee->input = input;
+ 
+ 	i_stream_ref(input);
+ 	return tee;
+ }
+ 
+-struct istream *
+-tee_i_stream_create_child(struct tee_istream *tee, pool_t pool)
++struct istream *tee_i_stream_create_child(struct tee_istream *tee)
+ {
+ 	struct tee_child_istream *tstream;
+ 
+-	tstream = p_new(pool, struct tee_child_istream, 1);
++	tstream = i_new(struct tee_child_istream, 1);
+ 	tstream->tee = tee;
+ 
+ 	tstream->istream.iostream.close = _close;
+@@ -202,6 +199,6 @@ tee_i_stream_create_child(struct tee_istream *tee, pool_t pool)
+ 	tstream->next = tee->children;
+ 	tee->children = tstream;
+ 
+-	return _i_stream_create(&tstream->istream, pool,
++	return _i_stream_create(&tstream->istream,
+ 				i_stream_get_fd(tee->input), 0);
+ }
+diff --git a/src/lib/istream-tee.h b/src/lib/istream-tee.h
+index 0e814cf..0ceeb6c 100644
+--- a/src/lib/istream-tee.h
++++ b/src/lib/istream-tee.h
+@@ -7,9 +7,8 @@
+ 
+    If the stream's buffer gets full because some child isn't consuming the
+    data, other streams get returned 0 by i_stream_read(). */
+-struct tee_istream *tee_i_stream_create(struct istream *input, pool_t pool);
++struct tee_istream *tee_i_stream_create(struct istream *input);
+ 
+-struct istream *
+-tee_i_stream_create_child(struct tee_istream *tee, pool_t pool);
++struct istream *tee_i_stream_create_child(struct tee_istream *tee);
+ 
+ #endif
+diff --git a/src/lib/istream.c b/src/lib/istream.c
+index 7b194c1..987a5fc 100644
+--- a/src/lib/istream.c
++++ b/src/lib/istream.c
+@@ -279,19 +279,15 @@ void _i_stream_grow_buffer(struct _istream *stream, size_t bytes)
+ 	stream->buffer_size = stream->pos + bytes;
+ 	if (stream->buffer_size <= I_STREAM_MIN_SIZE)
+ 		stream->buffer_size = I_STREAM_MIN_SIZE;
+-	else {
+-		stream->buffer_size =
+-			pool_get_exp_grown_size(stream->iostream.pool,
+-						old_size, stream->buffer_size);
+-	}
++	else
++		stream->buffer_size = nearest_power(stream->buffer_size);
+ 
+ 	if (stream->max_buffer_size > 0 &&
+ 	    stream->buffer_size > stream->max_buffer_size)
+ 		stream->buffer_size = stream->max_buffer_size;
+ 
+ 	stream->buffer = stream->w_buffer =
+-		p_realloc(stream->iostream.pool, stream->w_buffer,
+-			  old_size, stream->buffer_size);
++		i_realloc(stream->w_buffer, old_size, stream->buffer_size);
+ }
+ 
+ static void _set_max_buffer_size(struct _iostream *stream, size_t max_size)
+@@ -307,8 +303,8 @@ _stat(struct _istream *stream, bool exact __attr_unused__)
+ 	return &stream->statbuf;
+ }
+ 
+-struct istream *_i_stream_create(struct _istream *_stream, pool_t pool, int fd,
+-				 uoff_t abs_start_offset)
++struct istream *
++_i_stream_create(struct _istream *_stream, int fd, uoff_t abs_start_offset)
+ {
+ 	_stream->fd = fd;
+ 	_stream->abs_start_offset = abs_start_offset;
+@@ -325,7 +321,7 @@ struct istream *_i_stream_create(struct _istream *_stream, pool_t pool, int fd,
+ 		_stream->statbuf.st_mtime =
+ 		_stream->statbuf.st_ctime = ioloop_time;
+ 
+-	_io_stream_init(pool, &_stream->iostream);
++	_io_stream_init(&_stream->iostream);
+ 	return &_stream->istream;
+ }
+ 
+@@ -371,7 +367,7 @@ int main(void)
+ 	write(fd1, buf, sizeof(buf));
+ 
+ 	/* test reading */
+-	input = i_stream_create_file(fd1, default_pool, 512, FALSE);
++	input = i_stream_create_file(fd1, 512, FALSE);
+ 	i_assert(i_stream_get_size(input) == sizeof(buf));
+ 
+ 	i_assert(i_stream_read_data(input, &data, &size, 0) > 0);
+@@ -394,8 +390,8 @@ int main(void)
+ 	check_buffer(data, size, 900);
+ 
+ 	/* test moving data */
+-	output1 = o_stream_create_file(fd1, default_pool, 512, FALSE);
+-	output2 = o_stream_create_file(fd2, default_pool, 512, FALSE);
++	output1 = o_stream_create_file(fd1, 512, FALSE);
++	output2 = o_stream_create_file(fd2, 512, FALSE);
+ 
+ 	i_stream_seek(input, 1); size = sizeof(buf)-1;
+ 	i_assert(o_stream_send_istream(output2, input) == size);
+@@ -410,8 +406,7 @@ int main(void)
+ 	i_assert(o_stream_send_istream(output1, input) == sizeof(buf));
+ 
+ 	/* test moving with limits */
+-	l_input = i_stream_create_limit(default_pool, input,
+-					sizeof(buf)/2, 512);
++	l_input = i_stream_create_limit(input, sizeof(buf)/2, 512);
+ 	i_stream_seek(l_input, 0);
+ 	o_stream_seek(output1, 10);
+ 	i_assert(o_stream_send_istream(output1, l_input) == 512);
+diff --git a/src/lib/istream.h b/src/lib/istream.h
+index a08af7d..bdc1d12 100644
+--- a/src/lib/istream.h
++++ b/src/lib/istream.h
+@@ -18,14 +18,13 @@ struct istream {
+ 	struct _istream *real_stream;
+ };
+ 
+-struct istream *i_stream_create_file(int fd, pool_t pool,
+-				     size_t max_buffer_size, bool autoclose_fd);
+-struct istream *i_stream_create_mmap(int fd, pool_t pool, size_t block_size,
++struct istream *i_stream_create_file(int fd, size_t max_buffer_size,
++				     bool autoclose_fd);
++struct istream *i_stream_create_mmap(int fd, size_t block_size,
+ 				     uoff_t start_offset, uoff_t v_size,
+ 				     bool autoclose_fd);
+-struct istream *i_stream_create_from_data(pool_t pool, const void *data,
+-					  size_t size);
+-struct istream *i_stream_create_limit(pool_t pool, struct istream *input,
++struct istream *i_stream_create_from_data(const void *data, size_t size);
++struct istream *i_stream_create_limit(struct istream *input,
+ 				      uoff_t v_start_offset, uoff_t v_size);
+ 
+ /* i_stream_close() + i_stream_unref() */
+diff --git a/src/lib/macros.h b/src/lib/macros.h
+index 1f0705a..42152ec 100644
+--- a/src/lib/macros.h
++++ b/src/lib/macros.h
+@@ -15,6 +15,9 @@
+ #  define TRUE (!FALSE)
+ #endif
+ 
++#define N_ELEMENTS(arr) \
++	(sizeof(arr) / sizeof((arr)[0]))
++
+ #define BITS_IN_UINT (CHAR_BIT * sizeof(unsigned int))
+ #define BITS_IN_SIZE_T (CHAR_BIT * sizeof(size_t))
+ 
+diff --git a/src/lib/ostream-crlf.c b/src/lib/ostream-crlf.c
+index 9a11f94..1150a97 100644
+--- a/src/lib/ostream-crlf.c
++++ b/src/lib/ostream-crlf.c
+@@ -347,12 +347,11 @@ _send_istream(struct _ostream *outstream, struct istream *instream)
+ 	return sent == 0 && instream->stream_errno != 0 ? -1 : (ssize_t)sent;
+ }
+ 
+-static struct crlf_ostream *
+-o_stream_create_common(pool_t pool, struct ostream *output)
++static struct crlf_ostream *o_stream_create_common(struct ostream *output)
+ {
+ 	struct crlf_ostream *cstream;
+ 
+-	cstream = p_new(pool, struct crlf_ostream, 1);
++	cstream = i_new(struct crlf_ostream, 1);
+ 	cstream->output = output;
+ 	o_stream_ref(output);
+ 
+@@ -369,20 +368,20 @@ o_stream_create_common(pool_t pool, struct ostream *output)
+ 	return cstream;
+ }
+ 
+-struct ostream *o_stream_create_crlf(pool_t pool, struct ostream *output)
++struct ostream *o_stream_create_crlf(struct ostream *output)
+ {
+ 	struct crlf_ostream *cstream;
+ 
+-	cstream = o_stream_create_common(pool, output);
++	cstream = o_stream_create_common(output);
+ 	cstream->ostream.sendv = _sendv_crlf;
+-	return _o_stream_create(&cstream->ostream, pool);
++	return _o_stream_create(&cstream->ostream);
+ }
+ 
+-struct ostream *o_stream_create_lf(pool_t pool, struct ostream *output)
++struct ostream *o_stream_create_lf(struct ostream *output)
+ {
+ 	struct crlf_ostream *cstream;
+ 
+-	cstream = o_stream_create_common(pool, output);
++	cstream = o_stream_create_common(output);
+ 	cstream->ostream.sendv = _sendv_lf;
+-	return _o_stream_create(&cstream->ostream, pool);
++	return _o_stream_create(&cstream->ostream);
+ }
+diff --git a/src/lib/ostream-crlf.h b/src/lib/ostream-crlf.h
+index b6171a1..7fa38d7 100644
+--- a/src/lib/ostream-crlf.h
++++ b/src/lib/ostream-crlf.h
+@@ -2,8 +2,8 @@
+ #define __OSTREAM_CRLF_H
+ 
+ /* Replace all plain LFs with CRLF. */
+-struct ostream *o_stream_create_crlf(pool_t pool, struct ostream *output);
++struct ostream *o_stream_create_crlf(struct ostream *output);
+ /* Replace all CRLF pairs with plain LFs. */
+-struct ostream *o_stream_create_lf(pool_t pool, struct ostream *output);
++struct ostream *o_stream_create_lf(struct ostream *output);
+ 
+ #endif
+diff --git a/src/lib/ostream-file.c b/src/lib/ostream-file.c
+index 47c8887..31a2c59 100644
+--- a/src/lib/ostream-file.c
++++ b/src/lib/ostream-file.c
+@@ -78,7 +78,7 @@ static void _destroy(struct _iostream *stream)
+ {
+ 	struct file_ostream *fstream = (struct file_ostream *)stream;
+ 
+-	p_free(fstream->ostream.iostream.pool, fstream->buffer);
++	i_free(fstream->buffer);
+ }
+ 
+ static void _set_max_buffer_size(struct _iostream *stream, size_t max_size)
+@@ -322,9 +322,7 @@ static void o_stream_grow_buffer(struct file_ostream *fstream, size_t bytes)
+ {
+ 	size_t size, new_size, end_size;
+ 
+-	size = pool_get_exp_grown_size(fstream->ostream.iostream.pool,
+-				       fstream->buffer_size,
+-                                       fstream->buffer_size + bytes);
++	size = nearest_power(fstream->buffer_size + bytes);
+ 	if (size > fstream->max_buffer_size) {
+ 		/* limit the size */
+ 		size = fstream->max_buffer_size;
+@@ -339,8 +337,7 @@ static void o_stream_grow_buffer(struct file_ostream *fstream, size_t bytes)
+ 	if (size <= fstream->buffer_size)
+ 		return;
+ 
+-	fstream->buffer = p_realloc(fstream->ostream.iostream.pool,
+-				    fstream->buffer,
++	fstream->buffer = i_realloc(fstream->buffer,
+ 				    fstream->buffer_size, size);
+ 
+ 	if (fstream->tail <= fstream->head && !IS_STREAM_EMPTY(fstream)) {
+@@ -737,15 +734,14 @@ static off_t _send_istream(struct _ostream *outstream, struct istream *instream)
+ }
+ 
+ struct ostream *
+-o_stream_create_file(int fd, pool_t pool, size_t max_buffer_size,
+-		     bool autoclose_fd)
++o_stream_create_file(int fd, size_t max_buffer_size, bool autoclose_fd)
+ {
+ 	struct file_ostream *fstream;
+ 	struct ostream *ostream;
+ 	struct stat st;
+ 	off_t offset;
+ 
+-	fstream = p_new(pool, struct file_ostream, 1);
++	fstream = i_new(struct file_ostream, 1);
+ 	fstream->fd = fd;
+ 	fstream->max_buffer_size = max_buffer_size;
+ 	fstream->autoclose_fd = autoclose_fd;
+@@ -763,7 +759,7 @@ o_stream_create_file(int fd, pool_t pool, size_t max_buffer_size,
+ 	fstream->ostream.sendv = _sendv;
+ 	fstream->ostream.send_istream = _send_istream;
+ 
+-	ostream = _o_stream_create(&fstream->ostream, pool);
++	ostream = _o_stream_create(&fstream->ostream);
+ 
+ 	offset = lseek(fd, 0, SEEK_CUR);
+ 	if (offset >= 0) {
+diff --git a/src/lib/ostream-internal.h b/src/lib/ostream-internal.h
+index 30a6e8b..2c3ee09 100644
+--- a/src/lib/ostream-internal.h
++++ b/src/lib/ostream-internal.h
+@@ -26,6 +26,6 @@ struct _ostream {
+ 	void *context;
+ };
+ 
+-struct ostream *_o_stream_create(struct _ostream *_stream, pool_t pool);
++struct ostream *_o_stream_create(struct _ostream *_stream);
+ 
+ #endif
+diff --git a/src/lib/ostream.c b/src/lib/ostream.c
+index c7a3750..8d686b4 100644
+--- a/src/lib/ostream.c
++++ b/src/lib/ostream.c
+@@ -157,10 +157,10 @@ off_t o_stream_send_istream(struct ostream *outstream,
+ 	return ret;
+ }
+ 
+-struct ostream *_o_stream_create(struct _ostream *_stream, pool_t pool)
++struct ostream *_o_stream_create(struct _ostream *_stream)
+ {
+ 	_stream->ostream.real_stream = _stream;
+ 
+-	_io_stream_init(pool, &_stream->iostream);
++	_io_stream_init(&_stream->iostream);
+ 	return &_stream->ostream;
+ }
+diff --git a/src/lib/ostream.h b/src/lib/ostream.h
+index b81dca9..4917d90 100644
+--- a/src/lib/ostream.h
++++ b/src/lib/ostream.h
+@@ -24,8 +24,7 @@ typedef int stream_flush_callback_t(void *context);
+ /* Create new output stream from given file descriptor.
+    If max_buffer_size is 0, an "optimal" buffer size is used (max 128kB). */
+ struct ostream *
+-o_stream_create_file(int fd, pool_t pool, size_t max_buffer_size,
+-		     bool autoclose_fd);
++o_stream_create_file(int fd, size_t max_buffer_size, bool autoclose_fd);
+ 
+ /* o_stream_close() + o_stream_unref() */
+ void o_stream_destroy(struct ostream **stream);
+diff --git a/src/lib/unichar.c b/src/lib/unichar.c
+index fe54970..ea7ce80 100644
+--- a/src/lib/unichar.c
++++ b/src/lib/unichar.c
+@@ -2,8 +2,14 @@
+ 
+ #include "lib.h"
+ #include "buffer.h"
++#include "bsearch-insert-pos.h"
+ #include "unichar.h"
+ 
++#include "unicodemap.c"
++
++#define HANGUL_FIRST 0xac00
++#define HANGUL_LAST 0xd7a3
++
+ static const uint8_t utf8_non1_bytes[256 - 192 - 2] = {
+ 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+ 	3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,6,6,1,1
+@@ -164,3 +170,118 @@ unsigned int uni_utf8_strlen_n(const void *_input, size_t size)
+ 	}
+ 	return len;
+ }
++
++static bool uint16_find(const uint16_t *data, unsigned int count,
++			uint16_t value, unsigned int *idx_r)
++{
++	BINARY_NUMBER_SEARCH(data, count, value, idx_r);
++}
++
++static bool uint32_find(const uint32_t *data, unsigned int count,
++			uint32_t value, unsigned int *idx_r)
++{
++	BINARY_NUMBER_SEARCH(data, count, value, idx_r);
++}
++
++unichar_t uni_ucs4_to_titlecase(unichar_t chr)
++{
++	unsigned int idx;
++
++	if (chr <= 0xffff) {
++		if (!uint16_find(titlecase16_keys, N_ELEMENTS(titlecase16_keys),
++				 chr, &idx))
++			return chr;
++		else
++			return titlecase16_values[idx];
++	} else {
++		if (!uint32_find(titlecase32_keys, N_ELEMENTS(titlecase32_keys),
++				 chr, &idx))
++			return chr;
++		else
++			return titlecase32_values[idx];
++	}
++}
++
++static bool uni_ucs4_decompose_uni(unichar_t *chr)
++{
++	unsigned int idx;
++
++	if (*chr <= 0xffff) {
++		if (!uint16_find(uni16_decomp_keys,
++				 N_ELEMENTS(uni16_decomp_keys),
++				 *chr, &idx))
++			return FALSE;
++		*chr = uni16_decomp_values[idx];
++	} else {
++		if (!uint32_find(uni32_decomp_keys,
++				 N_ELEMENTS(uni32_decomp_keys),
++				 *chr, &idx))
++			return FALSE;
++		*chr = uni32_decomp_values[idx];
++	}
++	return TRUE;
++}
++
++static void uni_ucs4_decompose_hangul_utf8(unichar_t chr, buffer_t *output)
++{
++#define SBase HANGUL_FIRST
++#define LBase 0x1100 
++#define VBase 0x1161 
++#define TBase 0x11A7
++#define LCount 19 
++#define VCount 21
++#define TCount 28
++#define NCount (VCount * TCount)
++	unsigned int SIndex = chr - SBase;
++        unichar_t L = LBase + SIndex / NCount;
++        unichar_t V = VBase + (SIndex % NCount) / TCount;
++        unichar_t T = TBase + SIndex % TCount;
++
++	uni_ucs4_to_utf8_c(L, output);
++	uni_ucs4_to_utf8_c(V, output);
++	if (T != TBase) uni_ucs4_to_utf8_c(T, output);
++}
++
++static bool uni_ucs4_decompose_multi_utf8(unichar_t chr, buffer_t *output)
++{
++	const uint16_t *value;
++	unsigned int idx;
++
++	if (chr > 0xffff)
++		return FALSE;
++
++	if (!uint16_find(multidecomp_keys, N_ELEMENTS(multidecomp_keys),
++			 chr, &idx))
++		return FALSE;
++
++	value = &multidecomp_values[multidecomp_offsets[idx]];
++	for (; *value != 0; value++)
++		uni_ucs4_to_utf8_c(*value, output);
++	return TRUE;
++}
++
++int uni_utf8_to_decomposed_titlecase(const void *_input, size_t max_len,
++				     buffer_t *output)
++{
++	const unsigned char *input = _input;
++	unsigned int bytes;
++	unichar_t chr;
++
++	while (max_len > 0 && *input != '\0') {
++		if (uni_utf8_get_char_n(input, max_len, &chr) <= 0) {
++			/* invalid input */
++			return -1;
++		}
++		bytes = uni_utf8_char_bytes(*input);
++		input += bytes;
++		max_len -= bytes;
++
++		chr = uni_ucs4_to_titlecase(chr);
++		if (chr >= HANGUL_FIRST && chr <= HANGUL_LAST)
++			uni_ucs4_decompose_hangul_utf8(chr, output);
++		else if (uni_ucs4_decompose_uni(&chr) ||
++			 !uni_ucs4_decompose_multi_utf8(chr, output))
++			uni_ucs4_to_utf8_c(chr, output);
++	}
++	return 0;
++}
+diff --git a/src/lib/unichar.h b/src/lib/unichar.h
+index 78b8af5..412f061 100644
+--- a/src/lib/unichar.h
++++ b/src/lib/unichar.h
+@@ -31,4 +31,13 @@ static inline unsigned int uni_utf8_char_bytes(char chr)
+ 	return uni_utf8_non1_bytes[(uint8_t)chr - (192 + 2)];
+ }
+ 
++/* Return given character in titlecase. */
++unichar_t uni_ucs4_to_titlecase(unichar_t chr);
++
++/* Convert UTF-8 input to titlecase and decompose the titlecase characters to
++   output buffer. Returns 0 if ok, -1 if input was invalid. This generates
++   output that's compatible with i;unicode-casemap comparator. */
++int uni_utf8_to_decomposed_titlecase(const void *input, size_t max_len,
++				     buffer_t *output);
++
+ #endif
+diff --git a/src/lib/unicodemap.pl b/src/lib/unicodemap.pl
+new file mode 100755
+index 0000000..93bdfb3
+--- /dev/null
++++ b/src/lib/unicodemap.pl
+@@ -0,0 +1,134 @@
++#!/usr/bin/env perl
++use strict;
++
++my (@titlecase16_keys, @titlecase16_values);
++my (@titlecase32_keys, @titlecase32_values);
++my (@uni16_decomp_keys, @uni16_decomp_values);
++my (@uni32_decomp_keys, @uni32_decomp_values);
++my (@multidecomp_keys, @multidecomp_offsets, @multidecomp_values);
++while (<>) {
++  chomp $_;
++  my @arr = split(";");
++  my $code = eval("0x".$arr[0]);
++  my $decomp = $arr[5];
++  my $titlecode = $arr[14];
++  
++  if ($titlecode ne "") {
++    # titlecase mapping
++    my $value = eval("0x$titlecode");
++    if ($value == $code) { 
++      # the same character, ignore
++    } elsif ($code <= 0xffff && $value <= 0xffff) {
++      push @titlecase16_keys, $code;
++      push @titlecase16_values, $value;
++    } else {
++      push @titlecase32_keys, $code;
++      push @titlecase32_values, $value;
++    }
++  } elsif ($decomp =~ /\<[^>]*> (.+)/) {
++    # decompositions
++    my $decomp_codes = $1;
++    if ($decomp_codes =~ /^([0-9A-Z]*)$/i) {
++      # unicharacter decomposition. use separate lists for this
++      my $value = eval("0x$1");
++      if ($value > 0xffff) {
++	print STDERR "We've assumed decomposition codes are max. 16bit\n";
++	exit;
++      }
++      if ($code <= 0xffff) {
++	push @uni16_decomp_keys, $code;
++	push @uni16_decomp_values, $value;
++      } else {
++	push @uni32_decomp_keys, $code;
++	push @uni32_decomp_values, $value;
++      }
++    } else {
++      # multicharacter decomposition.
++      if ($code > 0xffff) {
++	print STDERR "We've assumed multi-decomposition key codes are max. 16bit\n";
++	exit;
++      }
++      
++      push @multidecomp_keys, $code;
++      push @multidecomp_offsets, scalar(@multidecomp_values);
++
++      foreach my $dcode (split(" ", $decomp_codes)) {
++	my $value = eval("0x$dcode");
++	if ($value > 0xffff) {
++	  print STDERR "We've assumed decomposition codes are max. 16bit\n";
++	  exit;
++	}
++	push @multidecomp_values, $value;
++      }
++      push @multidecomp_values, 0;
++    }
++  }
++}
++
++sub print_list {
++  my @list = @{$_[0]};
++  
++  my $last = $#list;
++  my $n = 0;
++  foreach my $key (@list) {
++    printf("0x%04x", $key);
++    last if ($n == $last);
++    print ",";
++    
++    $n++;
++    if (($n % 8) == 0) {
++      print "\n\t";
++    } else {
++      print " ";
++    }
++  }
++}
++
++print "/* This file is automatically generated by unicodemap.pl from UnicodeData.txt
++
++   NOTE: decompositions for characters having titlecase characters
++   are not included, because we first translate everything to titlecase */\n";
++
++print "static uint16_t titlecase16_keys[] = {\n\t";
++print_list(\@titlecase16_keys);
++print "\n};\n";
++
++print "static uint16_t titlecase16_values[] = {\n\t";
++print_list(\@titlecase16_values);
++print "\n};\n";
++
++print "static uint32_t titlecase32_keys[] = {\n\t";
++print_list(\@titlecase32_keys);
++print "\n};\n";
++
++print "static uint32_t titlecase32_values[] = {\n\t";
++print_list(\@titlecase32_values);
++print "\n};\n";
++
++print "static uint16_t uni16_decomp_keys[] = {\n\t";
++print_list(\@uni16_decomp_keys);
++print "\n};\n";
++
++print "static uint16_t uni16_decomp_values[] = {\n\t";
++print_list(\@uni16_decomp_values);
++print "\n};\n";
++
++print "static uint32_t uni32_decomp_keys[] = {\n\t";
++print_list(\@uni32_decomp_keys);
++print "\n};\n";
++
++print "static uint16_t uni32_decomp_values[] = {\n\t";
++print_list(\@uni32_decomp_values);
++print "\n};\n";
++
++print "static uint16_t multidecomp_keys[] = {\n\t";
++print_list(\@multidecomp_keys);
++print "\n};\n";
++
++print "static uint16_t multidecomp_offsets[] = {\n\t";
++print_list(\@multidecomp_offsets);
++print "\n};\n";
++
++print "static uint16_t multidecomp_values[] = {\n\t";
++print_list(\@multidecomp_values);
++print "\n};\n";
+diff --git a/src/login-common/login-proxy.c b/src/login-common/login-proxy.c
+index b7e3420..22d3fdb 100644
+--- a/src/login-common/login-proxy.c
++++ b/src/login-common/login-proxy.c
+@@ -121,11 +121,10 @@ static void proxy_wait_connect(struct login_proxy *proxy)
+ 
+ 	/* connect successful */
+ 	proxy->server_input =
+-		i_stream_create_file(proxy->server_fd, default_pool,
+-				     MAX_PROXY_INPUT_SIZE, FALSE);
++		i_stream_create_file(proxy->server_fd, MAX_PROXY_INPUT_SIZE,
++				     FALSE);
+ 	proxy->server_output =
+-		o_stream_create_file(proxy->server_fd, default_pool,
+-				     (size_t)-1, FALSE);
++		o_stream_create_file(proxy->server_fd, (size_t)-1, FALSE);
+ 
+ 	io_remove(&proxy->server_io);
+ 	proxy->server_io =
+diff --git a/src/login-common/master.c b/src/login-common/master.c
+index 9a0af95..f2ae8dd 100644
+--- a/src/login-common/master.c
++++ b/src/login-common/master.c
+@@ -165,7 +165,7 @@ static void master_read_env(int fd)
+ 	env_clean();
+ 
+ 	/* read environment variable lines until empty line comes */
+-	input = i_stream_create_file(fd, default_pool, 8192, FALSE);
++	input = i_stream_create_file(fd, 8192, FALSE);
+ 	do {
+ 		switch (i_stream_read(input)) {
+ 		case -1:
+diff --git a/src/master/auth-process.c b/src/master/auth-process.c
+index adeba9a..faa35b5 100644
+--- a/src/master/auth-process.c
++++ b/src/master/auth-process.c
+@@ -297,10 +297,8 @@ auth_process_new(pid_t pid, int fd, struct auth_process_group *group)
+ 	p->pid = pid;
+ 	p->fd = fd;
+ 	p->io = io_add(fd, IO_READ, auth_process_input, p);
+-	p->input = i_stream_create_file(fd, default_pool,
+-					MAX_INBUF_SIZE, FALSE);
+-	p->output = o_stream_create_file(fd, default_pool, MAX_OUTBUF_SIZE,
+-					 FALSE);
++	p->input = i_stream_create_file(fd, MAX_INBUF_SIZE, FALSE);
++	p->output = o_stream_create_file(fd, MAX_OUTBUF_SIZE, FALSE);
+ 	p->requests = hash_create(default_pool, default_pool, 0, NULL, NULL);
+ 
+ 	group->process_count++;
+diff --git a/src/master/log.c b/src/master/log.c
+index a43b72c..9ecfb8f 100644
+--- a/src/master/log.c
++++ b/src/master/log.c
+@@ -179,7 +179,7 @@ int log_create_pipe(struct log_io **log_r, unsigned int max_lines_per_sec)
+ 
+ 	log_io = i_new(struct log_io, 1);
+ 	log_io->refcount = 1;
+-	log_io->stream = i_stream_create_file(fd[0], default_pool, 1024, TRUE);
++	log_io->stream = i_stream_create_file(fd[0], 1024, TRUE);
+ 	log_io->max_lines_per_sec =
+ 		max_lines_per_sec != 0 ? max_lines_per_sec : (unsigned int)-1;
+ 
+diff --git a/src/master/login-process.c b/src/master/login-process.c
+index 2b33625..46e0d5f 100644
+--- a/src/master/login-process.c
++++ b/src/master/login-process.c
+@@ -449,7 +449,7 @@ login_process_new(struct login_group *group, pid_t pid, int fd)
+ 	p->pid = pid;
+ 	p->fd = fd;
+ 	p->io = io_add(fd, IO_READ, login_process_input, p);
+-	p->output = o_stream_create_file(fd, default_pool,
++	p->output = o_stream_create_file(fd,
+ 					 sizeof(struct master_login_reply)*10,
+ 					 FALSE);
+ 	child_process_add(pid, &p->process);
+diff --git a/src/master/mail-process.c b/src/master/mail-process.c
+index e770314..3a695ce 100644
+--- a/src/master/mail-process.c
++++ b/src/master/mail-process.c
+@@ -124,6 +124,7 @@ static bool validate_uid_gid(struct settings *set, uid_t uid, gid_t gid,
+ 		i_error("Logins with login process UID %s (user %s) "
+ 			"not permitted (see login_user in config file).",
+ 			dec2str(uid), user);
++		return FALSE;
+ 	}
+ 
+ 	if (uid < (uid_t)set->first_valid_uid ||
+diff --git a/src/plugins/acl/acl-backend-vfile-acllist.c b/src/plugins/acl/acl-backend-vfile-acllist.c
+index 1b7f64b..41b0110 100644
+--- a/src/plugins/acl/acl-backend-vfile-acllist.c
++++ b/src/plugins/acl/acl-backend-vfile-acllist.c
+@@ -83,7 +83,7 @@ static int acl_backend_vfile_acllist_read(struct acl_backend_vfile *backend)
+ 	backend->acllist_mtime = st.st_mtime;
+ 	acllist_clear(backend, st.st_size);
+ 
+-	input = i_stream_create_file(fd, default_pool, (size_t)-1, FALSE);
++	input = i_stream_create_file(fd, (size_t)-1, FALSE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		acllist.mtime = 0;
+ 		for (p = line; *p >= '0' && *p <= '9'; p++)
+@@ -208,7 +208,7 @@ int acl_backend_vfile_acllist_rebuild(struct acl_backend_vfile *backend)
+ 	fd = safe_mkstemp(path, mode, uid, gid);
+ 	if (fd == -1)
+ 		return -1;
+-	output = o_stream_create_file(fd, default_pool, 0, FALSE);
++	output = o_stream_create_file(fd, 0, FALSE);
+ 
+ 	ret = 0;
+ 	acllist_clear(backend, 0);
+diff --git a/src/plugins/acl/acl-backend-vfile.c b/src/plugins/acl/acl-backend-vfile.c
+index c1be2e3..2c784a7 100644
+--- a/src/plugins/acl/acl-backend-vfile.c
++++ b/src/plugins/acl/acl-backend-vfile.c
+@@ -345,7 +345,7 @@ acl_backend_vfile_read(struct acl_object_vfile *aclobj, const char *path,
+ 	if (aclobj->aclobj.backend->debug)
+ 		i_info("acl vfile: reading file %s", path);
+ 
+-	input = i_stream_create_file(fd, default_pool, 4096, FALSE);
++	input = i_stream_create_file(fd, 4096, FALSE);
+ 
+ 	if (!array_is_created(&aclobj->rights)) {
+ 		aclobj->rights_pool =
+diff --git a/src/plugins/expire/auth-client.c b/src/plugins/expire/auth-client.c
+index 9011564..9511888 100644
+--- a/src/plugins/expire/auth-client.c
++++ b/src/plugins/expire/auth-client.c
+@@ -46,10 +46,8 @@ static int auth_connection_connect(struct auth_connection *conn)
+ 	}
+ 
+ 	conn->fd = fd;
+-	conn->input =
+-		i_stream_create_file(fd, default_pool, MAX_INBUF_SIZE, FALSE);
+-	conn->output =
+-		o_stream_create_file(fd, default_pool, MAX_OUTBUF_SIZE, FALSE);
++	conn->input = i_stream_create_file(fd, MAX_INBUF_SIZE, FALSE);
++	conn->output = o_stream_create_file(fd, MAX_OUTBUF_SIZE, FALSE);
+ 	conn->io = io_add(fd, IO_READ, auth_input, conn);
+ 
+ 	o_stream_send_str(conn->output, "VERSION\t1\t0\n");
+diff --git a/src/plugins/fts-squat/squat-test.c b/src/plugins/fts-squat/squat-test.c
+index 61bed52..f520945 100644
+--- a/src/plugins/fts-squat/squat-test.c
++++ b/src/plugins/fts-squat/squat-test.c
+@@ -59,7 +59,7 @@ int main(int argc __attr_unused__, char *argv[])
+ 		return 1;
+ 
+ 	build_ctx = squat_trie_build_init(trie, &last_uid);
+-	input = i_stream_create_file(fd, default_pool, 0, FALSE);
++	input = i_stream_create_file(fd, 0, FALSE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		if (last != input->v_offset/(1024*100)) {
+ 			fprintf(stderr, "\r%ukB", (unsigned)(input->v_offset/1024));
+diff --git a/src/plugins/fts-squat/squat-trie.c b/src/plugins/fts-squat/squat-trie.c
+index 7c49497..0a4f466 100644
+--- a/src/plugins/fts-squat/squat-trie.c
++++ b/src/plugins/fts-squat/squat-trie.c
+@@ -1474,7 +1474,7 @@ trie_nodes_write(struct squat_trie_build_context *ctx, uint32_t *uidvalidity_r)
+ 		return -1;
+ 	}
+ 
+-	ctx->output = o_stream_create_file(trie->fd, default_pool, 0, FALSE);
++	ctx->output = o_stream_create_file(trie->fd, 0, FALSE);
+ 	o_stream_cork(ctx->output);
+ 	if (hdr.used_file_size == 0) {
+ 		o_stream_send(ctx->output, &hdr, sizeof(hdr));
+@@ -1799,7 +1799,7 @@ static int squat_trie_compress_init(struct squat_trie_compress_context *ctx,
+ 	}
+ 
+ 	ctx->trie = trie;
+-	ctx->output = o_stream_create_file(ctx->fd, default_pool, 0, FALSE);
++	ctx->output = o_stream_create_file(ctx->fd, 0, FALSE);
+ 	ctx->node_count = trie->hdr->node_count;
+ 
+ 	/* write a dummy header first */
+diff --git a/src/plugins/fts-squat/squat-uidlist.c b/src/plugins/fts-squat/squat-uidlist.c
+index 6d4d56a..50e9fb1 100644
+--- a/src/plugins/fts-squat/squat-uidlist.c
++++ b/src/plugins/fts-squat/squat-uidlist.c
+@@ -580,8 +580,7 @@ static int squat_uidlist_write_init(struct squat_uidlist *uidlist)
+ 			return -1;
+ 	}
+ 
+-	uidlist->output = o_stream_create_file(uidlist->fd, default_pool,
+-					       0, FALSE);
++	uidlist->output = o_stream_create_file(uidlist->fd, 0, FALSE);
+ 	o_stream_cork(uidlist->output);
+ 	if (uidlist->hdr.used_file_size < sizeof(uidlist->hdr)) {
+ 		/* creating a new file, write a dummy header */
+@@ -761,7 +760,7 @@ squat_uidlist_compress_begin(struct squat_uidlist *uidlist,
+ 		ctx->failed = TRUE;
+ 		i_error("open(%s) failed: %m", ctx->tmp_path);
+ 	} else {
+-		ctx->output = o_stream_create_file(fd, default_pool, 0, TRUE);
++		ctx->output = o_stream_create_file(fd, 0, TRUE);
+ 		o_stream_send(ctx->output, &ctx->hdr, sizeof(ctx->hdr));
+ 	}
+ 
+diff --git a/src/plugins/fts/fts-storage.c b/src/plugins/fts/fts-storage.c
+index 3cd1fab..a0f62e1 100644
+--- a/src/plugins/fts/fts-storage.c
++++ b/src/plugins/fts/fts-storage.c
+@@ -176,7 +176,7 @@ static int fts_build_mail(struct fts_storage_build_context *ctx)
+ 	parser = message_parser_init(pool_datastack_create(), input,
+ 				     MESSAGE_HEADER_PARSER_FLAG_CLEAN_ONELINE,
+ 				     0);
+-	decoder = message_decoder_init_ucase();
++	decoder = message_decoder_init(TRUE);
+ 	for (;;) {
+ 		ret = message_parser_parse_next_block(parser, &raw_block);
+ 		i_assert(ret != 0);
+diff --git a/src/plugins/trash/trash-plugin.c b/src/plugins/trash/trash-plugin.c
+index a5dcd02..e1c15ba 100644
+--- a/src/plugins/trash/trash-plugin.c
++++ b/src/plugins/trash/trash-plugin.c
+@@ -262,7 +262,7 @@ static int read_configuration(const char *path)
+ 	p_clear(config_pool);
+ 	p_array_init(&trash_boxes, config_pool, INIT_TRASH_MAILBOX_COUNT);
+ 
+-	input = i_stream_create_file(fd, default_pool, (size_t)-1, FALSE);
++	input = i_stream_create_file(fd, (size_t)-1, FALSE);
+ 	while ((line = i_stream_read_next_line(input)) != NULL) {
+ 		/* <priority> <mailbox name> */
+ 		name = strchr(line, ' ');
+diff --git a/src/plugins/zlib/istream-zlib.c b/src/plugins/zlib/istream-zlib.c
+index 06b7b75..c93bca7 100644
+--- a/src/plugins/zlib/istream-zlib.c
++++ b/src/plugins/zlib/istream-zlib.c
+@@ -35,7 +35,7 @@ static void _destroy(struct _iostream *stream __attr_unused__)
+ {
+ 	struct _istream *_stream = (struct _istream *) stream;
+ 
+-	p_free(_stream->iostream.pool, _stream->w_buffer);
++	i_free(_stream->w_buffer);
+ }
+ 
+ static ssize_t _read(struct _istream *stream)
+@@ -193,12 +193,12 @@ static void _sync(struct _istream *stream)
+ 	zstream->cached_size = (uoff_t)-1;
+ }
+ 
+-struct istream *i_stream_create_zlib(int fd, pool_t pool)
++struct istream *i_stream_create_zlib(int fd)
+ {
+ 	struct zlib_istream *zstream;
+ 	struct stat st;
+ 
+-	zstream = p_new(pool, struct zlib_istream, 1);
++	zstream = i_new(struct zlib_istream, 1);
+ 	zstream->fd = fd;
+ 	zstream->file = gzdopen(fd, "r");
+ 	zstream->cached_size = (uoff_t)-1;
+@@ -218,5 +218,5 @@ struct istream *i_stream_create_zlib(int fd, pool_t pool)
+ 		zstream->istream.istream.seekable = TRUE;
+ 	}
+ 
+-	return _i_stream_create(&zstream->istream, pool, fd, 0);
++	return _i_stream_create(&zstream->istream, fd, 0);
+ }
+diff --git a/src/plugins/zlib/istream-zlib.h b/src/plugins/zlib/istream-zlib.h
+index 88b3735..697c2ce 100644
+--- a/src/plugins/zlib/istream-zlib.h
++++ b/src/plugins/zlib/istream-zlib.h
+@@ -1,6 +1,6 @@
+ #ifndef __ISTREAM_ZLIB_H
+ #define __ISTREAM_ZLIB_H
+ 
+-struct istream *i_stream_create_zlib(int fd, pool_t pool);
++struct istream *i_stream_create_zlib(int fd);
+ 
+ #endif
+diff --git a/src/plugins/zlib/zlib-plugin.c b/src/plugins/zlib/zlib-plugin.c
+index 97cab54..549dfc4 100644
+--- a/src/plugins/zlib/zlib-plugin.c
++++ b/src/plugins/zlib/zlib-plugin.c
+@@ -41,10 +41,8 @@ zlib_mailbox_open(struct mail_storage *storage, const char *name,
+ 			int fd;
+ 
+ 			fd = open(path, O_RDONLY);
+-			if (fd != -1) {
+-				input = zlib_input =
+-					i_stream_create_zlib(fd, default_pool);
+-			}
++			if (fd != -1)
++				input = zlib_input = i_stream_create_zlib(fd);
+ 		}
+ 	}
+ 
+diff --git a/src/pop3-login/client.c b/src/pop3-login/client.c
+index 040b6b9..3f5dc1c 100644
+--- a/src/pop3-login/client.c
++++ b/src/pop3-login/client.c
+@@ -65,10 +65,8 @@ static void client_set_title(struct pop3_client *client)
+ 
+ static void client_open_streams(struct pop3_client *client, int fd)
+ {
+-	client->input = i_stream_create_file(fd, default_pool,
+-					     MAX_INBUF_SIZE, FALSE);
+-	client->output = o_stream_create_file(fd, default_pool,
+-					      MAX_OUTBUF_SIZE, FALSE);
++	client->input = i_stream_create_file(fd, MAX_INBUF_SIZE, FALSE);
++	client->output = o_stream_create_file(fd, MAX_OUTBUF_SIZE, FALSE);
+ }
+ 
+ static void client_start_tls(struct pop3_client *client)
+diff --git a/src/pop3/client.c b/src/pop3/client.c
+index 10e96cb..3efc9e9 100644
+--- a/src/pop3/client.c
++++ b/src/pop3/client.c
+@@ -140,10 +140,8 @@ struct client *client_create(int fd_in, int fd_out,
+ 	client = i_new(struct client, 1);
+ 	client->fd_in = fd_in;
+ 	client->fd_out = fd_out;
+-	client->input = i_stream_create_file(fd_in, default_pool,
+-					     MAX_INBUF_SIZE, FALSE);
+-	client->output = o_stream_create_file(fd_out, default_pool,
+-					      (size_t)-1, FALSE);
++	client->input = i_stream_create_file(fd_in, MAX_INBUF_SIZE, FALSE);
++	client->output = o_stream_create_file(fd_out, (size_t)-1, FALSE);
+ 	o_stream_set_flush_callback(client->output, client_output, client);
+ 
+ 	client->io = io_add(fd_in, IO_READ, client_input, client);
+diff --git a/src/util/rawlog.c b/src/util/rawlog.c
+index ae89533..097f3f4 100644
+--- a/src/util/rawlog.c
++++ b/src/util/rawlog.c
+@@ -240,19 +240,16 @@ rawlog_proxy_create(int client_in_fd, int client_out_fd, int server_fd,
+ 	proxy = i_new(struct rawlog_proxy, 1);
+ 	proxy->server_fd = server_fd;
+ 	proxy->server_input =
+-		i_stream_create_file(server_fd, default_pool,
+-				     MAX_PROXY_INPUT_SIZE, FALSE);
++		i_stream_create_file(server_fd, MAX_PROXY_INPUT_SIZE, FALSE);
+ 	proxy->server_output =
+-		o_stream_create_file(server_fd, default_pool,
+-				     (size_t)-1, FALSE);
++		o_stream_create_file(server_fd, (size_t)-1, FALSE);
+ 	proxy->server_io = io_add(server_fd, IO_READ, server_input, proxy);
+ 	o_stream_set_flush_callback(proxy->server_output, server_output, proxy);
+ 
+ 	proxy->client_in_fd = client_in_fd;
+ 	proxy->client_out_fd = client_out_fd;
+ 	proxy->client_output =
+-		o_stream_create_file(client_out_fd, default_pool,
+-				     (size_t)-1, FALSE);
++		o_stream_create_file(client_out_fd, (size_t)-1, FALSE);
+ 	proxy->client_io = io_add(proxy->client_in_fd, IO_READ,
+ 				  client_input, proxy);
+ 	o_stream_set_flush_callback(proxy->client_output, client_output, proxy);
