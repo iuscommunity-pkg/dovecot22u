@@ -1,10 +1,10 @@
-%define dovecot_hg a744ae38a9e1
+#%define dovecot_hg a744ae38a9e1
 %define sieve_hg 131e25f6862b
-%define upstream 1.1.alpha1
+%define upstream 1.1.alpha2
 %define sieve_upstream 1.1-%{sieve_hg}
 %define pkg_version 1.1
-%define my_release 14.6
-%define pkg_release %{my_release}.hg.%{dovecot_hg}%{?dist}
+%define my_release 15
+%define pkg_release %{my_release}.alpha2%{?dist}
 %define pkg_sieve_version 1.1
 %define pkg_sieve_release %{my_release}.hg.%{sieve_hg}%{?dist}
 
@@ -18,6 +18,8 @@ Group: System Environment/Daemons
 %define build_postgres 1
 %define build_mysql 1
 %define build_sqlite 1
+%define build_ldap 1
+%define build_gssapi 1
 
 %define build_sieve 1
 %define sieve_name dovecot-sieve
@@ -35,9 +37,8 @@ Patch100: dovecot-1.1.alpha1-default-settings.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
-Patch106: dovecot-1.1.alpha1-split.patch
 Patch107: dovecot-1.1-unicodedata.patch
-Patch200: dovecot-%{dovecot_hg}.patch
+#Patch200: dovecot-%{dovecot_hg}.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -46,14 +47,12 @@ Patch200: dovecot-%{dovecot_hg}.patch
 URL: http://www.dovecot.org/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: openssl-devel
-BuildRequires: openldap-devel
 BuildRequires: pam-devel
 BuildRequires: pkgconfig
 BuildRequires: zlib-devel
 BuildRequires: libtool
 BuildRequires: autoconf
 BuildRequires: automake
-BuildRequires: krb5-devel
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
@@ -77,6 +76,14 @@ BuildRequires: mysql-devel
 BuildRequires: sqlite-devel
 %endif
 
+%if %{build_ldap}
+BuildRequires: openldap-devel
+%endif
+
+%if %{build_gssapi}
+BuildRequires: krb5-devel
+%endif
+
 %define docdir %{_docdir}/%{name}
 %define ssldir %{_sysconfdir}/pki/%{name}
 %define restart_flag /var/run/%{name}-restart-after-rpm-install
@@ -87,6 +94,8 @@ BuildRequires: sqlite-devel
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
 primarily in mind.  It also contains a small POP3 server.  It supports mail 
 in either of maildir or mbox formats.
+
+The SQL drivers and authentication plugins are in their subpackages.
 
 
 %if %{build_sieve}
@@ -133,6 +142,24 @@ Group: System Environment/Daemons
 This package provides the SQLite backend for dovecot-auth etc.
 %endif
 
+%if %{build_ldap}
+%package ldap
+Requires: %{name} = %{version}-%{release}
+Summary: LDAP auth plugin for dovecot
+Group: System Environment/Daemons
+%description ldap
+This package provides the LDAP auth plugin for dovecot-auth etc.
+%endif
+
+%if %{build_gssapi}
+%package gssapi
+Requires: %{name} = %{version}-%{release}
+Summary: GSSAPI auth mechanism plugin for dovecot
+Group: System Environment/Daemons
+%description gssapi
+This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
+%endif
+
 
 %prep
 
@@ -143,9 +170,7 @@ This package provides the SQLite backend for dovecot-auth etc.
 %patch103 -p1 -b .mkcert-permissions
 %patch105 -p1 -b .mkcert-paths
 %patch107 -p1 -b .unicodedata
-%patch200 -p1 -b .%{dovecot_hg}
-
-%patch106 -p1 -b .split
+#%patch200 -p1 -b .%{dovecot_hg}
 
 %if %{build_sieve}
 %setup -q -n %{name}-%{upstream} -D -T -a 8
@@ -167,12 +192,16 @@ autoreconf -i
 %if %{build_sqlite}
     --with-sqlite                \
 %endif
-    --with-dynamic-sql           \
+    --with-sql=plugin            \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
-    --with-ldap                  \
+%if %{build_ldap}
+    --with-ldap=plugin           \
+%endif
     --with-inotify               \
-    --with-gssapi
+%if %{build_gssapi}
+    --with-gssapi=plugin
+%endif
 
 make
 
@@ -256,7 +285,7 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/%{name}/dovecot-config
 (
     find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -type d | sed -e "s|^|%dir |";
     find ${RPM_BUILD_ROOT}/%{_libdir}/%{name} -! -type d | \
-	grep -v 'lib90_cmusieve_plugin.so\|libdriver_.*.so';
+	grep -v 'lib90_cmusieve_plugin\.so\|libdriver_.*\.so\|libauthdb_.*\.so\|libmech_.*\.so';
 ) | sed -e "s|$RPM_BUILD_ROOT||" >libs.filelist
 
 %pre
@@ -340,25 +369,45 @@ rm -rf $RPM_BUILD_ROOT
 %if %{build_mysql}
 %files mysql
 %{_libdir}/%{name}/sql/libdriver_mysql.so
+%{_libdir}/%{name}/auth/libdriver_mysql.so
+%{_libdir}/%{name}/dict/libdriver_mysql.so
 %endif
 
 %if %{build_postgres}
 %files pgsql
 %{_libdir}/%{name}/sql/libdriver_pgsql.so
+%{_libdir}/%{name}/auth/libdriver_pgsql.so
+%{_libdir}/%{name}/dict/libdriver_pgsql.so
 %endif
 
 %if %{build_sqlite}
 %files sqlite
 %{_libdir}/%{name}/sql/libdriver_sqlite.so
+%{_libdir}/%{name}/auth/libdriver_sqlite.so
+%{_libdir}/%{name}/dict/libdriver_sqlite.so
+%endif
+
+%if %{build_ldap}
+%files ldap
+%{_libdir}/%{name}/auth/libauthdb_ldap.so
+%endif
+
+%if %{build_gssapi}
+%files gssapi
+%{_libdir}/%{name}/auth/libmech_gssapi.so
 %endif
 
 %changelog
+* Fri Aug 10 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-15.alpha2
+- updated to latest upstream alpha
+- split ldap and gssapi plugins to subpackages
+
 * Wed Jul 25 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-14.6.hg.a744ae38a9e1
 - update to a744ae38a9e1 from hg
 - update dovecot-sieve to 131e25f6862b from hg and enable it again
 
 * Thu Jul 19 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-14.5.alpha1
-- update to latest upstream beta
+- update to latest upstream alpha
 - don't build dovecot-sieve, it's only for 1.0
 
 * Sun Jul 15 2007 Tomas Janousek <tjanouse@redhat.com> - 1.0.2-13.5
