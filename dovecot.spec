@@ -101,13 +101,13 @@ The SQL drivers and authentication plugins are in their subpackages.
 %if %{build_sieve}
 %package sieve
 Requires: %{name} = %{version}-%{release}
-Summary: CMU Cieve plugin for dovecot LDA
+Summary: CMU Sieve plugin for dovecot LDA
 Group: System Environment/Daemons
 Version: %{pkg_sieve_version}
 Release: %{pkg_sieve_release}
 
 %description sieve
-This package provides the CMU Cieve plugin for dovecot LDA.
+This package provides the CMU Sieve plugin for dovecot LDA.
 %endif
 
 
