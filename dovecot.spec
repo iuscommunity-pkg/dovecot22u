@@ -1,10 +1,10 @@
 #%define dovecot_hg a744ae38a9e1
-%define sieve_hg 131e25f6862b
-%define upstream 1.1.alpha2
+%define sieve_hg 0367450c9382
+%define upstream 1.1.alpha3
 %define sieve_upstream 1.1-%{sieve_hg}
 %define pkg_version 1.1
-%define my_release 15
-%define pkg_release %{my_release}.alpha2%{?dist}
+%define my_release 16
+%define pkg_release %{my_release}.alpha3%{?dist}
 %define pkg_sieve_version 1.1
 %define pkg_sieve_release %{my_release}.hg.%{sieve_hg}%{?dist}
 
@@ -398,6 +398,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Aug 13 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-16.alpha3
+- updated to latest upstream alpha
+- update dovecot-sieve to 0367450c9382 from hg
+
 * Fri Aug 10 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-15.alpha2
 - updated to latest upstream alpha
 - split ldap and gssapi plugins to subpackages
