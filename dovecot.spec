@@ -3,7 +3,7 @@
 %define upstream 1.1.alpha3
 %define sieve_upstream 1.1-%{sieve_hg}
 %define pkg_version 1.1
-%define my_release 16
+%define my_release 16.1
 %define pkg_release %{my_release}.alpha3%{?dist}
 %define pkg_sieve_version 1.1
 %define pkg_sieve_release %{my_release}.hg.%{sieve_hg}%{?dist}
@@ -12,7 +12,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Version: %{pkg_version}
 Release: %{pkg_release}
-License: LGPL
+License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
 %define build_postgres 1
@@ -105,6 +105,7 @@ Summary: CMU Sieve plugin for dovecot LDA
 Group: System Environment/Daemons
 Version: %{pkg_sieve_version}
 Release: %{pkg_sieve_release}
+License: MIT and LGPLv2+
 
 %description sieve
 This package provides the CMU Sieve plugin for dovecot LDA.
@@ -398,6 +399,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Aug 22 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-16.1.alpha3
+- updated license tags
+
 * Mon Aug 13 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-16.alpha3
 - updated to latest upstream alpha
 - update dovecot-sieve to 0367450c9382 from hg
