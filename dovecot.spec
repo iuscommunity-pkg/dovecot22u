@@ -1,15 +1,16 @@
 #%define dovecot_hg a744ae38a9e1
-%define sieve_hg 0367450c9382
-%define upstream 1.1.alpha3
-%define sieve_upstream 1.1-%{sieve_hg}
-%define pkg_version 1.1
-%define my_release 16.1
-%define pkg_release %{my_release}.alpha3%{?dist}
-%define pkg_sieve_version 1.1
-%define pkg_sieve_release %{my_release}.hg.%{sieve_hg}%{?dist}
+#%define sieve_hg 0367450c9382
+%define upstream 1.0.5
+%define sieve_upstream 1.0.2
+%define pkg_version 1.0.5
+%define my_release 1
+%define pkg_release %{my_release}%{?dist}
+%define pkg_sieve_version 1.0.2
+%define pkg_sieve_release %{my_release}%{?dist}
 
 Summary: Dovecot Secure imap server
 Name: dovecot
+Epoch: 1
 Version: %{pkg_version}
 Release: %{pkg_release}
 License: MIT and LGPLv2 and BSD with advertising
@@ -33,12 +34,14 @@ Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_upstream}.tar.gz
-Patch100: dovecot-1.1.alpha1-default-settings.patch
+Patch100: dovecot-1.0.rc15-default-settings.patch
 Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
-Patch107: dovecot-1.1-unicodedata.patch
+Patch106: dovecot-1.0.rc27-quota-warning.patch
+#Patch107: dovecot-1.1-unicodedata.patch
 #Patch200: dovecot-%{dovecot_hg}.patch
+Patch200: dovecot-1.0.rc32-split.patch
 
 # XXX this patch needs review and forward porting
 #Patch105: dovecot-auth-log.patch
@@ -100,7 +103,7 @@ The SQL drivers and authentication plugins are in their subpackages.
 
 %if %{build_sieve}
 %package sieve
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: CMU Sieve plugin for dovecot LDA
 Group: System Environment/Daemons
 Version: %{pkg_sieve_version}
@@ -118,7 +121,7 @@ This package provides the CMU Sieve plugin for dovecot LDA.
 
 %if %{build_postgres}
 %package pgsql
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: Postgres SQL backend for dovecot
 Group: System Environment/Daemons
 %description pgsql
@@ -127,7 +130,7 @@ This package provides the Postgres SQL backend for dovecot-auth etc.
 
 %if %{build_mysql}
 %package mysql
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: MySQL backend for dovecot
 Group: System Environment/Daemons
 %description mysql
@@ -136,30 +139,30 @@ This package provides the MySQL backend for dovecot-auth etc.
 
 %if %{build_sqlite}
 %package sqlite
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: SQLite backend for dovecot
 Group: System Environment/Daemons
 %description sqlite
 This package provides the SQLite backend for dovecot-auth etc.
 %endif
 
-%if %{build_ldap}
-%package ldap
-Requires: %{name} = %{version}-%{release}
-Summary: LDAP auth plugin for dovecot
-Group: System Environment/Daemons
-%description ldap
-This package provides the LDAP auth plugin for dovecot-auth etc.
-%endif
+#%if %{build_ldap}
+#%package ldap
+#Requires: %{name} = %{epoch}:%{version}-%{release}
+#Summary: LDAP auth plugin for dovecot
+#Group: System Environment/Daemons
+#%description ldap
+#This package provides the LDAP auth plugin for dovecot-auth etc.
+#%endif
 
-%if %{build_gssapi}
-%package gssapi
-Requires: %{name} = %{version}-%{release}
-Summary: GSSAPI auth mechanism plugin for dovecot
-Group: System Environment/Daemons
-%description gssapi
-This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
-%endif
+#%if %{build_gssapi}
+#%package gssapi
+#Requires: %{name} = %{epoch}:%{version}-%{release}
+#Summary: GSSAPI auth mechanism plugin for dovecot
+#Group: System Environment/Daemons
+#%description gssapi
+#This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
+#%endif
 
 
 %prep
@@ -170,7 +173,9 @@ This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
 %patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 %patch105 -p1 -b .mkcert-paths
-%patch107 -p1 -b .unicodedata
+#%patch107 -p1 -b .unicodedata
+%patch106 -p1 -b .quota-warning
+%patch200 -p1 -b .split
 #%patch200 -p1 -b .%{dovecot_hg}
 
 %if %{build_sieve}
@@ -193,16 +198,23 @@ autoreconf -i
 %if %{build_sqlite}
     --with-sqlite                \
 %endif
-    --with-sql=plugin            \
+    --with-dynamic-sql           \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
-%if %{build_ldap}
-    --with-ldap=plugin           \
-%endif
     --with-inotify               \
-%if %{build_gssapi}
-    --with-gssapi=plugin
+%if %{build_ldap}
+    --with-ldap                  \
 %endif
+%if %{build_gssapi}
+    --with-gssapi                \
+%endif
+#    --with-sql=plugin            \
+#%if %{build_ldap}
+#    --with-ldap=plugin           \
+#%endif
+#%if %{build_gssapi}
+#    --with-gssapi=plugin
+#%endif
 
 make
 
@@ -370,35 +382,38 @@ rm -rf $RPM_BUILD_ROOT
 %if %{build_mysql}
 %files mysql
 %{_libdir}/%{name}/sql/libdriver_mysql.so
-%{_libdir}/%{name}/auth/libdriver_mysql.so
-%{_libdir}/%{name}/dict/libdriver_mysql.so
+#%{_libdir}/%{name}/auth/libdriver_mysql.so
+#%{_libdir}/%{name}/dict/libdriver_mysql.so
 %endif
 
 %if %{build_postgres}
 %files pgsql
 %{_libdir}/%{name}/sql/libdriver_pgsql.so
-%{_libdir}/%{name}/auth/libdriver_pgsql.so
-%{_libdir}/%{name}/dict/libdriver_pgsql.so
+#%{_libdir}/%{name}/auth/libdriver_pgsql.so
+#%{_libdir}/%{name}/dict/libdriver_pgsql.so
 %endif
 
 %if %{build_sqlite}
 %files sqlite
 %{_libdir}/%{name}/sql/libdriver_sqlite.so
-%{_libdir}/%{name}/auth/libdriver_sqlite.so
-%{_libdir}/%{name}/dict/libdriver_sqlite.so
+#%{_libdir}/%{name}/auth/libdriver_sqlite.so
+#%{_libdir}/%{name}/dict/libdriver_sqlite.so
 %endif
 
-%if %{build_ldap}
-%files ldap
-%{_libdir}/%{name}/auth/libauthdb_ldap.so
-%endif
+#%if %{build_ldap}
+#%files ldap
+#%{_libdir}/%{name}/auth/libauthdb_ldap.so
+#%endif
 
-%if %{build_gssapi}
-%files gssapi
-%{_libdir}/%{name}/auth/libmech_gssapi.so
-%endif
+#%if %{build_gssapi}
+#%files gssapi
+#%{_libdir}/%{name}/auth/libmech_gssapi.so
+#%endif
 
 %changelog
+* Tue Sep 25 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.5-1
+- downgraded to lastest upstream stable (1.0.5)
+
 * Wed Aug 22 2007 Tomas Janousek <tjanouse@redhat.com> - 1.1-16.1.alpha3
 - updated license tags
 
