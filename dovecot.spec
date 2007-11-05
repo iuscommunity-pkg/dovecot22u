@@ -1,9 +1,9 @@
 #%define dovecot_hg a744ae38a9e1
 #%define sieve_hg 0367450c9382
-%define upstream 1.0.5
+%define upstream 1.0.7
 %define sieve_upstream 1.0.2
-%define pkg_version 1.0.5
-%define my_release 1
+%define pkg_version 1.0.7
+%define my_release 2
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.2
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -216,7 +216,7 @@ autoreconf -i
 #    --with-gssapi=plugin
 #%endif
 
-make
+make %{?_smp_mflags}
 
 %if %{build_sieve}
 cd %{sieve_name}-%{sieve_upstream}
@@ -228,7 +228,7 @@ autoreconf
     INSTALL_DATA="install -c -p -m644" \
     --with-dovecot=../
 
-make
+make %{?_smp_mflags}
 %endif
 
 %install
@@ -411,6 +411,9 @@ rm -rf $RPM_BUILD_ROOT
 #%endif
 
 %changelog
+* Mon Nov 05 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.7-2
+- update to latest upstream stable (1.0.7)
+
 * Tue Sep 25 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.5-1
 - downgraded to lastest upstream stable (1.0.5)
 
