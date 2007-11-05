@@ -47,6 +47,8 @@ Patch200: dovecot-1.0.rc32-split.patch
 #Patch105: dovecot-auth-log.patch
 
 # Patches 500+ from upstream fixes
+Patch1000: http://www.dovecot.org/patches/1.0/dovecot-1.0.3-winbind.patch
+
 URL: http://www.dovecot.org/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: openssl-devel
@@ -177,6 +179,7 @@ This package provides the SQLite backend for dovecot-auth etc.
 %patch106 -p1 -b .quota-warning
 %patch200 -p1 -b .split
 #%patch200 -p1 -b .%{dovecot_hg}
+%patch1000 -p1 -b .winbind
 
 %if %{build_sieve}
 %setup -q -n %{name}-%{upstream} -D -T -a 8
@@ -413,6 +416,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Mon Nov 05 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.7-2
 - update to latest upstream stable (1.0.7)
+- added the wibnind patch (#286351)
 
 * Tue Sep 25 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.5-1
 - downgraded to lastest upstream stable (1.0.5)
