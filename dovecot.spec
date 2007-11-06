@@ -416,7 +416,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Mon Nov 05 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.7-2
 - update to latest upstream stable (1.0.7)
-- added the wibnind patch (#286351)
+- added the winbind patch (#286351)
 
 * Tue Sep 25 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.5-1
 - downgraded to lastest upstream stable (1.0.5)
