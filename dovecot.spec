@@ -3,7 +3,7 @@
 %define upstream 1.0.7
 %define sieve_upstream 1.0.2
 %define pkg_version 1.0.7
-%define my_release 2
+%define my_release 3
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.2
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -414,6 +414,9 @@ rm -rf $RPM_BUILD_ROOT
 #%endif
 
 %changelog
+* Wed Dec 05 2007 Jesse Keating <jkeating@redhat.com> - 1:1.0.7-3
+- Bump for deps
+
 * Mon Nov 05 2007 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.7-2
 - update to latest upstream stable (1.0.7)
 - added the winbind patch (#286351)
