@@ -414,6 +414,9 @@ rm -rf $RPM_BUILD_ROOT
 #%endif
 
 %changelog
+* Wed Feb 20 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 1:1.0.10-4
+- Autorebuild for GCC 4.3
+
 * Fri Jan 07 2008 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.10-4
 - update to latest upstream stable (1.0.10)
 
