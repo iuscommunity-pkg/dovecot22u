@@ -1,9 +1,9 @@
 #%define dovecot_hg a744ae38a9e1
 #%define sieve_hg 0367450c9382
-%define upstream 1.0.10
+%define upstream 1.0.13
 %define sieve_upstream 1.0.2
-%define pkg_version 1.0.10
-%define my_release 5
+%define pkg_version 1.0.13
+%define my_release 6
 %define pkg_release %{my_release}%{?dist}
 %define pkg_sieve_version 1.0.2
 %define pkg_sieve_release %{my_release}%{?dist}
@@ -414,6 +414,9 @@ rm -rf $RPM_BUILD_ROOT
 #%endif
 
 %changelog
+* Sun Mar 09 2008 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.13-6
+- update to latest upstream stable (1.0.13)
+
 * Wed Feb 20 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 1:1.0.10-5
 - Autorebuild for GCC 4.3
 
