@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.0.13
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -78,8 +78,6 @@ BuildRequires: krb5-devel
 
 %define docdir %{_docdir}/%{name}
 %define ssldir %{_sysconfdir}/pki/%{name}
-%define dovecot_uid 97
-%define dovecot_gid 97
 
 %description
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
@@ -168,7 +166,6 @@ libtoolize -f
 autoreconf -i
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
-    --with-doc                         \
     --disable-static             \
 %if %{build_postgres}
     --with-pgsql                 \
@@ -182,7 +179,6 @@ autoreconf -i
     --with-dynamic-sql           \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
-    --with-inotify               \
 %if %{build_ldap}
     --with-ldap                  \
 %endif
@@ -288,30 +284,21 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %pre
-/usr/sbin/useradd -c "dovecot" -u %{dovecot_uid} -s /sbin/nologin -r -d /usr/libexec/dovecot dovecot 2>/dev/null || :
+getent group dovecot >/dev/null || groupadd -r dovecot
+getent passwd dovecot >/dev/null || \
+useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot IMAP server" dovecot
+exit 0
 
 %post
 /sbin/chkconfig --add %{name}
-# create a ssl cert only when installing, not during upgrade
-if [ $1 = 1 ]; then
-    if [ -f %{ssldir}/%{name}.pem -a ! -e %{ssldir}/certs/%{name}.pem ]; then
-        mv  %{ssldir}/%{name}.pem %{ssldir}/certs/%{name}.pem
-    else
-        if [ -f /usr/share/ssl/certs/dovecot.pem -a ! -e %{ssldir}/certs/%{name}.pem ]; then
-            mv /usr/share/ssl/certs/dovecot.pem %{ssldir}/certs/%{name}.pem
-        fi
-        if [ -f /usr/share/ssl/private/dovecot.pem -a ! -e %{ssldir}/private/%{name}.pem ]; then
-            mv /usr/share/ssl/private/dovecot.pem %{ssldir}/private/%{name}.pem
-        fi
-    fi
-    if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
+# generate the ssl certificates
+if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
     SSLDIR=%{ssldir} OPENSSLCONFIG=%{ssldir}/dovecot-openssl.cnf \
          %{_libexecdir}/%{name}/mkcert.sh &> /dev/null
-    fi
+fi
 
-    if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
-        dovecot --build-ssl-parameters &>/dev/null
-    fi
+if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
+    dovecot --build-ssl-parameters &>/dev/null
 fi
 exit 0
 
@@ -322,10 +309,7 @@ if [ $1 = 0 ]; then
 fi
 
 %postun
-if [ $1 = 0 ]; then
-    /usr/sbin/userdel dovecot 2>/dev/null || :
-    /usr/sbin/groupdel dovecot 2>/dev/null || :
-elif [ "$1" -ge "1" ]; then
+if [ "$1" -ge "1" ]; then
     /sbin/service %{name} condrestart >/dev/null 2>&1 || :
 fi
 
@@ -338,6 +322,7 @@ fi
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %dir %{ssldir}
 %dir %{ssldir}/certs
+%dir %{ssldir}/private
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
@@ -392,6 +377,11 @@ fi
 #%endif
 
 %changelog
+* Thu May 29 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.13-8
+- update scriptlets to follow UsersAndGroups guideline
+- remove support for upgrading from version < 1.0 from scriptlets
+- Resolves: #448095
+
 * Tue May 20 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.13-7
 - spec file cleanup
 - update sieve plugin to 1.0.3
