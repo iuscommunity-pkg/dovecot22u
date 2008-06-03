@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.0.13
-Release: 8%{?dist}
+Version: 1.0.14
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -27,8 +27,6 @@ Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
 Patch100: dovecot-1.0.rc15-default-settings.patch
-# RHBZ #146198
-Patch102: dovecot-1.0.rc2-pam-setcred.patch
 Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
 # local filesystem rules
 Patch105: dovecot-1.0.rc7-mkcert-paths.patch
@@ -149,7 +147,6 @@ This package provides the SQLite backend for dovecot-auth etc.
 %setup -q
 
 %patch100 -p1 -b .default-settings
-%patch102 -p1 -b .pam-setcred
 %patch103 -p1 -b .mkcert-permissions
 %patch105 -p1 -b .mkcert-paths
 %patch106 -p1 -b .quota-warning
@@ -377,6 +374,10 @@ fi
 #%endif
 
 %changelog
+* Tue Jun  3 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-1
+- update to upstream version 1.0.14
+- remove setcred patch (use of setcred must be explictly enabled in config)
+
 * Thu May 29 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.13-8
 - update scriptlets to follow UsersAndGroups guideline
 - remove support for upgrading from version < 1.0 from scriptlets
