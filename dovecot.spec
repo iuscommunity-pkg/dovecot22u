@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.0.14
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -211,11 +211,13 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT%{_datadir}/%{name}
 
+install -p -m 755 src/plugins/convert/convert-tool $RPM_BUILD_ROOT%{_libexecdir}/%{name}
+
 mkdir -p $RPM_BUILD_ROOT%{_initrddir}
-install -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/dovecot
+install -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/dovecot
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pam.d
-install -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
+install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 
 # generate ghost .pem file
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/certs
@@ -374,6 +376,9 @@ fi
 #%endif
 
 %changelog
+* Thu Jun  5 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-2
+- install convert-tool (Resolves: #450010)
+
 * Tue Jun  3 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-1
 - update to upstream version 1.0.14
 - remove setcred patch (use of setcred must be explictly enabled in config)
