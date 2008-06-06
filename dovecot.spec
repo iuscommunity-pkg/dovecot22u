@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.0.14
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -141,6 +141,13 @@ This package provides the SQLite backend for dovecot-auth etc.
 #This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
 #%endif
 
+%package devel
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Summary: Development files dor dovecot
+Group: Development/Libraries
+%description devel
+This package provides the development files for dovecot.
+
 
 %prep
 
@@ -163,6 +170,7 @@ libtoolize -f
 autoreconf -i
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
+    --enable-header-install      \
     --disable-static             \
 %if %{build_postgres}
     --with-pgsql                 \
@@ -268,13 +276,11 @@ popd
 #remove the libtool archives
 find $RPM_BUILD_ROOT%{_libdir}/%{name}/ -name '*.la' | xargs rm -f
 
-rm -f $RPM_BUILD_ROOT%{_libdir}/%{name}/dovecot-config
-
 #prepare the filelist
 (
     find ${RPM_BUILD_ROOT}%{_libdir}/%{name} -type d | sed -e "s|^|%dir |";
     find ${RPM_BUILD_ROOT}%{_libdir}/%{name} -! -type d | \
-        grep -v 'lib90_cmusieve_plugin\.so\|libdriver_.*\.so\|libauthdb_.*\.so\|libmech_.*\.so';
+        grep -v 'dovecot-config\|lib90_cmusieve_plugin\.so\|libdriver_.*\.so\|libauthdb_.*\.so\|libmech_.*\.so';
 ) | sed -e "s|$RPM_BUILD_ROOT||" >libs.filelist
 
 
@@ -375,7 +381,16 @@ fi
 #%{_libdir}/%{name}/auth/libmech_gssapi.so
 #%endif
 
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/%{name}
+%{_libdir}/%{name}/dovecot-config
+
+
 %changelog
+* Fri Jun  6 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-3
+- build devel subpackage (Resolves: #306881)
+
 * Thu Jun  5 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-2
 - install convert-tool (Resolves: #450010)
 
