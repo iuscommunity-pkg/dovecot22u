@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.0.14
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -388,6 +388,9 @@ fi
 
 
 %changelog
+* Wed Jun 18 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-4
+- update init script (Resolves: #451838)
+
 * Fri Jun  6 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-3
 - build devel subpackage (Resolves: #306881)
 

@@ -8,6 +8,7 @@
 # description: Dovecot Imap Server
 # processname: dovecot
 # config: /etc/dovecot.conf
+# pidfile: /var/run/dovecot/master.pid
 
 ### BEGIN INIT INFO
 # Provides: dovecot
@@ -28,23 +29,34 @@
 
 RETVAL=0
 prog="Dovecot Imap"
+exec="/usr/sbin/dovecot"
+config="/etc/dovecot.conf"
+pidfile="/var/run/dovecot/master.pid"
+lockfile="/var/lock/subsys/dovecot"
 
 start() {
-	[ -x /usr/sbin/dovecot ] || exit 5
-	[ -f /etc/dovecot.conf ] || exit 6
+	[ -x $exec ] || exit 5
+	[ -f $config ] || exit 6
 
         echo -n $"Starting $prog: "
-	daemon /usr/sbin/dovecot
+	daemon --pidfile $pidfile $exec
 	RETVAL=$?
-	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/dovecot
+	[ $RETVAL -eq 0 ] && touch  $lockfile
 	echo
 }
 
 stop() {
 	echo -n $"Stopping $prog: "
-	killproc /usr/sbin/dovecot
+	killproc -p $pidfile $exec
 	RETVAL=$?
-	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/dovecot
+	[ $RETVAL -eq 0 ] && rm -f $lockfile
+	echo
+}
+
+reload() {
+	echo -n $"Reloading $prog: "
+	killproc -p $pidfile $exec -HUP
+	RETVAL=$?
 	echo
 }
 
@@ -58,23 +70,26 @@ case "$1" in
   stop)
 	stop
 	;;
-  reload|restart)
+  reload)
+	reload
+	;;
+  force-reload|restart)
 	stop
 	start
 	RETVAL=$?
 	;;
-  condrestart)
-	if [ -f /var/lock/subsys/dovecot ]; then
+  condrestart|try-restart)
+	if [ -f $lockfile ]; then
 	    stop
 	    start
 	fi
 	;;
   status)
-	status /usr/sbin/dovecot
+	status -p $pidfile $exec
 	RETVAL=$?
 	;;
   *)
-	echo $"Usage: $0 {condrestart|start|stop|restart|reload|status}"
+	echo $"Usage: $0 {condrestart|try-restart|start|stop|restart|reload|force-reload|status}"
 	exit 2
 esac
 
