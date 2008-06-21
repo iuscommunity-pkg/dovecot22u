@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.0.14
-Release: 4%{?dist}
+Version: 1.1.0
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -13,11 +13,11 @@ Group: System Environment/Daemons
 %define build_gssapi 1
 
 %define build_sieve 1
-%define sieve_version 1.0.3
+%define sieve_version 1.1.5
 %define sieve_name dovecot-sieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/1.0/%{name}-%{version}.tar.gz
+Source: http://www.dovecot.org/releases/1.1/%{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -26,18 +26,10 @@ Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
-Patch100: dovecot-1.0.rc15-default-settings.patch
-Patch103: dovecot-1.0.beta2-mkcert-permissions.patch
+Patch1: dovecot-1.1-default-settings.patch
+Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 # local filesystem rules
-Patch105: dovecot-1.0.rc7-mkcert-paths.patch
-# http://dovecot.org/list/dovecot/2007-April/021429.html
-# will be replaced by a new quota mechanism in 1.1
-Patch106: dovecot-1.0.rc27-quota-warning.patch
-# RHBZ #145241
-Patch200: dovecot-1.0.rc32-split.patch
-
-# Patches 500+ from upstream fixes
-Patch1000: http://www.dovecot.org/patches/1.0/dovecot-1.0.3-winbind.patch
+Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
@@ -123,23 +115,23 @@ Group: System Environment/Daemons
 This package provides the SQLite backend for dovecot-auth etc.
 %endif
 
-#%if %{build_ldap}
-#%package ldap
-#Requires: %{name} = %{epoch}:%{version}-%{release}
-#Summary: LDAP auth plugin for dovecot
-#Group: System Environment/Daemons
-#%description ldap
-#This package provides the LDAP auth plugin for dovecot-auth etc.
-#%endif
+%if %{build_ldap}
+%package ldap
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Summary: LDAP auth plugin for dovecot
+Group: System Environment/Daemons
+%description ldap
+This package provides the LDAP auth plugin for dovecot-auth etc.
+%endif
 
-#%if %{build_gssapi}
-#%package gssapi
-#Requires: %{name} = %{epoch}:%{version}-%{release}
-#Summary: GSSAPI auth mechanism plugin for dovecot
-#Group: System Environment/Daemons
-#%description gssapi
-#This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
-#%endif
+%if %{build_gssapi}
+%package gssapi
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Summary: GSSAPI auth mechanism plugin for dovecot
+Group: System Environment/Daemons
+%description gssapi
+This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
+%endif
 
 %package devel
 Requires: %{name} = %{epoch}:%{version}-%{release}
@@ -153,12 +145,9 @@ This package provides the development files for dovecot.
 
 %setup -q
 
-%patch100 -p1 -b .default-settings
-%patch103 -p1 -b .mkcert-permissions
-%patch105 -p1 -b .mkcert-paths
-%patch106 -p1 -b .quota-warning
-%patch200 -p1 -b .split
-%patch1000 -p1 -b .winbind
+%patch1 -p1 -b .default-settings
+%patch2 -p1 -b .mkcert-permissions
+%patch3 -p1 -b .mkcert-paths
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
@@ -166,8 +155,7 @@ This package provides the development files for dovecot.
 
 %build
 rm -f ./configure
-libtoolize -f
-autoreconf -i
+autoreconf -i -f
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
     --enable-header-install      \
@@ -181,22 +169,16 @@ autoreconf -i
 %if %{build_sqlite}
     --with-sqlite                \
 %endif
-    --with-dynamic-sql           \
+    --with-sql=plugin            \
+    --with-sql-drivers           \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
 %if %{build_ldap}
-    --with-ldap                  \
+    --with-ldap=plugin           \
 %endif
 %if %{build_gssapi}
-    --with-gssapi                \
+    --with-gssapi=plugin
 %endif
-#    --with-sql=plugin            \
-#%if %{build_ldap}
-#    --with-ldap=plugin           \
-#%endif
-#%if %{build_gssapi}
-#    --with-gssapi=plugin
-#%endif
 
 make %{?_smp_mflags}
 
@@ -204,8 +186,7 @@ make %{?_smp_mflags}
 cd %{sieve_name}-%{sieve_version}
 
 rm -f ./configure
-libtoolize -f
-autoreconf
+autoreconf -i -f
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
     --disable-static                 \
@@ -322,7 +303,7 @@ fi
 %files -f libs.filelist
 %defattr(-,root,root,-)
 %doc %{docdir}-%{version}
-%attr(0640,root,root) %config(noreplace) %{_sysconfdir}/dovecot.conf
+%attr(0640,dovecot,mail) %config(noreplace) %{_sysconfdir}/dovecot.conf
 %{_initrddir}/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %dir %{ssldir}
@@ -349,37 +330,37 @@ fi
 %files mysql
 %defattr(-,root,root,-)
 %{_libdir}/%{name}/sql/libdriver_mysql.so
-#%{_libdir}/%{name}/auth/libdriver_mysql.so
-#%{_libdir}/%{name}/dict/libdriver_mysql.so
+%{_libdir}/%{name}/auth/libdriver_mysql.so
+%{_libdir}/%{name}/dict/libdriver_mysql.so
 %endif
 
 %if %{build_postgres}
 %files pgsql
 %defattr(-,root,root,-)
 %{_libdir}/%{name}/sql/libdriver_pgsql.so
-#%{_libdir}/%{name}/auth/libdriver_pgsql.so
-#%{_libdir}/%{name}/dict/libdriver_pgsql.so
+%{_libdir}/%{name}/auth/libdriver_pgsql.so
+%{_libdir}/%{name}/dict/libdriver_pgsql.so
 %endif
 
 %if %{build_sqlite}
 %files sqlite
 %defattr(-,root,root,-)
 %{_libdir}/%{name}/sql/libdriver_sqlite.so
-#%{_libdir}/%{name}/auth/libdriver_sqlite.so
-#%{_libdir}/%{name}/dict/libdriver_sqlite.so
+%{_libdir}/%{name}/auth/libdriver_sqlite.so
+%{_libdir}/%{name}/dict/libdriver_sqlite.so
 %endif
 
-#%if %{build_ldap}
-#%files ldap
-#%defattr(-,root,root,-)
-#%{_libdir}/%{name}/auth/libauthdb_ldap.so
-#%endif
+%if %{build_ldap}
+%files ldap
+%defattr(-,root,root,-)
+%{_libdir}/%{name}/auth/libauthdb_ldap.so
+%endif
 
-#%if %{build_gssapi}
-#%files gssapi
-#%defattr(-,root,root,-)
-#%{_libdir}/%{name}/auth/libmech_gssapi.so
-#%endif
+%if %{build_gssapi}
+%files gssapi
+%defattr(-,root,root,-)
+%{_libdir}/%{name}/auth/libmech_gssapi.so
+%endif
 
 %files devel
 %defattr(-,root,root,-)
@@ -388,6 +369,13 @@ fi
 
 
 %changelog
+* Sat Jun 21 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.0-1
+- update to upstream version 1.1.0
+- update sieve plugin to 1.1.5
+- remove unnecessary patches
+- enable ldap and gssapi plugins
+- change ownership of dovecot.conf (Resolves: #452088)
+
 * Wed Jun 18 2008 Dan Horak <dan[at]danny.cz> - 1:1.0.14-4
 - update init script (Resolves: #451838)
 
