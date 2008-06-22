@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.0
+Version: 1.1.1
 Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
@@ -369,6 +369,9 @@ fi
 
 
 %changelog
+* Sun Jun 22 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.1-1
+- update to upstream version 1.1.1
+
 * Sat Jun 21 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.0-1
 - update to upstream version 1.1.0
 - update sieve plugin to 1.1.5
