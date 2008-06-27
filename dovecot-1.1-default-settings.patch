@@ -26,7 +26,7 @@ diff -Nru dovecot-1.1.rc8.orig/dovecot-example.conf dovecot-1.1.rc8/dovecot-exam
  #     ..
  #   }
 -#listen = *
-+#listen = [::]
++#listen = *, [::]
  
  # Disable LOGIN command and all other plaintext authentications unless
  # SSL/TLS is used (LOGINDISABLED capability). Note that if the remote IP
@@ -67,7 +67,7 @@ diff -Nru dovecot-1.1.rc8.orig/src/master/master-settings.c dovecot-1.1.rc8/src/
 -	MEMBER(protocols) "imap imaps",
 -	MEMBER(listen) "*",
 +	MEMBER(protocols) "imap imaps pop3 pop3s",
-+	MEMBER(listen) "[::]",
++	MEMBER(listen) "*, [::]",
  	MEMBER(ssl_listen) "",
  
  	MEMBER(ssl_disable) FALSE,

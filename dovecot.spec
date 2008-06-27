@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.1.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -369,6 +369,9 @@ fi
 
 
 %changelog
+* Fri Jun 27 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.1-2
+- update default settings to listen on both IPv4 and IPv6 instead of IPv6 only
+
 * Sun Jun 22 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.1-1
 - update to upstream version 1.1.1
 
