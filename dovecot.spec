@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.1
-Release: 2%{?dist}
+Version: 1.1.2
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -26,10 +26,12 @@ Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
+Source9: dovecot.sysconfig
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 # local filesystem rules
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+Patch4: dovecot-1.1-default-settings-passwd.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
@@ -148,6 +150,7 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
+%patch4 -p1 -b .passwd
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
@@ -207,6 +210,9 @@ install -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/dovecot
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pam.d
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
+
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
+install -p -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 
 # generate ghost .pem file
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/certs
@@ -303,7 +309,8 @@ fi
 %files -f libs.filelist
 %defattr(-,root,root,-)
 %doc %{docdir}-%{version}
-%attr(0640,dovecot,mail) %config(noreplace) %{_sysconfdir}/dovecot.conf
+%config(noreplace) %{_sysconfdir}/dovecot.conf
+%attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %{_initrddir}/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %dir %{ssldir}
@@ -369,6 +376,10 @@ fi
 
 
 %changelog
+* Tue Jul 29 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.2-1
+- update to upstream version 1.1.2
+- final solution for #445200 (put the password into /etc/sysconfig/dovecot)
+
 * Fri Jun 27 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.1-2
 - update default settings to listen on both IPv4 and IPv6 instead of IPv6 only
 

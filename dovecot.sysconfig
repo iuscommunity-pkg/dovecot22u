@@ -1,0 +1,5 @@
+# Here you can specify the password for your SSL certificates
+# so the main config file can be world readable. Other command
+# line options can be specified too.
+#
+#OPTIONS="-p my_certificate_password"
