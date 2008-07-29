@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.1.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -376,9 +376,12 @@ fi
 
 
 %changelog
+* Tue Jul 29 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.2-2
+- really ask for the password during start-up
+
 * Tue Jul 29 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.2-1
 - update to upstream version 1.1.2
-- final solution for #445200 (put the password into /etc/sysconfig/dovecot)
+- final solution for #445200 (add /etc/sysconfig/dovecot for start-up options)
 
 * Fri Jun 27 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.1-2
 - update default settings to listen on both IPv4 and IPv6 instead of IPv6 only
