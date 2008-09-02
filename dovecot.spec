@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.2
-Release: 2%{?dist}
+Version: 1.1.3
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -376,6 +376,9 @@ fi
 
 
 %changelog
+* Tue Sep  2 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.3-1
+- update to upstream version 1.1.3
+
 * Tue Jul 29 2008 Dan Horak <dan[at]danny.cz> - 1:1.1.2-2
 - really ask for the password during start-up
 
