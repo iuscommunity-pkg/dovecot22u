@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.5
+Version: 1.1.6
 Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
@@ -31,7 +31,6 @@ Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 # local filesystem rules
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-Patch4: dovecot-1.1-default-settings-passwd.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
@@ -150,7 +149,6 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .passwd
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
@@ -228,7 +226,7 @@ chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 	
 # Install dovecot.conf and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT%{ssldir}
-install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot.conf
+install -p -m640 dovecot-example.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot.conf
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot-*example.conf # dovecot seems to install this by itself
 install -p -m644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
 
@@ -309,7 +307,7 @@ fi
 %files -f libs.filelist
 %defattr(-,root,root,-)
 %doc %{docdir}-%{version}
-%config(noreplace) %{_sysconfdir}/dovecot.conf
+%attr(0640,root,mail) %config(noreplace) %{_sysconfdir}/dovecot.conf
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %{_initrddir}/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
@@ -320,6 +318,19 @@ fi
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
 %{_libexecdir}/%{name}
+%{_libexecdir}/%{name}/checkpassword-reply
+%attr(2755,root,mail) %{_libexecdir}/%{name}/deliver
+%{_libexecdir}/%{name}/dict
+%{_libexecdir}/%{name}/dovecot-auth
+%{_libexecdir}/%{name}/gdbhelper
+%{_libexecdir}/%{name}/idxview
+%{_libexecdir}/%{name}/imap
+%{_libexecdir}/%{name}/imap-login
+%{_libexecdir}/%{name}/logview
+%{_libexecdir}/%{name}/pop3
+%{_libexecdir}/%{name}/pop3-login
+%{_libexecdir}/%{name}/rawlog
+%{_libexecdir}/%{name}/ssl-build-param
 %{_sbindir}/dovecot
 %{_sbindir}/dovecotpw
 %attr(0755,root,dovecot) %dir /var/run/dovecot
@@ -376,6 +387,10 @@ fi
 
 
 %changelog
+* Mon Nov 3 2008 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.6-1
+- update to upstream version 1.1.6
+- change permissions of deliver and dovecot.conf to prevent possible password exposure
+
 * Wed Oct 29 2008 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.5-1
 - update to upstream version 1.1.5 (Resolves: CVE-2008-4577, CVE-2008-4578)
 
