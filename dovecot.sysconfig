@@ -1,5 +1,3 @@
-# Here you can specify whether dovecot will ask for the SSL certificates'
-# password during start-up so the main config file can be world readable.
-# Other command line options can be specified too.
+# Here you can specify your dovecot command line options.
 #
-#OPTIONS="-p"
+#OPTIONS=""
