@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.6
-Release: 2%{?dist}
+Version: 1.1.7
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -387,6 +387,9 @@ fi
 
 
 %changelog
+* Tue Dec 2 2008 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.7-1
+- update to upstream version 1.1.7
+
 * Mon Nov 3 2008 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.6-2
 - changed comment in sysconfig to match actual state
 
