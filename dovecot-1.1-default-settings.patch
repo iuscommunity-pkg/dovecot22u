@@ -1,6 +1,6 @@
-diff -Nru dovecot-1.1.rc8.orig/dovecot-example.conf dovecot-1.1.rc8/dovecot-example.conf
---- dovecot-1.1.rc8.orig/dovecot-example.conf	2008-05-25 00:51:54.000000000 +0200
-+++ dovecot-1.1.rc8/dovecot-example.conf	2008-06-03 11:46:14.000000000 +0200
+diff -up dovecot-1.1.7/dovecot-example.conf.default-settings dovecot-1.1.7/dovecot-example.conf
+--- dovecot-1.1.7/dovecot-example.conf.default-settings	2008-11-23 22:53:53.000000000 +0100
++++ dovecot-1.1.7/dovecot-example.conf	2008-12-02 15:18:54.961559642 +0100
 @@ -10,17 +10,14 @@
  # value inside quotes, eg.: key = "# char and trailing whitespace  "
  
@@ -21,7 +21,7 @@ diff -Nru dovecot-1.1.rc8.orig/dovecot-example.conf dovecot-1.1.rc8/dovecot-exam
  
  # A space separated list of IP or host addresses where to listen in for
  # connections. "*" listens in all IPv4 interfaces. "[::]" listens in all IPv6
-@@ -39,13 +36,13 @@
+@@ -38,13 +35,13 @@
  #     listen = *:10100
  #     ..
  #   }
@@ -37,7 +37,7 @@ diff -Nru dovecot-1.1.rc8.orig/dovecot-example.conf dovecot-1.1.rc8/dovecot-exam
  
  # Should all IMAP and POP3 processes be killed when Dovecot master process
  # shuts down. Setting this to "no" means that Dovecot can be upgraded without
-@@ -91,8 +88,8 @@
+@@ -90,8 +87,8 @@
  # dropping root privileges, so keep the key file unreadable by anyone but
  # root. Included doc/mkcert.sh can be used to easily generate self-signed
  # certificate, just make sure to update the domains in dovecot-openssl.cnf
@@ -47,8 +47,8 @@ diff -Nru dovecot-1.1.rc8.orig/dovecot-example.conf dovecot-1.1.rc8/dovecot-exam
 +#ssl_key_file = /etc/pki/dovecot/private/dovecot.pem
  
  # If key file is password protected, give the password here. Alternatively
- # give it when starting dovecot with -p parameter.
-@@ -448,7 +445,7 @@
+ # give it when starting dovecot with -p parameter. Since this file is often
+@@ -449,7 +446,7 @@
  # locking methods as well. Some operating systems don't allow using some of
  # them simultaneously.
  #mbox_read_locks = fcntl
@@ -57,10 +57,10 @@ diff -Nru dovecot-1.1.rc8.orig/dovecot-example.conf dovecot-1.1.rc8/dovecot-exam
  
  # Maximum time in seconds to wait for lock (all of them) before aborting.
  #mbox_lock_timeout = 300
-diff -Nru dovecot-1.1.rc8.orig/src/master/master-settings.c dovecot-1.1.rc8/src/master/master-settings.c
---- dovecot-1.1.rc8.orig/src/master/master-settings.c	2008-06-01 20:09:00.000000000 +0200
-+++ dovecot-1.1.rc8/src/master/master-settings.c	2008-06-03 11:43:22.000000000 +0200
-@@ -178,8 +178,8 @@
+diff -up dovecot-1.1.7/src/master/master-settings.c.default-settings dovecot-1.1.7/src/master/master-settings.c
+--- dovecot-1.1.7/src/master/master-settings.c.default-settings	2008-11-15 18:13:18.000000000 +0100
++++ dovecot-1.1.7/src/master/master-settings.c	2008-12-02 15:17:11.762934079 +0100
+@@ -178,8 +178,8 @@ struct settings default_settings = {
  	MEMBER(syslog_facility) "mail",
  
  	/* general */
@@ -71,7 +71,7 @@ diff -Nru dovecot-1.1.rc8.orig/src/master/master-settings.c dovecot-1.1.rc8/src/
  	MEMBER(ssl_listen) "",
  
  	MEMBER(ssl_disable) FALSE,
-@@ -191,7 +191,7 @@
+@@ -191,7 +191,7 @@ struct settings default_settings = {
  	MEMBER(ssl_cipher_list) "",
  	MEMBER(ssl_cert_username_field) "commonName",
  	MEMBER(ssl_verify_client_cert) FALSE,
@@ -80,7 +80,7 @@ diff -Nru dovecot-1.1.rc8.orig/src/master/master-settings.c dovecot-1.1.rc8/src/
  	MEMBER(verbose_ssl) FALSE,
  	MEMBER(shutdown_clients) TRUE,
  	MEMBER(nfs_check) TRUE,
-@@ -255,7 +255,7 @@
+@@ -255,7 +255,7 @@ struct settings default_settings = {
  	MEMBER(maildir_copy_with_hardlinks) TRUE,
  	MEMBER(maildir_copy_preserve_filename) FALSE,
  	MEMBER(mbox_read_locks) "fcntl",
