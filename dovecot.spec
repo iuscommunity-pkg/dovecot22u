@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.7
-Release: 2%{?dist}
+Version: 1.1.8
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -13,7 +13,7 @@ Group: System Environment/Daemons
 %define build_gssapi 1
 
 %define build_sieve 1
-%define sieve_version 1.1.5
+%define sieve_version 1.1.6
 %define sieve_name dovecot-sieve
 
 URL: http://www.dovecot.org/
@@ -374,6 +374,10 @@ fi
 
 
 %changelog
+* Thu Jan 8 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.8-1
+- dovecot updated to 1.1.8
+- sieve-plugin updated to 1.1.6
+
 * Tue Dec 2 2008 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.7-2
 - revert changes from 1:1.1.6-2 and 1:1.1.6-1
 - password can be stored in different file readable only for root 
