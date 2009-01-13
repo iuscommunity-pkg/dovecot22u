@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.1.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -13,8 +13,11 @@ Group: System Environment/Daemons
 %define build_gssapi 1
 
 %define build_sieve 1
+%define build_managesieve 1
 %define sieve_version 1.1.6
 %define sieve_name dovecot-sieve
+%define managesieve_version 0.10.4
+%define managesieve_name dovecot-1.1-managesieve
 
 URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/1.1/%{name}-%{version}.tar.gz
@@ -27,6 +30,9 @@ Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
+Source10: http://www.rename-it.nl/dovecot/1.1/%{managesieve_name}-%{managesieve_version}.tar.gz
+Source11: http://www.rename-it.nl/dovecot/1.1/dovecot-%{version}-managesieve-%{managesieve_version}.diff.gz
+Patch0: dovecot-%{version}-managesieve-%{managesieve_version}.diff.gz
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 # local filesystem rules
@@ -89,6 +95,17 @@ License: MIT and LGPLv2+
 This package provides the CMU Sieve plugin version %{sieve_version} for dovecot LDA.
 %endif
 
+%if %{build_managesieve}
+%package managesieve
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Summary: Manage Sieve daemon for dovecot
+Group: System Environment/Daemons
+License: LGPLv2.1
+
+%description managesieve
+This package provides the Manage Sieve daemon version %{managesieve_version} for dovecot.
+%endif
+
 %if %{build_postgres}
 %package pgsql
 Requires: %{name} = %{epoch}:%{version}-%{release}
@@ -146,12 +163,17 @@ This package provides the development files for dovecot.
 
 %setup -q
 
+%patch0 -p1 -b .managesieve
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
+%endif
+
+%if %{build_managesieve}
+%setup -q -D -T -a 10
 %endif
 
 %build
@@ -192,6 +214,21 @@ autoreconf -i -f
     INSTALL_DATA="install -c -p -m644" \
     --disable-static                 \
     --with-dovecot=../
+
+make %{?_smp_mflags}
+%endif
+
+%if %{build_managesieve}
+cd ..
+cd %{managesieve_name}-%{managesieve_version}
+
+rm -f ./configure
+autoreconf -i -f
+%configure                           \
+    INSTALL_DATA="install -c -p -m644" \
+    --disable-static                 \
+    --with-dovecot=../               \
+    --with-dovecot-sieve=../%{sieve_name}-%{sieve_version}/
 
 make %{?_smp_mflags}
 %endif
@@ -254,6 +291,13 @@ mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
 %if %{build_sieve}
 # dovecot-sieve
 pushd %{sieve_name}-%{sieve_version}
+make install DESTDIR=$RPM_BUILD_ROOT
+popd
+%endif
+
+%if %{build_managesieve}
+# dovecot-managesieve
+pushd %{managesieve_name}-%{managesieve_version}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 %endif
@@ -331,6 +375,13 @@ fi
 %{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
 %endif
 
+%if %{build_managesieve}
+%files managesieve
+%defattr(-,root,root,-)
+%{_libexecdir}/%{name}/managesieve
+%{_libexecdir}/%{name}/managesieve-login
+%endif
+
 %if %{build_mysql}
 %files mysql
 %defattr(-,root,root,-)
@@ -374,6 +425,9 @@ fi
 
 
 %changelog
+* Tue Jan 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.8-2
+- added managesieve support (thanks Helmut K. C. Tessarek)
+
 * Thu Jan 8 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.8-1
 - dovecot updated to 1.1.8
 - sieve-plugin updated to 1.1.6

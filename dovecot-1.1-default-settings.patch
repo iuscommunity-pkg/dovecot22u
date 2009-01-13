@@ -1,6 +1,6 @@
-diff -up dovecot-1.1.7/dovecot-example.conf.default-settings dovecot-1.1.7/dovecot-example.conf
---- dovecot-1.1.7/dovecot-example.conf.default-settings	2008-11-23 22:53:53.000000000 +0100
-+++ dovecot-1.1.7/dovecot-example.conf	2008-12-02 15:18:54.961559642 +0100
+diff -up dovecot-1.1.8/dovecot-example.conf.default-settings dovecot-1.1.8/dovecot-example.conf
+--- dovecot-1.1.8/dovecot-example.conf.default-settings	2009-01-13 19:34:30.390937820 +0100
++++ dovecot-1.1.8/dovecot-example.conf	2009-01-13 19:37:00.217687707 +0100
 @@ -10,17 +10,14 @@
  # value inside quotes, eg.: key = "# char and trailing whitespace  "
  
@@ -14,15 +14,15 @@ diff -up dovecot-1.1.7/dovecot-example.conf.default-settings dovecot-1.1.7/dovec
  # Base directory where to store runtime data.
  #base_dir = /var/run/dovecot/
  
- # Protocols we want to be serving: imap imaps pop3 pop3s
+ # Protocols we want to be serving: imap imaps pop3 pop3s managesieve
  # If you only want to use dovecot-auth, you can set this to "none".
 -#protocols = imap imaps
 +#protocols = imap imaps pop3 pop3s
  
  # A space separated list of IP or host addresses where to listen in for
  # connections. "*" listens in all IPv4 interfaces. "[::]" listens in all IPv6
-@@ -38,13 +35,13 @@
- #     listen = *:10100
+@@ -42,13 +39,13 @@
+ #     listen = *:12000
  #     ..
  #   }
 -#listen = *
@@ -37,7 +37,7 @@ diff -up dovecot-1.1.7/dovecot-example.conf.default-settings dovecot-1.1.7/dovec
  
  # Should all IMAP and POP3 processes be killed when Dovecot master process
  # shuts down. Setting this to "no" means that Dovecot can be upgraded without
-@@ -90,8 +87,8 @@
+@@ -95,8 +92,8 @@
  # dropping root privileges, so keep the key file unreadable by anyone but
  # root. Included doc/mkcert.sh can be used to easily generate self-signed
  # certificate, just make sure to update the domains in dovecot-openssl.cnf
@@ -48,7 +48,7 @@ diff -up dovecot-1.1.7/dovecot-example.conf.default-settings dovecot-1.1.7/dovec
  
  # If key file is password protected, give the password here. Alternatively
  # give it when starting dovecot with -p parameter. Since this file is often
-@@ -449,7 +446,7 @@
+@@ -452,7 +449,7 @@
  # locking methods as well. Some operating systems don't allow using some of
  # them simultaneously.
  #mbox_read_locks = fcntl
@@ -57,9 +57,9 @@ diff -up dovecot-1.1.7/dovecot-example.conf.default-settings dovecot-1.1.7/dovec
  
  # Maximum time in seconds to wait for lock (all of them) before aborting.
  #mbox_lock_timeout = 300
-diff -up dovecot-1.1.7/src/master/master-settings.c.default-settings dovecot-1.1.7/src/master/master-settings.c
---- dovecot-1.1.7/src/master/master-settings.c.default-settings	2008-11-15 18:13:18.000000000 +0100
-+++ dovecot-1.1.7/src/master/master-settings.c	2008-12-02 15:17:11.762934079 +0100
+diff -up dovecot-1.1.8/src/master/master-settings.c.default-settings dovecot-1.1.8/src/master/master-settings.c
+--- dovecot-1.1.8/src/master/master-settings.c.default-settings	2009-01-13 19:34:30.408937169 +0100
++++ dovecot-1.1.8/src/master/master-settings.c	2009-01-13 19:34:30.419937312 +0100
 @@ -178,8 +178,8 @@ struct settings default_settings = {
  	MEMBER(syslog_facility) "mail",
  
