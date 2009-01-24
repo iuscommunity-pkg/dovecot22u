@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.1.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -425,6 +425,9 @@ fi
 
 
 %changelog
+* Sat Jan 24 2009 Dan Horak <dan[at]danny.cz> - 1:1.1.8-3
+- rebuild with new mysql
+
 * Tue Jan 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.8-2
 - added managesieve support (thanks Helmut K. C. Tessarek)
 
