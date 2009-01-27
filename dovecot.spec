@@ -1,8 +1,8 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.8
-Release: 3%{?dist}
+Version: 1.1.10
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -16,7 +16,7 @@ Group: System Environment/Daemons
 %define build_managesieve 1
 %define sieve_version 1.1.6
 %define sieve_name dovecot-sieve
-%define managesieve_version 0.10.4
+%define managesieve_version 0.10.5
 %define managesieve_name dovecot-1.1-managesieve
 
 URL: http://www.dovecot.org/
@@ -425,6 +425,9 @@ fi
 
 
 %changelog
+* Tue Jan 27 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.10-1
+- updated to 1.1.10
+
 * Sat Jan 24 2009 Dan Horak <dan[at]danny.cz> - 1:1.1.8-3
 - rebuild with new mysql
 

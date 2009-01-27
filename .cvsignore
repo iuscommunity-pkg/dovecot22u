@@ -1,7 +1,8 @@
-dovecot-1.1.8.tar.gz
-dovecot-1.1.8.tar.gz.sig
+dovecot-1.1.10-managesieve-0.10.5.diff.gz
+dovecot-1.1.10-managesieve-0.10.5.diff.gz.sig
+dovecot-1.1.10.tar.gz
+dovecot-1.1.10.tar.gz.sig
+dovecot-1.1-managesieve-0.10.5.tar.gz
+dovecot-1.1-managesieve-0.10.5.tar.gz.sig
 dovecot-sieve-1.1.6.tar.gz
 dovecot-sieve-1.1.6.tar.gz.sig
-dovecot-1.1.8-managesieve-0.10.4.diff.gz
-dovecot-1.1.8-managesieve-0.10.4.diff.gz.sig
-dovecot-1.1-managesieve-0.10.4.tar.gz
