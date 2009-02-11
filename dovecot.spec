@@ -1,7 +1,7 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.10
+Version: 1.1.11
 Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
@@ -425,6 +425,15 @@ fi
 
 
 %changelog
+* Wed Feb 11 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.11-1
+- updated to 1.1.11
+- IMAP: PERMANENTFLAGS list didn't contain \*, causing some clients
+  not to save keywords.
+- auth: Using "username" or "domain" passdb fields caused problems
+  with cache and blocking passdbs in v1.1.8 .. v1.1.10.   
+- userdb prefetch + blocking passdbs was broken with non-plaintext
+  auth in v1.1.8 .. v1.1.10.
+
 * Tue Jan 27 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.1.10-1
 - updated to 1.1.10
 
