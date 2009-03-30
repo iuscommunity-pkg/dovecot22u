@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 1.2
 %define betaver beta4
-Release: 0.%{betaver}.1%{?dist}
+Release: 0.%{betaver}.2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -434,6 +434,9 @@ fi
 
 
 %changelog
+* Mon Mar 30 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.beta4.2
+- fix typo and rebuild
+
 * Mon Mar 30 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.beta4.1
 - spec clean-up
 - updated to 1.2.beta4
