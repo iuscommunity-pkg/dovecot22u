@@ -1,8 +1,9 @@
 Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
-Version: 1.1.11
-Release: 2%{?dist}
+Version: 1.2
+%define betaver beta4
+Release: 0.%{betaver}.1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -16,11 +17,11 @@ Group: System Environment/Daemons
 %define build_managesieve 1
 %define sieve_version 1.1.6
 %define sieve_name dovecot-sieve
-%define managesieve_version 0.10.5
-%define managesieve_name dovecot-1.1-managesieve
+%define managesieve_version 0.11.3
+%define managesieve_name dovecot-%{version}-managesieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/1.1/%{name}-%{version}.tar.gz
+Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.%{betaver}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -30,22 +31,29 @@ Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
-Source10: http://www.rename-it.nl/dovecot/1.1/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.1/dovecot-%{version}-managesieve-%{managesieve_version}.diff.gz
-Patch0: dovecot-%{version}-managesieve-%{managesieve_version}.diff.gz
+Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
+Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{version}.%{betaver}-managesieve-%{managesieve_version}.diff.gz
+Patch0: dovecot-%{version}.%{betaver}-managesieve-%{managesieve_version}.diff.gz
+
+# 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
-# local filesystem rules
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+
+# from upstream, for dovecot <= 1.2.beta4
+Patch4: dovecot-1.2-ldap.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
 BuildRequires: libtool autoconf automake
+
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
+
 # Explicit Runtime Requirements
 Requires: openssl >= 0.9.7f-4
+
 # Package includes an initscript service file, needs to require initscripts package
 Requires: initscripts
 Requires(pre): /usr/sbin/useradd
@@ -161,23 +169,24 @@ This package provides the development files for dovecot.
 
 %prep
 
-%setup -q
+%setup -q -n %{name}-%{version}.%{betaver}
 
 %patch0 -p1 -b .managesieve
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
+%patch4 -p1 -b .ldap
 
 %if %{build_sieve}
-%setup -q -D -T -a 8
+%setup -q -n %{name}-%{version}.%{betaver} -D -T -a 8
 %endif
 
 %if %{build_managesieve}
-%setup -q -D -T -a 10
+%setup -q -n %{name}-%{version}.%{betaver} -D -T -a 10
 %endif
 
 %build
-rm -f ./configure
+rm -f ./"configure"
 autoreconf -i -f
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
@@ -208,7 +217,7 @@ make %{?_smp_mflags}
 %if %{build_sieve}
 cd %{sieve_name}-%{sieve_version}
 
-rm -f ./configure
+rm -f ./"configure"
 autoreconf -i -f
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
@@ -222,7 +231,7 @@ make %{?_smp_mflags}
 cd ..
 cd %{managesieve_name}-%{managesieve_version}
 
-rm -f ./configure
+rm -f ./"configure"
 autoreconf -i -f
 %configure                           \
     INSTALL_DATA="install -c -p -m644" \
@@ -425,6 +434,10 @@ fi
 
 
 %changelog
+* Mon Mar 30 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.beta4.1
+- spec clean-up
+- updated to 1.2.beta4
+
 * Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:1.1.11-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 

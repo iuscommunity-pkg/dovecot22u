@@ -1,6 +1,6 @@
-diff -up dovecot-1.1.8/dovecot-example.conf.default-settings dovecot-1.1.8/dovecot-example.conf
---- dovecot-1.1.8/dovecot-example.conf.default-settings	2009-01-13 19:34:30.390937820 +0100
-+++ dovecot-1.1.8/dovecot-example.conf	2009-01-13 19:37:00.217687707 +0100
+diff -up dovecot-1.2.beta4/dovecot-example.conf.default-settings dovecot-1.2.beta4/dovecot-example.conf
+--- dovecot-1.2.beta4/dovecot-example.conf.default-settings	2009-03-30 15:56:26.941208108 +0200
++++ dovecot-1.2.beta4/dovecot-example.conf	2009-03-30 15:56:26.969311839 +0200
 @@ -10,17 +10,14 @@
  # value inside quotes, eg.: key = "# char and trailing whitespace  "
  
@@ -48,7 +48,7 @@ diff -up dovecot-1.1.8/dovecot-example.conf.default-settings dovecot-1.1.8/dovec
  
  # If key file is password protected, give the password here. Alternatively
  # give it when starting dovecot with -p parameter. Since this file is often
-@@ -452,7 +449,7 @@
+@@ -481,7 +478,7 @@
  # locking methods as well. Some operating systems don't allow using some of
  # them simultaneously.
  #mbox_read_locks = fcntl
@@ -57,9 +57,9 @@ diff -up dovecot-1.1.8/dovecot-example.conf.default-settings dovecot-1.1.8/dovec
  
  # Maximum time in seconds to wait for lock (all of them) before aborting.
  #mbox_lock_timeout = 300
-diff -up dovecot-1.1.8/src/master/master-settings.c.default-settings dovecot-1.1.8/src/master/master-settings.c
---- dovecot-1.1.8/src/master/master-settings.c.default-settings	2009-01-13 19:34:30.408937169 +0100
-+++ dovecot-1.1.8/src/master/master-settings.c	2009-01-13 19:34:30.419937312 +0100
+diff -up dovecot-1.2.beta4/src/master/master-settings.c.default-settings dovecot-1.2.beta4/src/master/master-settings.c
+--- dovecot-1.2.beta4/src/master/master-settings.c.default-settings	2009-03-30 15:56:26.966311559 +0200
++++ dovecot-1.2.beta4/src/master/master-settings.c	2009-03-30 15:57:10.994066535 +0200
 @@ -178,8 +178,8 @@ struct settings default_settings = {
  	MEMBER(syslog_facility) "mail",
  
@@ -70,7 +70,7 @@ diff -up dovecot-1.1.8/src/master/master-settings.c.default-settings dovecot-1.1
 +	MEMBER(listen) "*, [::]",
  	MEMBER(ssl_listen) "",
  
- 	MEMBER(ssl_disable) FALSE,
+ 	MEMBER(ssl) "yes",
 @@ -191,7 +191,7 @@ struct settings default_settings = {
  	MEMBER(ssl_cipher_list) "",
  	MEMBER(ssl_cert_username_field) "commonName",
@@ -80,7 +80,7 @@ diff -up dovecot-1.1.8/src/master/master-settings.c.default-settings dovecot-1.1
  	MEMBER(verbose_ssl) FALSE,
  	MEMBER(shutdown_clients) TRUE,
  	MEMBER(nfs_check) TRUE,
-@@ -255,7 +255,7 @@ struct settings default_settings = {
+@@ -254,7 +254,7 @@ struct settings default_settings = {
  	MEMBER(maildir_copy_with_hardlinks) TRUE,
  	MEMBER(maildir_copy_preserve_filename) FALSE,
  	MEMBER(mbox_read_locks) "fcntl",
