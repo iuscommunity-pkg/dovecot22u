@@ -2,8 +2,8 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.2
-%define betaver beta4
-Release: 0.%{betaver}.2%{?dist}
+%define betaver rc2
+Release: 0.%{betaver}.1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -33,15 +33,11 @@ Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
 Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{version}.%{betaver}-managesieve-%{managesieve_version}.diff.gz
-Patch0: dovecot-%{version}.%{betaver}-managesieve-%{managesieve_version}.diff.gz
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-# from upstream, for dovecot <= 1.2.beta4
-Patch4: dovecot-1.2-ldap.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
@@ -171,11 +167,10 @@ This package provides the development files for dovecot.
 
 %setup -q -n %{name}-%{version}.%{betaver}
 
-%patch0 -p1 -b .managesieve
+zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .ldap
 
 %if %{build_sieve}
 %setup -q -n %{name}-%{version}.%{betaver} -D -T -a 8
@@ -434,6 +429,9 @@ fi
 
 
 %changelog
+* Mon Apr 06 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.rc2.1
+- updated to 1.2.rc2
+
 * Mon Mar 30 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.beta4.2
 - fix typo and rebuild
 
