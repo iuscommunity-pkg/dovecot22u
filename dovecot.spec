@@ -1,4 +1,4 @@
-Summary: Dovecot Secure imap server
+Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2
@@ -264,7 +264,7 @@ chmod 600 $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/login
 chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
-	
+
 # Install dovecot.conf and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT%{ssldir}
 install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot.conf
