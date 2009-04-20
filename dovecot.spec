@@ -2,7 +2,7 @@ Summary: Dovecot Secure imap server
 Name: dovecot
 Epoch: 1
 Version: 1.2
-%define betaver rc2
+%define betaver rc3
 Release: 0.%{betaver}.1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
@@ -17,7 +17,7 @@ Group: System Environment/Daemons
 %define build_managesieve 1
 %define sieve_version 1.1.6
 %define sieve_name dovecot-sieve
-%define managesieve_version 0.11.3
+%define managesieve_version 0.11.4
 %define managesieve_name dovecot-%{version}-managesieve
 
 URL: http://www.dovecot.org/
@@ -429,6 +429,9 @@ fi
 
 
 %changelog
+* Mon Apr 20 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.rc3.1
+- updated to 1.2.rc3
+
 * Mon Apr 06 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.rc2.1
 - updated to 1.2.rc2
 
