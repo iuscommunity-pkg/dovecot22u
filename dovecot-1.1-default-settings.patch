@@ -1,14 +1,15 @@
-diff -up dovecot-1.2.rc2/dovecot-example.conf.default-settings dovecot-1.2.rc2/dovecot-example.conf
---- dovecot-1.2.rc2/dovecot-example.conf.default-settings	2009-04-06 10:45:53.519651253 +0200
-+++ dovecot-1.2.rc2/dovecot-example.conf	2009-04-06 10:45:53.525647967 +0200
-@@ -10,17 +10,14 @@
+diff -up dovecot-1.2.1/dovecot-example.conf.default-settings dovecot-1.2.1/dovecot-example.conf
+--- dovecot-1.2.1/dovecot-example.conf.default-settings	2009-07-13 09:05:54.735890052 +0200
++++ dovecot-1.2.1/dovecot-example.conf	2009-07-13 09:09:23.309020322 +0200
+@@ -10,18 +10,14 @@
  # value inside quotes, eg.: key = "# char and trailing whitespace  "
  
  # Default values are shown for each setting, it's not required to uncomment
--# any of the lines. Exception to this are paths, they're just examples with
--# the real defaults being based on configure options. The paths listed here
--# are for configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
--# --with-ssldir=/etc/ssl
+-# those. These are exceptions to this though: No sections (e.g. namespace {})
+-# or plugin settings are added by default, they're listed only as examples.
+-# Paths are also just examples with the real defaults being based on configure
+-# options. The paths listed here are for configure --prefix=/usr
+-# --sysconfdir=/etc --localstatedir=/var --with-ssldir=/etc/ssl
 +# any of the lines.
  
  # Base directory where to store runtime data.
@@ -21,7 +22,7 @@ diff -up dovecot-1.2.rc2/dovecot-example.conf.default-settings dovecot-1.2.rc2/d
  
  # A space separated list of IP or host addresses where to listen in for
  # connections. "*" listens in all IPv4 interfaces. "[::]" listens in all IPv6
-@@ -42,13 +39,13 @@
+@@ -43,13 +39,13 @@
  #     listen = *:12000
  #     ..
  #   }
@@ -37,7 +38,7 @@ diff -up dovecot-1.2.rc2/dovecot-example.conf.default-settings dovecot-1.2.rc2/d
  
  # Should all IMAP and POP3 processes be killed when Dovecot master process
  # shuts down. Setting this to "no" means that Dovecot can be upgraded without
-@@ -95,8 +92,8 @@
+@@ -96,8 +92,8 @@
  # dropping root privileges, so keep the key file unreadable by anyone but
  # root. Included doc/mkcert.sh can be used to easily generate self-signed
  # certificate, just make sure to update the domains in dovecot-openssl.cnf
@@ -48,7 +49,7 @@ diff -up dovecot-1.2.rc2/dovecot-example.conf.default-settings dovecot-1.2.rc2/d
  
  # If key file is password protected, give the password here. Alternatively
  # give it when starting dovecot with -p parameter. Since this file is often
-@@ -485,7 +482,7 @@
+@@ -486,7 +482,7 @@
  # locking methods as well. Some operating systems don't allow using some of
  # them simultaneously.
  #mbox_read_locks = fcntl
@@ -57,9 +58,9 @@ diff -up dovecot-1.2.rc2/dovecot-example.conf.default-settings dovecot-1.2.rc2/d
  
  # Maximum time in seconds to wait for lock (all of them) before aborting.
  #mbox_lock_timeout = 300
-diff -up dovecot-1.2.rc2/src/master/master-settings.c.default-settings dovecot-1.2.rc2/src/master/master-settings.c
---- dovecot-1.2.rc2/src/master/master-settings.c.default-settings	2009-04-06 10:45:53.523648309 +0200
-+++ dovecot-1.2.rc2/src/master/master-settings.c	2009-04-06 10:48:05.630586332 +0200
+diff -up dovecot-1.2.1/src/master/master-settings.c.default-settings dovecot-1.2.1/src/master/master-settings.c
+--- dovecot-1.2.1/src/master/master-settings.c.default-settings	2009-07-13 09:05:54.738890180 +0200
++++ dovecot-1.2.1/src/master/master-settings.c	2009-07-13 09:05:54.742889890 +0200
 @@ -178,8 +178,8 @@ struct settings default_settings = {
  	MEMBER(syslog_facility) "mail",
  

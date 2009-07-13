@@ -1,9 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2
-%define betaver rc3
-Release: 0.%{betaver}.1%{?dist}
+Version: 1.2.1
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -15,13 +14,14 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define sieve_version 1.1.6
-%define sieve_name dovecot-sieve
-%define managesieve_version 0.11.4
-%define managesieve_name dovecot-%{version}-managesieve
+%define sieve_version 0.1.8
+%define sieve_name dovecot-1.2-sieve
+%define managesieve_version 0.11.7
+#define managesieve_name dovecot-%{version}-managesieve
+%define managesieve_name dovecot-1.2-managesieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.%{betaver}.tar.gz
+Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -29,10 +29,11 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
+#Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
+Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{version}.%{betaver}-managesieve-%{managesieve_version}.diff.gz
+Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{version}-managesieve-%{managesieve_version}.diff.gz
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
@@ -162,10 +163,8 @@ Group: Development/Libraries
 %description devel
 This package provides the development files for dovecot.
 
-
 %prep
-
-%setup -q -n %{name}-%{version}.%{betaver}
+%setup -q
 
 zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 %patch1 -p1 -b .default-settings
@@ -173,11 +172,11 @@ zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 %patch3 -p1 -b .mkcert-paths
 
 %if %{build_sieve}
-%setup -q -n %{name}-%{version}.%{betaver} -D -T -a 8
+%setup -q -D -T -a 8
 %endif
 
 %if %{build_managesieve}
-%setup -q -n %{name}-%{version}.%{betaver} -D -T -a 10
+%setup -q -D -T -a 10
 %endif
 
 %build
@@ -376,7 +375,14 @@ fi
 %if %{build_sieve}
 %files sieve
 %defattr(-,root,root,-)
-%{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
+#%{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
+%{_bindir}/sieve-filter
+%{_bindir}/sieve-test
+%{_bindir}/sievec
+%{_bindir}/sieved
+%{_mandir}/man1/sieve-test.1.gz
+%{_mandir}/man1/sievec.1.gz
+%{_mandir}/man1/sieved.1.gz
 %endif
 
 %if %{build_managesieve}
@@ -429,6 +435,13 @@ fi
 
 
 %changelog
+* Mon Jul 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.1-1
+- updated to 1.2.1
+- GSSAPI authentication is fixed (#506782)
+- logins now fail if home directory path is relative, because it was 
+  not working correctly and never was expected to work
+- sieve and managesieve update
+
 * Mon Apr 20 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2-0.rc3.1
 - updated to 1.2.rc3
 

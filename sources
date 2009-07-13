@@ -1,4 +1,4 @@
-66ce5ff7faff318a943a1b62b765c127  dovecot-1.2-managesieve-0.11.4.tar.gz
-5ef845d0c137a6fd4cca8453073cd6b4  dovecot-1.2.rc3.tar.gz
-50e849383089b4abb2718e8aa004f3be  dovecot-1.2.rc3-managesieve-0.11.4.diff.gz
-7acf3d98974a515b868addbdb73054eb  dovecot-sieve-1.1.6.tar.gz
+c269cfe38fc40061e232dd28e5fe3721  dovecot-1.2.1.tar.gz
+61e84cf3749e3ec1ce1f41e918f1f0b0  dovecot-1.2-managesieve-0.11.7.tar.gz
+a2b944bd9a477fd4c2bf65fe086369a6  dovecot-1.2.1-managesieve-0.11.7.diff.gz
+364ca99ec75d7c149ed2f2de15debf8a  dovecot-1.2-sieve-0.1.8.tar.gz
