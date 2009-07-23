@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -14,7 +14,7 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define sieve_version 0.1.8
+%define sieve_version 0.1.9
 %define sieve_name dovecot-1.2-sieve
 %define managesieve_version 0.11.7
 #define managesieve_name dovecot-%{version}-managesieve
@@ -213,10 +213,11 @@ cd %{sieve_name}-%{sieve_version}
 
 rm -f ./"configure"
 autoreconf -i -f
-%configure                           \
+%configure                             \
     INSTALL_DATA="install -c -p -m644" \
-    --disable-static                 \
-    --with-dovecot=../
+    --disable-static                   \
+    --with-dovecot=../                 \
+    --with-unfinished-features
 
 make %{?_smp_mflags}
 %endif
@@ -435,6 +436,9 @@ fi
 
 
 %changelog
+* Thu Jul 23 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.1-2
+- updated sieve plugin to 0.1.9
+
 * Mon Jul 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.1-1
 - updated to 1.2.1
 - GSSAPI authentication is fixed (#506782)
