@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.1
-Release: 3%{?dist}
+Version: 1.2.2
+Release: 1.20090728snap%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -17,11 +17,10 @@ Group: System Environment/Daemons
 %define sieve_version 0.1.9
 %define sieve_name dovecot-1.2-sieve
 %define managesieve_version 0.11.7
-#define managesieve_name dovecot-%{version}-managesieve
 %define managesieve_name dovecot-1.2-managesieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.tar.gz
+Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}-20090728.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -29,7 +28,6 @@ Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
 Source7: dovecot-REDHAT-FAQ.txt
-#Source8: http://dovecot.org/releases/sieve/%{sieve_name}-%{sieve_version}.tar.gz
 Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
@@ -436,6 +434,13 @@ fi
 
 
 %changelog
+* Tue Jul 28 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.2-1.20090728snap
+- updated to post 1.2.2 snapshot (including post release GSSAPI fix)
+- Fixed "corrupted index cache file" errors
+- IMAP: FETCH X-* parameters weren't working.
+- Maildir++ quota: Quota was sometimes updated wrong
+- Dovecot master process could hang if it received signals too rapidly
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:1.2.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
