@@ -38,6 +38,9 @@ Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
+#temporary for dovecot-sieve 0.1.11 only
+Patch4: dovecot-sieve-0.1.11.patch
+
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
 BuildRequires: libtool autoconf automake
@@ -171,6 +174,7 @@ zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
+%patch4 -p0 -b .devnull
 %endif
 
 %if %{build_managesieve}
@@ -379,6 +383,7 @@ fi
 %{_bindir}/sieve-test
 %{_bindir}/sievec
 %{_bindir}/sieved
+%{_mandir}/man1/sieve-filter.1.gz
 %{_mandir}/man1/sieve-test.1.gz
 %{_mandir}/man1/sievec.1.gz
 %{_mandir}/man1/sieved.1.gz
