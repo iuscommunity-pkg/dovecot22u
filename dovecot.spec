@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.2
-Release: 1.20090728snap%{?dist}
+Version: 1.2.3
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -14,13 +14,13 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define sieve_version 0.1.9
+%define sieve_version 0.1.11
 %define sieve_name dovecot-1.2-sieve
-%define managesieve_version 0.11.7
+%define managesieve_version 0.11.8
 %define managesieve_name dovecot-1.2-managesieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}-20090728.tar.gz
+Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 Source3: maildir-migration.txt
@@ -434,6 +434,19 @@ fi
 
 
 %changelog
+* Mon Aug 10 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.3-1
+- updated: dovecot 1.2.3, managesieve 0.11.8, sieve 0.1.11
+- Mailbox names with control characters can't be created anymore.
+  Existing mailboxes can still be accessed though.
+- Allow namespace prefix to be opened as mailbox, if a mailbox
+  already exists in the root dir.
+- Maildir: dovecot-uidlist was being recreated every time a mailbox
+  was accessed, even if nothing changed.
+- listescape plugin was somewhat broken
+- ldap: Fixed hang when >128 requests were sent at once.
+- fts_squat: Fixed crashing when searching virtual mailbox.
+- imap: Fixed THREAD .. INTHREAD crashing.
+
 * Tue Jul 28 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.2-1.20090728snap
 - updated to post 1.2.2 snapshot (including post release GSSAPI fix)
 - Fixed "corrupted index cache file" errors
