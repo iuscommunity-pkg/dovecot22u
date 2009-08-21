@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.3
+Version: 1.2.4
 Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
@@ -14,9 +14,9 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define sieve_version 0.1.11
+%define sieve_version 0.1.12
 %define sieve_name dovecot-1.2-sieve
-%define managesieve_version 0.11.8
+%define managesieve_version 0.11.9
 %define managesieve_name dovecot-1.2-managesieve
 
 URL: http://www.dovecot.org/
@@ -37,9 +37,6 @@ Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{version}-managesieve-%{m
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-#temporary for dovecot-sieve 0.1.11 only
-Patch4: dovecot-sieve-0.1.11.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel
@@ -174,7 +171,6 @@ zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
-%patch4 -p0 -b .devnull
 %endif
 
 %if %{build_managesieve}
@@ -439,6 +435,17 @@ fi
 
 
 %changelog
+* Fri Aug 21 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.4-1
+- updated: dovecot 1.2.4, managesieve 0.11.9, sieve 0.1.12
+- fixed a crash in index file handling
+- fixed a crash in saving messages where message contained a CR
+  character that wasn't followed by LF
+- fixed a crash when listing shared namespace prefix
+- sieve: implemented the new date extension. This allows matching
+  against date values in header fields and the current date at
+  the time of script evaluation
+- managesieve: reintroduced ability to abort SASL with "*" response
+
 * Mon Aug 10 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.3-1
 - updated: dovecot 1.2.3, managesieve 0.11.8, sieve 0.1.11
 - Mailbox names with control characters can't be created anymore.
