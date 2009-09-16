@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -435,6 +435,9 @@ fi
 
 
 %changelog
+* Wed Sep 16 2009 Tomas Mraz <tmraz@redhat.com> - 1:1.2.4-3
+- use password-auth common PAM configuration instead of system-auth
+
 * Fri Aug 21 2009 Tomas Mraz <tmraz@redhat.com> - 1:1.2.4-2
 - rebuilt with new openssl
 
