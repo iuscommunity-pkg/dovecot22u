@@ -28,7 +28,7 @@
 # Source function library.
 . /etc/init.d/functions
 
-if [ -f /etc/sysconfig/dovecot ]; then
+if [ -f /etc/sysconfig/dovecot -a $UID -eq 0 ]; then
     . /etc/sysconfig/dovecot
 fi
 
@@ -40,6 +40,7 @@ pidfile="/var/run/dovecot/master.pid"
 lockfile="/var/lock/subsys/dovecot"
 
 start() {
+	[ $UID -eq 0 ] || exit 4
 	[ -x $exec ] || exit 5
 	[ -f $config ] || exit 6
 
@@ -51,6 +52,7 @@ start() {
 }
 
 stop() {
+	[ $UID -eq 0 ] || exit 4
 	echo -n $"Stopping $prog: "
 	killproc -p $pidfile $exec
 	RETVAL=$?
@@ -59,6 +61,7 @@ stop() {
 }
 
 reload() {
+	[ $UID -eq 0 ] || exit 4
 	echo -n $"Reloading $prog: "
 	killproc -p $pidfile $exec -HUP
 	RETVAL=$?
@@ -95,6 +98,7 @@ case "$1" in
 	;;
   *)
 	echo $"Usage: $0 {condrestart|try-restart|start|stop|restart|reload|force-reload|status}"
+	[ $1 = 'usage' ] && exit 0
 	exit 2
 esac
 

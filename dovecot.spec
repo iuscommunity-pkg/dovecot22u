@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.4
-Release: 3%{?dist}
+Version: 1.2.5
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -31,7 +31,7 @@ Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{version}-managesieve-%{managesieve_version}.diff.gz
+Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-1.2.4-managesieve-%{managesieve_version}.diff.gz
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
@@ -355,7 +355,7 @@ fi
 %doc %{docdir}-%{version}
 %config(noreplace) %{_sysconfdir}/dovecot.conf
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
-%{_initrddir}/dovecot
+%{_initddir}/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %dir %{ssldir}
 %dir %{ssldir}/certs
@@ -368,7 +368,6 @@ fi
 %{_sbindir}/dovecotpw
 %attr(0755,root,dovecot) %dir /var/run/dovecot
 %attr(0750,root,dovecot) %dir /var/run/dovecot/login
-#%attr(0755,root,dovecot) %{_libexecdir}/%{name}/mkcert.sh
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
 %if %{build_sieve}
@@ -435,6 +434,19 @@ fi
 
 
 %changelog
+* Thu Sep 17 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.5-1
+- updated to dovecot 1.2.5
+- Authentication: DIGEST-MD5 and RPA mechanisms no longer require
+  user's login realm to be listed in auth_realms. It only made
+  configuration more difficult without really providing extra security.
+- zlib plugin: Don't allow clients to save compressed data directly.
+  This prevents users from exploiting (most of the) potential security
+  holes in zlib/bzlib.
+- fix index file handling that could have caused an assert-crash
+- IMAP: Fixes to QRESYNC extension.
+- deliver: Don't send rejects to any messages that have Auto-Submitted
+  header. This avoids emails loops.
+
 * Wed Sep 16 2009 Tomas Mraz <tmraz@redhat.com> - 1:1.2.4-3
 - use password-auth common PAM configuration instead of system-auth
 
