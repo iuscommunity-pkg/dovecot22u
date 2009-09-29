@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -39,7 +39,7 @@ Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: openssl-devel, pam-devel, zlib-devel
+BuildRequires: openssl-devel, pam-devel, zlib-devel, libcap-devel
 BuildRequires: libtool autoconf automake
 
 # gettext-devel is needed for running autoconf because of the
@@ -184,6 +184,7 @@ autoreconf -i -f
     INSTALL_DATA="install -c -p -m644" \
     --enable-header-install      \
     --disable-static             \
+    --with-libcap                \
 %if %{build_postgres}
     --with-pgsql                 \
 %endif
@@ -434,6 +435,9 @@ fi
 
 
 %changelog
+* Tue Sep 29 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.5-2
+- build with libcap enabled
+
 * Thu Sep 17 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.5-1
 - updated to dovecot 1.2.5
 - Authentication: DIGEST-MD5 and RPA mechanisms no longer require
