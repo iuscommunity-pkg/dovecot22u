@@ -243,8 +243,8 @@ rm -rf $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install -p -m 755 src/plugins/convert/convert-tool $RPM_BUILD_ROOT%{_libexecdir}/%{name}
 
-mkdir -p $RPM_BUILD_ROOT%{_initrddir}
-install -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/dovecot
+mkdir -p $RPM_BUILD_ROOT%{_initddir}
+install -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pam.d
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
