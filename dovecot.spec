@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.5
-Release: 2%{?dist}
+Version: 1.2.6
+Release: 1%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -31,7 +31,7 @@ Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-1.2.4-managesieve-%{managesieve_version}.diff.gz
+Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-1.2.5-managesieve-%{managesieve_version}.diff.gz
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
@@ -435,6 +435,16 @@ fi
 
 
 %changelog
+* Tue Oct 06 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-1
+- dovecot updated to 1.2.6
+- Added authtest utility for doing passdb and userdb lookups.
+- login: ssl_security string now also shows the used compression.
+- quota: Don't crash with non-Maildir++ quota backend.
+- imap proxy: Fixed crashing with some specific password characters.
+- fixed broken dovecot --exec-mail.
+- Avoid assert-crashing when two processes try to create index at the
+  same time.
+
 * Tue Sep 29 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.5-2
 - build with libcap enabled
 
