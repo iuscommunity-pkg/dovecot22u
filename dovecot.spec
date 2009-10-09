@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.6
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT and LGPLv2 and BSD with advertising
 Group: System Environment/Daemons
 
@@ -31,7 +31,7 @@ Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-1.2.5-managesieve-%{managesieve_version}.diff.gz
+Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-1.2.6-managesieve-%{managesieve_version}.diff.gz
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
@@ -435,6 +435,9 @@ fi
 
 
 %changelog
+* Fri Oct 09 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-2
+- fix init script for case when no action was specified
+
 * Tue Oct 06 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-1
 - dovecot updated to 1.2.6
 - Added authtest utility for doing passdb and userdb lookups.

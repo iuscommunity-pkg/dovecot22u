@@ -98,8 +98,8 @@ case "$1" in
 	;;
   *)
 	echo $"Usage: $0 {condrestart|try-restart|start|stop|restart|reload|force-reload|status}"
-	[ $1 = 'usage' ] && exit 0
-	exit 2
+	RETVAL=2
+	[ "$1" = 'usage' ] && RETVAL=0
 esac
 
 exit $RETVAL
