@@ -3,7 +3,8 @@ Name: dovecot
 Epoch: 1
 Version: 1.2.6
 Release: 2%{?dist}
-License: MIT and LGPLv2 and BSD with advertising
+#dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
+License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
 
 %define build_postgres 1
