@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.6
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,7 +15,8 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define sieve_version 0.1.12
+%define ver4mansieve %{version}
+%define sieve_version 0.1.13
 %define sieve_name dovecot-1.2-sieve
 %define managesieve_version 0.11.9
 %define managesieve_name dovecot-1.2-managesieve
@@ -32,7 +33,7 @@ Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-1.2.6-managesieve-%{managesieve_version}.diff.gz
+Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{ver4mansieve}-managesieve-%{managesieve_version}.diff.gz
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
@@ -436,6 +437,25 @@ fi
 
 
 %changelog
+* Mon Oct 19 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-3
+- sieve updated to 0.1.13 which brings these changes:
+- Body extension: implemented proper handling of the :raw transform
+  and added various new tests to the test suite. However, :content
+  "multipart" and :content "message/rfc822" are still not working.
+- Fixed race condition occuring when multiple instances are saving the
+  same binary (patch by Timo Sirainen).
+- Body extension: don't give SKIP_BODY_BLOCK flag to message parser,
+  we want the body!
+- Fixed bugs in multiscript support; subsequent keep actions were not
+  always merged correctly and implicit side effects were not always
+  handled correctly.
+- Fixed a segfault bug in the sieve-test tool occuring when compile
+  fails.
+- Fixed segfault bug in action procesing. It was triggered while
+  merging side effects in duplicate actions.
+- Fixed bug in the Sieve plugin that caused it to try to stat() a NULL
+  path, yielding a 'Bad address' error.
+
 * Fri Oct 09 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-2
 - fix init script for case when no action was specified
 
