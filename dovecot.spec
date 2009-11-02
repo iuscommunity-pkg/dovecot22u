@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.6
-Release: 3%{?dist}
+Release: 5%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -39,6 +39,9 @@ Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{ver4mansieve}-managesiev
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+
+# taken from upstream, for dovecot <= 1.2.6 use imap_capability in greeting message, rhbz#524485
+Patch4: dovecot-1.2.6-greetings.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, libcap-devel
@@ -86,18 +89,18 @@ Dovecot is an IMAP server for Linux/UNIX-like systems, written with security
 primarily in mind.  It also contains a small POP3 server.  It supports mail 
 in either of maildir or mbox formats.
 
-The SQL drivers and authentication plugins are in their subpackages.
+The SQL drivers and authentication plug-ins are in their subpackages.
 
 
 %if %{build_sieve}
 %package sieve
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: Sieve plugin for dovecot LDA
+Summary: Sieve plug-in for dovecot LDA
 Group: System Environment/Daemons
 License: MIT and LGPLv2+
 
 %description sieve
-This package provides sieve plugin version %{sieve_version} for dovecot LDA.
+This package provides sieve plug-in version %{sieve_version} for dovecot LDA.
 %endif
 
 %if %{build_managesieve}
@@ -105,7 +108,7 @@ This package provides sieve plugin version %{sieve_version} for dovecot LDA.
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: Manage Sieve daemon for dovecot
 Group: System Environment/Daemons
-License: LGPLv2.1
+License: LGPLv2
 
 %description managesieve
 This package provides the Manage Sieve daemon version %{managesieve_version} for dovecot.
@@ -114,51 +117,51 @@ This package provides the Manage Sieve daemon version %{managesieve_version} for
 %if %{build_postgres}
 %package pgsql
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: Postgres SQL backend for dovecot
+Summary: Postgres SQL back end for dovecot
 Group: System Environment/Daemons
 %description pgsql
-This package provides the Postgres SQL backend for dovecot-auth etc.
+This package provides the Postgres SQL back end for dovecot-auth etc.
 %endif
 
 %if %{build_mysql}
 %package mysql
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: MySQL backend for dovecot
+Summary: MySQL back end for dovecot
 Group: System Environment/Daemons
 %description mysql
-This package provides the MySQL backend for dovecot-auth etc.
+This package provides the MySQL back end for dovecot-auth etc.
 %endif
 
 %if %{build_sqlite}
 %package sqlite
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: SQLite backend for dovecot
+Summary: SQLite back end for dovecot
 Group: System Environment/Daemons
 %description sqlite
-This package provides the SQLite backend for dovecot-auth etc.
+This package provides the SQLite back end for dovecot-auth etc.
 %endif
 
 %if %{build_ldap}
 %package ldap
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: LDAP auth plugin for dovecot
+Summary: LDAP auth plug-in for dovecot
 Group: System Environment/Daemons
 %description ldap
-This package provides the LDAP auth plugin for dovecot-auth etc.
+This package provides the LDAP auth plug-in for dovecot-auth etc.
 %endif
 
 %if %{build_gssapi}
 %package gssapi
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: GSSAPI auth mechanism plugin for dovecot
+Summary: GSSAPI auth mechanism plug-in for dovecot
 Group: System Environment/Daemons
 %description gssapi
-This package provides the GSSAPI auth mechanism plugin for dovecot-auth etc.
+This package provides the GSSAPI auth mechanism plug-in for dovecot-auth etc.
 %endif
 
 %package devel
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: Development files dor dovecot
+Summary: Development files for dovecot
 Group: Development/Libraries
 %description devel
 This package provides the development files for dovecot.
@@ -170,6 +173,7 @@ zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
+%patch4 -p1 -b .greetings
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
@@ -290,8 +294,19 @@ do
     install -p -m644 $f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
 done
 
+# fix encoding
+pushd $RPM_BUILD_ROOT
+for fe in ./%{docdir}/auth-protocol.txt
+do
+  iconv -f iso-8859-1 -t utf-8 <$fe >$fe.new
+  touch -r $fe $fe.new
+  mv -f $fe.new $fe
+done
+popd
+
 mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
+
 
 %if %{build_sieve}
 # dovecot-sieve
@@ -437,6 +452,13 @@ fi
 
 
 %changelog
+* Mon Nov 02 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-5
+- spec cleanup
+
+* Wed Oct 21 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-4
+- imap-login: If imap_capability is set, show it in the banner 
+  instead of the default (#524485)
+
 * Mon Oct 19 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-3
 - sieve updated to 0.1.13 which brings these changes:
 - Body extension: implemented proper handling of the :raw transform

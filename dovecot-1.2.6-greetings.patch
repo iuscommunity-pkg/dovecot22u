@@ -1,0 +1,98 @@
+diff -up dovecot-1.2.6/src/imap-login/client.c.greetings dovecot-1.2.6/src/imap-login/client.c
+--- dovecot-1.2.6/src/imap-login/client.c.greetings	2009-10-05 20:10:44.000000000 +0200
++++ dovecot-1.2.6/src/imap-login/client.c	2009-10-21 12:20:03.995249615 +0200
+@@ -93,11 +93,12 @@ bool client_skip_line(struct imap_client
+ 
+ static const char *get_capability(struct imap_client *client, bool full)
+ {
+-	const char *auths;
++	const char *auths, *cap_str;
+ 
++	cap_str = full || capability_string_overridden ? capability_string :
++		CAPABILITY_BANNER_STRING;
+ 	auths = client_authenticate_get_capabilities(client->common.secured);
+-	return t_strconcat(full ? capability_string : CAPABILITY_BANNER_STRING,
+-			   (ssl_initialized && !client->common.tls) ?
++	return t_strconcat(cap_str, (ssl_initialized && !client->common.tls) ?
+ 			   " STARTTLS" : "",
+ 			   disable_plaintext_auth && !client->common.secured ?
+ 			   " LOGINDISABLED" : "", auths, NULL);
+diff -up dovecot-1.2.6/src/login-common/common.h.greetings dovecot-1.2.6/src/login-common/common.h
+--- dovecot-1.2.6/src/login-common/common.h.greetings	2009-01-15 21:27:26.000000000 +0100
++++ dovecot-1.2.6/src/login-common/common.h	2009-10-21 12:20:03.996248613 +0200
+@@ -23,7 +23,7 @@ extern const char *trusted_networks;
+ extern unsigned int max_connections;
+ extern unsigned int login_process_uid;
+ extern struct auth_client *auth_client;
+-extern bool closing_down;
++extern bool closing_down, capability_string_overridden;
+ 
+ void main_ref(void);
+ void main_unref(void);
+diff -up dovecot-1.2.6/src/login-common/main.c.greetings dovecot-1.2.6/src/login-common/main.c
+--- dovecot-1.2.6/src/login-common/main.c.greetings	2009-08-12 20:03:16.000000000 +0200
++++ dovecot-1.2.6/src/login-common/main.c	2009-10-21 12:20:03.996248613 +0200
+@@ -28,7 +28,7 @@ const char *trusted_networks;
+ unsigned int max_connections;
+ unsigned int login_process_uid;
+ struct auth_client *auth_client;
+-bool closing_down;
++bool closing_down, capability_string_overridden;
+ 
+ static const char *process_name;
+ static struct ioloop *ioloop;
+@@ -354,8 +354,11 @@ static void main_init(void)
+ 
+ 	/* capability default is set in imap/pop3-login */
+ 	value = getenv("CAPABILITY_STRING");
+-	if (value != NULL && *value != '\0')
++	if (value != NULL && *value != '\0') {
+ 		capability_string = value;
++		if (getenv("CAPABILITY_STRING_OVERRIDDEN") != NULL)
++			capability_string_overridden = TRUE;
++	}
+ 
+         closing_down = FALSE;
+ 	main_refcount = 0;
+diff -up dovecot-1.2.6/src/login-common/ssl-proxy-openssl.c.greetings dovecot-1.2.6/src/login-common/ssl-proxy-openssl.c
+--- dovecot-1.2.6/src/login-common/ssl-proxy-openssl.c.greetings	2009-09-29 16:14:15.000000000 +0200
++++ dovecot-1.2.6/src/login-common/ssl-proxy-openssl.c	2009-10-21 12:20:04.000248772 +0200
+@@ -715,6 +715,7 @@ static DH *ssl_tmp_dh_callback(SSL *ssl 
+ 	return ssl_params.dh_1024;
+ }
+ 
++#ifdef HAVE_SSL_CTX_SET_INFO_CALLBACK
+ static void ssl_info_callback(const SSL *ssl, int where, int ret)
+ {
+ 	struct ssl_proxy *proxy;
+@@ -732,6 +733,7 @@ static void ssl_info_callback(const SSL 
+ 			  net_ip2addr(&proxy->ip));
+ 	}
+ }
++#endif
+ 
+ static int ssl_verify_client_cert(int preverify_ok, X509_STORE_CTX *ctx)
+ {
+@@ -814,8 +816,10 @@ static void ssl_proxy_ctx_init(SSL_CTX *
+ 				cafile, ssl_last_error());
+ 		}
+ 	}
++#ifdef HAVE_SSL_CTX_SET_INFO_CALLBACK
+ 	if (verbose_ssl)
+ 		SSL_CTX_set_info_callback(ssl_ctx, ssl_info_callback);
++#endif
+ 	if (SSL_CTX_need_tmp_RSA(ssl_ctx))
+ 		SSL_CTX_set_tmp_rsa_callback(ssl_ctx, ssl_gen_rsa_key);
+ 	SSL_CTX_set_tmp_dh_callback(ssl_ctx, ssl_tmp_dh_callback);
+diff -up dovecot-1.2.6/src/master/login-process.c.greetings dovecot-1.2.6/src/master/login-process.c
+--- dovecot-1.2.6/src/master/login-process.c.greetings	2009-10-21 12:20:03.965978906 +0200
++++ dovecot-1.2.6/src/master/login-process.c	2009-10-21 12:23:04.696873716 +0200
+@@ -635,6 +635,8 @@ static void login_process_init_env(struc
+ 				    *set->imap_capability != '\0' ?
+ 				    set->imap_capability :
+ 				    set->imap_generated_capability, NULL));
++		if (*set->imap_capability != '\0')
++			env_put("CAPABILITY_STRING_OVERRIDDEN=1");
+ 	} else if (group->mail_process_type == PROCESS_TYPE_MANAGESIEVE) {
+ 		env_put(t_strconcat("CAPABILITY_STRING=",
+ 			set->managesieve_generated_capability, NULL));
