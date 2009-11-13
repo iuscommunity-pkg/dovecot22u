@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.6
-Release: 5%{?dist}
+Version: 1.2.7
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,7 +15,7 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define ver4mansieve %{version}
+%define ver4mansieve 1.2.6
 %define sieve_version 0.1.13
 %define sieve_name dovecot-1.2-sieve
 %define managesieve_version 0.11.9
@@ -39,9 +39,6 @@ Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{ver4mansieve}-managesiev
 Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-# taken from upstream, for dovecot <= 1.2.6 use imap_capability in greeting message, rhbz#524485
-Patch4: dovecot-1.2.6-greetings.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, libcap-devel
@@ -173,7 +170,6 @@ zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .greetings
 
 %if %{build_sieve}
 %setup -q -D -T -a 8
@@ -273,6 +269,7 @@ chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 # Install dovecot.conf and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT%{ssldir}
 install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot.conf
+install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{docdir}/dovecot.conf.default
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot-*example.conf # dovecot seems to install this by itself
 install -p -m644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
 
@@ -452,6 +449,10 @@ fi
 
 
 %changelog
+* Fri Nov 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.7-1
+- updated to dovecot 1.2.7
+- add man pages
+
 * Mon Nov 02 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-5
 - spec cleanup
 
