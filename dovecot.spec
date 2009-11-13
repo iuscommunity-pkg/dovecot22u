@@ -452,6 +452,19 @@ fi
 * Fri Nov 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.7-1
 - updated to dovecot 1.2.7
 - add man pages
+- IMAP: IDLE now sends "Still here" notifications to same user's
+  connections at the same time. This hopefully reduces power usage
+  of some mobile clients that use multiple IDLEing connections.
+- IMAP: If imap_capability is set, show it in the login banner.
+- IMAP: Implemented SORT=DISPLAY extension.
+- Login process creation could have sometimes failed with epoll_ctl()
+  errors or without epoll probably some other strange things could
+  have happened.
+- Maildir: Fixed some performance issues
+- Maildir: Fixed crash when using a lot of keywords.
+- Several fixes to QRESYNC extension and modseq handling
+- mbox: Make sure failed saves get rolled back with NFS.
+- dbox: Several fixes.
 
 * Mon Nov 02 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.6-5
 - spec cleanup
