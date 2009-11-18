@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,11 +15,17 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define ver4mansieve 1.2.6
+%define ver4mansieve 1.2.7
 %define sieve_version 0.1.13
 %define sieve_name dovecot-1.2-sieve
 %define managesieve_version 0.11.9
 %define managesieve_name dovecot-1.2-managesieve
+
+%if %{?fedora}00%{?rhel} < 6
+%if %{?_initdddir}
+%define _initdddir %{_initrddir}
+%endif
+%endif
 
 URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.tar.gz
@@ -34,6 +40,9 @@ Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
 Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{ver4mansieve}-managesieve-%{managesieve_version}.diff.gz
+Source12: dovecot.8
+Source13: dovecotpw.1
+Source14: dovecot.conf.5
 
 # 3x Fedora specific
 Patch1: dovecot-1.1-default-settings.patch
@@ -42,7 +51,7 @@ Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, libcap-devel
-BuildRequires: libtool autoconf automake
+BuildRequires: libtool autoconf automake pkgconfig
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -243,16 +252,23 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT%{_datadir}/%{name}
 
+%if %{?fedora}00%{?rhel} < 6
+sed -i 's|password-auth|system-auth|'%{SOURCE2} %if %{_initdddir}
+%endif
+
 install -p -m 755 src/plugins/convert/convert-tool $RPM_BUILD_ROOT%{_libexecdir}/%{name}
 
-mkdir -p $RPM_BUILD_ROOT%{_initddir}
-install -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
+install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pam.d
-install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
+install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-install -p -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
+install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
+
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man5,man8}
+install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_mandir}/man8/
+install -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_mandir}/man1/
+install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/
+find $RPM_BUILD_ROOT%{_mandir} -type f -exec gzip '{}' \;
 
 # generate ghost .pem file
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/certs
@@ -384,6 +400,9 @@ fi
 %attr(0755,root,dovecot) %dir /var/run/dovecot
 %attr(0750,root,dovecot) %dir /var/run/dovecot/login
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
+%{_mandir}/man1/dovecotpw.1.gz
+%{_mandir}/man5/dovecot.conf.5.gz
+%{_mandir}/man8/dovecot.8.gz
 
 %if %{build_sieve}
 %files sieve
@@ -449,6 +468,10 @@ fi
 
 
 %changelog
+* Mon Nov 16 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.7-2
+- use originall managesieve to dovecot diff
+- EPEL-ize spec for rhel5 rebuilds (#537666)
+
 * Fri Nov 13 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.7-1
 - updated to dovecot 1.2.7
 - add man pages
