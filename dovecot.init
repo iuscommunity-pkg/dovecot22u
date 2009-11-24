@@ -83,12 +83,14 @@ case "$1" in
 	;;
   force-reload|restart)
 	stop
+	sleep 1
 	start
 	RETVAL=$?
 	;;
   condrestart|try-restart)
 	if [ -f $lockfile ]; then
 	    stop
+	    sleep 3
 	    start
 	fi
 	;;
