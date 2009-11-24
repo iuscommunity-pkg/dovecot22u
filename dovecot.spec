@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -22,9 +22,7 @@ Group: System Environment/Daemons
 %define managesieve_name dovecot-1.2-managesieve
 
 %if %{?fedora}00%{?rhel} < 6
-%if %{?_initdddir}
-%define _initdddir %{_initrddir}
-%endif
+%define _initddir %{_initrddir}
 %endif
 
 URL: http://www.dovecot.org/
@@ -253,7 +251,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 %if %{?fedora}00%{?rhel} < 6
-sed -i 's|password-auth|system-auth|'%{SOURCE2} %if %{_initdddir}
+sed -i 's|password-auth|system-auth|' %{SOURCE2}
 %endif
 
 install -p -m 755 src/plugins/convert/convert-tool $RPM_BUILD_ROOT%{_libexecdir}/%{name}
@@ -468,6 +466,9 @@ fi
 
 
 %changelog
+* Tue Nov 24 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.8-2
+- fix initdddir typo (for rhel rebuilds)
+
 * Fri Nov 20 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.8-1
 - update to dovecot 1.2.8
 
