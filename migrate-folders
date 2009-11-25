@@ -1,0 +1,195 @@
+#!/bin/bash
+
+# author: G.R.Keech <rkeech@redhat.com>
+# name:   migrate-folders
+# date:   2004-10-20
+
+# This script assists in the conversion of mail boxes
+# in mbox format to maildir format.
+# See also migrate-users.
+
+# Applicability.
+#
+# This script is intended for the common case on Red Hat systems
+# where mail users have mail folders in their home directories
+# under /home, and have inboxes in /var/spool/mail/
+#==================================================================
+# Change the value of the elements in this section as required.
+
+#This is a list of folders, one per line.  This does not
+#include the inboxes.  This might be prepared starting with
+#the output of "find /home -type d".
+FOLDERLIST=/root/migrate/folderlist
+# folder is the existing mbox folder being migrated.
+# It is a path under /home.
+# eg if oldfolder is  fred/personal, then folder is personal,
+# user is fred.
+
+#Specify the location of the new location for mail folders.
+#This cannot be the same as the old location because it will
+#create directory names that contend with existing file names.
+NEWBASE=/var/spool/mail2
+
+#The script to convert invidual mail folders to maildir format.
+#http://perfectmaildir.home-dn.net/
+FOLDERCONVERT=/usr/local/bin/perfect_maildir.pl 
+
+#This is a list of users to have their mail folders created.
+#One user per line.
+#Suggest create with cut -d: -f1 /etc/passwd > ~/migrate/u1
+#then remove inappropriate entries by hand.
+USERLIST=/root/migrate/userlist
+
+# Detailed migration information is sent to this file
+MIGRATELOG=/tmp/foldermigrationlog-$(date -I) 
+#=================================================================
+echo 
+echo "Have you created the users' mail directories yet? (y/n)"
+echo
+read ans
+if [ "$ans" != "y" ]
+then
+  echo Good Bye.
+  echo use the migrate-users script first.
+  exit 0
+fi
+echo
+echo This will copy existing mbox-style mail folders listed
+echo in the file $FOLDERLIST.  Maildir-style folders will
+echo be created under $NEWBASE
+echo
+echo "Do you want to continue? (y/n)"
+read ans
+if [ "$ans" != "y" ]
+then
+  echo Good Bye.
+  exit 0
+fi
+echo
+echo Note: Detailed folder migration information will be sent to $MIGRATELOG
+echo
+echo Press enter to start
+read ans
+
+if [ ! -x ${FOLDERCONVERT} ]
+then
+  echo Error: file ${FOLDERCONVERT} is not available to execute.
+  exit 1
+fi
+
+if [ ! -d ${NEWBASE} ]
+then
+  echo Error: directory $NEWBASE does not exist
+  exit 1
+fi
+
+if [ ! -f "${USERLIST}" ]
+then
+  echo Error: user list file \"$USERLIST\" does not exist.
+  exit 1
+fi
+
+
+#-----------------------------------------------------------------
+echo
+echo Testing that the base of the folderlist entries corresponds to usernames
+while read oldfolder
+do
+  user="$(dirname "$oldfolder")"
+  if grep ^${user}: /etc/passwd &> /dev/null
+  then
+    echo -n .
+  else
+    echo User \"$user\": is bogus.
+    echo The string \"$user\" from the file \"$FOLDERLIST\" needs to
+    echo correspond exactly to a username.  Edit the file accordingly.
+    exit 1
+  fi
+done < $FOLDERLIST
+echo
+echo PASS
+echo
+nusers=$(wc -l $USERLIST | awk '{ print $1 }' )
+n=1
+#-----------------------------------------------------------------
+# Iterate through user list and migrate folders.
+while read user
+do
+  #-----------------------------------------------------------------
+  # Step 1: Check stuff
+  if grep ^${user}: /etc/passwd &> /dev/null
+  then
+    echo -n "$n / $nusers : User \"$user\" is OK: "
+    n=$(( $n + 1 ))
+    echo "User \"$user\"" >> $MIGRATELOG
+
+    inbox=/var/spool/mail/${user}
+
+    if [ \( ! -f "${inbox}" \) -o \( ! -s "${inbox}" \) ]
+    then
+	echo User \"${user}\" has no inbox to convert.
+    else
+      #-----------------------------------------------------------------
+      # Step 2: Migrate user inboxes from /var/spool/mail/.
+      newdir="${NEWBASE}/${user}/"
+      $FOLDERCONVERT "$newdir" < "${inbox}" >> $MIGRATELOG 2>&1
+      chown -R ${user}:mail "${newdir}"
+      find "$newdir" -type f  -exec chmod 600 {} \;
+      echo -n  " inbox "
+    fi
+    #-----------------------------------------------------------------
+    # Step 3: Migrate other mail folders from user home directories.
+    while read oldfolder
+    do
+      folder=$(basename "${oldfolder}")
+      fuser="$(dirname "$oldfolder")"
+
+      if [ "$user" = "$fuser" ]
+      then
+	if [ ! -f "/home/${oldfolder}" ]
+	then
+	  echo Error folder \"${folder}\" does not exist.
+	  break
+	fi
+
+	if [ ! -d ${NEWBASE}/${fuser} ]
+	then
+	    echo Error ${NEWBASE}/${fuser} does not exist.
+	    break
+	fi
+
+	newdir="${NEWBASE}/${fuser}/.$folder"
+	mkdir -p "$newdir"/cur
+	mkdir -p "$newdir"/new
+	mkdir -p "$newdir"/tmp
+	chmod -R 770  "${newdir}"
+	$FOLDERCONVERT "$newdir" < "/home/$oldfolder" >> $MIGRATELOG 2>&1
+	chown -R ${user}:mail "${newdir}"
+        #chmod 600 "$newdir/cur/*"
+	find "$newdir" -type f  -exec chmod 600 {} \;
+  
+	echo "$folder" >> ${NEWBASE}/${fuser}/.subscriptions
+	chmod 600 ${NEWBASE}/${fuser}/.subscriptions
+	chown ${fuser}:mail ${NEWBASE}/${fuser}/.subscriptions
+	
+	echo -n .
+      fi
+    done < $FOLDERLIST
+    echo
+
+  else
+    echo User "$user: is bogus."
+  fi
+
+done < $USERLIST
+
+echo
+echo
+echo To make the new base mail directory active, change the
+echo mail_spool_directory setting for postfix using
+echo postconf -e \"mail_spool_directory = ${NEWBASE}/\"
+echo and change Dovecots default_mail_env setting in
+echo /etc/dovecot.conf to
+echo default_mail_env = maildir:${NEWBASE}/%u
+echo
+
