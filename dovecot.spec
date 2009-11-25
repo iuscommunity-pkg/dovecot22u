@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.8
-Release: 3%{?dist}
+Release: 4%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -462,6 +462,9 @@ fi
 
 
 %changelog
+* Wed Nov 25 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.8-4
+- spec cleanup
+
 * Tue Nov 24 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.8-3
 - fix dovecot's restart after update (#518753)
 
