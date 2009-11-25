@@ -33,7 +33,6 @@ Source3: maildir-migration.txt
 Source4: migrate-folders
 Source5: migrate-users
 Source6: perfect_maildir.pl
-Source7: dovecot-REDHAT-FAQ.txt
 Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
 Source9: dovecot.sysconfig
 Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
@@ -286,9 +285,6 @@ install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot.conf
 install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{docdir}/dovecot.conf.default
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot-*example.conf # dovecot seems to install this by itself
 install -p -m644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
-
-# Install some of our own documentation
-install -p -m644 %{SOURCE7} $RPM_BUILD_ROOT%{docdir}/REDHAT-FAQ.txt
 
 # Install the licensing files into the documentation area
 install -p -m644 COPYING* $RPM_BUILD_ROOT%{docdir}
