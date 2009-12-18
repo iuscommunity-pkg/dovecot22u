@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.8
-Release: 4%{?dist}
+Version: 1.2.9
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,7 +15,7 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define ver4mansieve 1.2.7
+%define ver4mansieve 1.2.8
 %define sieve_version 0.1.13
 %define sieve_name dovecot-1.2-sieve
 %define managesieve_version 0.11.9
@@ -462,6 +462,20 @@ fi
 
 
 %changelog
+* Fri Dec 18 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.9-1
+- updated to 1.2.9
+- maildir: When saving, filenames now always contain ,S=<size>.
+  Previously this was done only when quota plugin was loaded. It's
+  required for zlib plugin and may be useful for other things too.
+- maildir: v1.2.7 and v1.2.8 caused assert-crashes in
+  maildir_uidlist_records_drop_expunges()
+- maildir_copy_preserve_filename=yes could have caused crashes.
+- Maildir++ quota: % limits weren't updated when limits were read
+  from maildirsize.
+- virtual: v1.2.8 didn't fully fix the "lots of mailboxes" bug
+- virtual: Fixed updating virtual mailbox based on flag changes.
+- fts-squat: Fixed searching multi-byte characters.
+
 * Wed Nov 25 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.8-4
 - spec cleanup
 
