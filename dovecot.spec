@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,10 +15,10 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define ver4mansieve 1.2.8
-%define sieve_version 0.1.13
+%define ver4mansieve 1.2.9
+%define sieve_version 0.1.14
 %define sieve_name dovecot-1.2-sieve
-%define managesieve_version 0.11.9
+%define managesieve_version 0.11.10
 %define managesieve_name dovecot-1.2-managesieve
 
 %if %{?fedora}00%{?rhel} < 6
@@ -462,6 +462,10 @@ fi
 
 
 %changelog
+* Tue Dec 22 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.9-2
+- sieve updated to 0.1.14
+- managesieve updated to 0.11.10 
+
 * Fri Dec 18 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.9-1
 - updated to 1.2.9
 - maildir: When saving, filenames now always contain ,S=<size>.
