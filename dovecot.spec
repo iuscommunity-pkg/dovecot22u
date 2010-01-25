@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.9
-Release: 2%{?dist}
+Version: 1.2.10
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -462,6 +462,16 @@ fi
 
 
 %changelog
+* Mon Jan 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-1
+- updated to 1.2.10
+- %variables now support %{host}, %{pid} and %{env:ENVIRONMENT_NAME}
+  everywhere.
+- LIST-STATUS capability is now advertised
+- maildir: Fixed several assert-crashes.
+- imap: LIST "" inbox shouldn't crash when using namespace with
+  "INBOX." prefix.
+- lazy_expunge now ignores non-private namespaces.
+
 * Tue Dec 22 2009 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.9-2
 - sieve updated to 0.1.14
 - managesieve updated to 0.11.10 
