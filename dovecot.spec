@@ -464,7 +464,7 @@ fi
 %changelog
 * Mon Jan 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-1
 - updated to 1.2.10
-- %variables now support %{host}, %{pid} and %{env:ENVIRONMENT_NAME}
+- %%variables now support %%{host}, %%{pid} and %%{env:ENVIRONMENT_NAME}
   everywhere.
 - LIST-STATUS capability is now advertised
 - maildir: Fixed several assert-crashes.
