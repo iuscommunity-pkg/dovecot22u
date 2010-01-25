@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.10
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,10 +15,10 @@ Group: System Environment/Daemons
 
 %define build_sieve 1
 %define build_managesieve 1
-%define ver4mansieve 1.2.9
-%define sieve_version 0.1.14
+%define ver4mansieve 1.2.10
+%define sieve_version 0.1.15
 %define sieve_name dovecot-1.2-sieve
-%define managesieve_version 0.11.10
+%define managesieve_version 0.11.11
 %define managesieve_name dovecot-1.2-managesieve
 
 %if %{?fedora}00%{?rhel} < 6
@@ -462,6 +462,28 @@ fi
 
 
 %changelog
+* Mon Jan 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-2
+- updated sive and managesieve
+- Added preliminary support for Sieve plugins and added support for
+  installing Sieve development headers
+- Variables extension: added support for variable namespaces.
+- Added configurable script size limit. Compiler will refuse to
+  compile files larger than sieve_max_script_size.
+- Fixed a bug in the i;ascii-numeric comparator. If one of the
+  strings started with a non-digit character, the comparator would
+  always yield less-than.
+- Imap4flags extension: fixed bug in removeflag: removing a single
+  flag failed due to off-by-one error (bug report by Julian Cowley).
+- Fixed parser recovery. In particular cases it would trigger spurious
+  errors after an initial valid error and sometimes additional errors
+  were inappropriately ignored.
+- Implemented ManageSieve QUOTA enforcement.
+- Added MAXREDIRECTS capability after login.
+- Implemented new script name rules specified in most recent
+  ManageSieve draft.
+- Fixed assertion failure occuring with challenge-response SASL
+  mechanisms.
+
 * Mon Jan 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-1
 - updated to 1.2.10
 - %%variables now support %%{host}, %%{pid} and %%{env:ENVIRONMENT_NAME}
