@@ -2,19 +2,11 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.10
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
 
-%define build_postgres 1
-%define build_mysql 1
-%define build_sqlite 1
-%define build_ldap 1
-%define build_gssapi 1
-
-%define build_sieve 1
-%define build_managesieve 1
 %define ver4mansieve 1.2.10
 %define sieve_version 0.1.15
 %define sieve_name dovecot-1.2-sieve
@@ -46,9 +38,20 @@ Patch1: dovecot-1.1-default-settings.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
+Obsoletes: dovecot-sqlite < 1:1.2.10-3
+Obsoletes: dovecot-ldap   < 1:1.2.10-3
+Obsoletes: dovecot-gssapi < 1:1.2.10-3
+#Provides: dovecot-ldap = %{epoch}:%{version}-%{release}
+#Provides: dovecot-sqlite = %{epoch}:%{version}-%{release}
+
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, libcap-devel
 BuildRequires: libtool autoconf automake pkgconfig
+BuildRequires: sqlite-devel
+BuildRequires: postgresql-devel
+BuildRequires: mysql-devel
+BuildRequires: openldap-devel
+BuildRequires: krb5-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -64,26 +67,6 @@ Requires(post): /sbin/chkconfig, /usr/sbin/useradd, /sbin/chkconfig
 Requires(preun): /usr/sbin/userdel, /usr/sbin/groupdel, /sbin/chkconfig, /sbin/service
 Requires(postun): /sbin/service
 
-%if %{build_postgres}
-BuildRequires: postgresql-devel
-%endif
-
-%if %{build_mysql}
-BuildRequires: mysql-devel
-%endif
-
-%if %{build_sqlite}
-BuildRequires: sqlite-devel
-%endif
-
-%if %{build_ldap}
-BuildRequires: openldap-devel
-%endif
-
-%if %{build_gssapi}
-BuildRequires: krb5-devel
-%endif
-
 %define docdir %{_docdir}/%{name}
 %define ssldir %{_sysconfdir}/pki/%{name}
 
@@ -94,73 +77,32 @@ in either of maildir or mbox formats.
 
 The SQL drivers and authentication plug-ins are in their subpackages.
 
-
-%if %{build_sieve}
-%package sieve
+%package pigeonhole
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: Sieve plug-in for dovecot LDA
+Obsoletes: dovecot-sieve < 1:1.2.10-3
+Obsoletes: dovecot-managesieve < 1:1.2.10-3
+#Provides: dovecot-sieve = %{epoch}:%{version}-%{release}
+#Provides: dovecot-managesieve = %{epoch}:%{version}-%{release}
+Summary: Sieve and managesieve plug-in for dovecot
 Group: System Environment/Daemons
-License: MIT and LGPLv2+
+License: MIT and LGPLv2
 
-%description sieve
-This package provides sieve plug-in version %{sieve_version} for dovecot LDA.
-%endif
+%description pigeonhole
+This package provides sieve %{sieve_version} and managesieve %{managesieve_version} plug-in for dovecot LDA.
 
-%if %{build_managesieve}
-%package managesieve
-Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: Manage Sieve daemon for dovecot
-Group: System Environment/Daemons
-License: LGPLv2
-
-%description managesieve
-This package provides the Manage Sieve daemon version %{managesieve_version} for dovecot.
-%endif
-
-%if %{build_postgres}
 %package pgsql
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: Postgres SQL back end for dovecot
 Group: System Environment/Daemons
 %description pgsql
 This package provides the Postgres SQL back end for dovecot-auth etc.
-%endif
 
-%if %{build_mysql}
 %package mysql
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Summary: MySQL back end for dovecot
 Group: System Environment/Daemons
 %description mysql
 This package provides the MySQL back end for dovecot-auth etc.
-%endif
-
-%if %{build_sqlite}
-%package sqlite
-Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: SQLite back end for dovecot
-Group: System Environment/Daemons
-%description sqlite
-This package provides the SQLite back end for dovecot-auth etc.
-%endif
-
-%if %{build_ldap}
-%package ldap
-Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: LDAP auth plug-in for dovecot
-Group: System Environment/Daemons
-%description ldap
-This package provides the LDAP auth plug-in for dovecot-auth etc.
-%endif
-
-%if %{build_gssapi}
-%package gssapi
-Requires: %{name} = %{epoch}:%{version}-%{release}
-Summary: GSSAPI auth mechanism plug-in for dovecot
-Group: System Environment/Daemons
-%description gssapi
-This package provides the GSSAPI auth mechanism plug-in for dovecot-auth etc.
-%endif
 
 %package devel
 Requires: %{name} = %{epoch}:%{version}-%{release}
@@ -170,20 +112,13 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q
-
+%setup -q 
 zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
+%setup -q -D -T -a 8 -a 10
+
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-
-%if %{build_sieve}
-%setup -q -D -T -a 8
-%endif
-
-%if %{build_managesieve}
-%setup -q -D -T -a 10
-%endif
 
 %build
 rm -f ./"configure"
@@ -193,31 +128,20 @@ autoreconf -i -f
     --enable-header-install      \
     --disable-static             \
     --with-libcap                \
-%if %{build_postgres}
     --with-pgsql                 \
-%endif
-%if %{build_mysql}
     --with-mysql                 \
-%endif
-%if %{build_sqlite}
     --with-sqlite                \
-%endif
     --with-sql=plugin            \
     --with-sql-drivers           \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
-%if %{build_ldap}
     --with-ldap=plugin           \
-%endif
-%if %{build_gssapi}
     --with-gssapi=plugin
-%endif
 
 make %{?_smp_mflags}
 
-%if %{build_sieve}
-cd %{sieve_name}-%{sieve_version}
-
+#sieve
+pushd %{sieve_name}-%{sieve_version}
 rm -f ./"configure"
 autoreconf -i -f
 %configure                             \
@@ -227,12 +151,10 @@ autoreconf -i -f
     --with-unfinished-features
 
 make %{?_smp_mflags}
-%endif
+popd
 
-%if %{build_managesieve}
-cd ..
-cd %{managesieve_name}-%{managesieve_version}
-
+#managesieve
+pushd %{managesieve_name}-%{managesieve_version}
 rm -f ./"configure"
 autoreconf -i -f
 %configure                           \
@@ -242,7 +164,7 @@ autoreconf -i -f
     --with-dovecot-sieve=../%{sieve_name}-%{sieve_version}/
 
 make %{?_smp_mflags}
-%endif
+popd
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -315,19 +237,15 @@ mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
 
 
-%if %{build_sieve}
-# dovecot-sieve
+# sieve
 pushd %{sieve_name}-%{sieve_version}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
-%endif
 
-%if %{build_managesieve}
-# dovecot-managesieve
+# managesieve
 pushd %{managesieve_name}-%{managesieve_version}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
-%endif
 
 #remove the libtool archives
 find $RPM_BUILD_ROOT%{_libdir}/%{name}/ -name '*.la' | xargs rm -f
@@ -398,62 +316,36 @@ fi
 %{_mandir}/man5/dovecot.conf.5.gz
 %{_mandir}/man8/dovecot.8.gz
 
-%if %{build_sieve}
-%files sieve
+%files pigeonhole
 %defattr(-,root,root,-)
 #%{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
 %{_bindir}/sieve-filter
 %{_bindir}/sieve-test
 %{_bindir}/sievec
 %{_bindir}/sieved
+%{_libexecdir}/%{name}/managesieve
+%{_libexecdir}/%{name}/managesieve-login
+%{_libdir}/%{name}/sql/libdriver_sqlite.so
+%{_libdir}/%{name}/auth/libmech_gssapi.so
+%{_libdir}/%{name}/auth/libauthdb_ldap.so
+%{_libdir}/%{name}/auth/libdriver_sqlite.so
+%{_libdir}/%{name}/dict/libdriver_sqlite.so
 %{_mandir}/man1/sieve-filter.1.gz
 %{_mandir}/man1/sieve-test.1.gz
 %{_mandir}/man1/sievec.1.gz
 %{_mandir}/man1/sieved.1.gz
-%endif
 
-%if %{build_managesieve}
-%files managesieve
-%defattr(-,root,root,-)
-%{_libexecdir}/%{name}/managesieve
-%{_libexecdir}/%{name}/managesieve-login
-%endif
-
-%if %{build_mysql}
 %files mysql
 %defattr(-,root,root,-)
 %{_libdir}/%{name}/sql/libdriver_mysql.so
 %{_libdir}/%{name}/auth/libdriver_mysql.so
 %{_libdir}/%{name}/dict/libdriver_mysql.so
-%endif
 
-%if %{build_postgres}
 %files pgsql
 %defattr(-,root,root,-)
 %{_libdir}/%{name}/sql/libdriver_pgsql.so
 %{_libdir}/%{name}/auth/libdriver_pgsql.so
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
-%endif
-
-%if %{build_sqlite}
-%files sqlite
-%defattr(-,root,root,-)
-%{_libdir}/%{name}/sql/libdriver_sqlite.so
-%{_libdir}/%{name}/auth/libdriver_sqlite.so
-%{_libdir}/%{name}/dict/libdriver_sqlite.so
-%endif
-
-%if %{build_ldap}
-%files ldap
-%defattr(-,root,root,-)
-%{_libdir}/%{name}/auth/libauthdb_ldap.so
-%endif
-
-%if %{build_gssapi}
-%files gssapi
-%defattr(-,root,root,-)
-%{_libdir}/%{name}/auth/libmech_gssapi.so
-%endif
 
 %files devel
 %defattr(-,root,root,-)
@@ -462,6 +354,10 @@ fi
 
 
 %changelog
+* Fri Feb 19 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-3
+- merged dovecot-sieve and dovecot-managesieve into dovecot-pigeonhole
+- merged dovecot-sqlite, dovecot-gssapi and dovecot-ldap into dovecot
+
 * Mon Jan 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-2
 - updated sive and managesieve
 - Added preliminary support for Sieve plugins and added support for
