@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.10
-Release: 3%{?dist}
+Release: 4%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -112,7 +112,7 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q 
+%setup -q
 zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
 %setup -q -D -T -a 8 -a 10
 
@@ -296,19 +296,24 @@ fi
 %files -f libs.filelist
 %defattr(-,root,root,-)
 %doc %{docdir}-%{version}
+%{_sbindir}/dovecot
+%{_sbindir}/dovecotpw
 %config(noreplace) %{_sysconfdir}/dovecot.conf
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
-%{_initddir}/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
+%config(noreplace) %{ssldir}/dovecot-openssl.cnf
+%{_initddir}/dovecot
 %dir %{ssldir}
 %dir %{ssldir}/certs
 %dir %{ssldir}/private
-%config(noreplace) %{ssldir}/dovecot-openssl.cnf
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
+%{_libdir}/%{name}/sql/libdriver_sqlite.so
+%{_libdir}/%{name}/auth/libmech_gssapi.so
+%{_libdir}/%{name}/auth/libauthdb_ldap.so
+%{_libdir}/%{name}/auth/libdriver_sqlite.so
+%{_libdir}/%{name}/dict/libdriver_sqlite.so
 %{_libexecdir}/%{name}
-%{_sbindir}/dovecot
-%{_sbindir}/dovecotpw
 %attr(0755,root,dovecot) %dir /var/run/dovecot
 %attr(0750,root,dovecot) %dir /var/run/dovecot/login
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
@@ -325,11 +330,6 @@ fi
 %{_bindir}/sieved
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
-%{_libdir}/%{name}/sql/libdriver_sqlite.so
-%{_libdir}/%{name}/auth/libmech_gssapi.so
-%{_libdir}/%{name}/auth/libauthdb_ldap.so
-%{_libdir}/%{name}/auth/libdriver_sqlite.so
-%{_libdir}/%{name}/dict/libdriver_sqlite.so
 %{_mandir}/man1/sieve-filter.1.gz
 %{_mandir}/man1/sieve-test.1.gz
 %{_mandir}/man1/sievec.1.gz
@@ -354,6 +354,9 @@ fi
 
 
 %changelog
+* Tue Feb 23 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-4
+- move libs to correct package
+
 * Fri Feb 19 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-3
 - merged dovecot-sieve and dovecot-managesieve into dovecot-pigeonhole
 - merged dovecot-sqlite, dovecot-gssapi and dovecot-ldap into dovecot
