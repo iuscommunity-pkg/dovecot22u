@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.10
-Release: 4%{?dist}
+Version: 1.2.11
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -354,6 +354,15 @@ fi
 
 
 %changelog
+* Tue Mar 09 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.11-1
+- updated to 1.2.11
+- mbox: Message header reading was unnecessarily slow. Fetching a
+  huge header could have resulted in Dovecot eating a lot of CPU.
+  Also searching messages was much slower than necessary.
+- maildir: Reading uidlist could have ended up in an infinite loop.
+- IMAP IDLE: v1.2.7+ caused extra load by checking changes every
+  0.5 seconds after a change had occurred in mailbox
+
 * Tue Feb 23 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.10-4
 - move libs to correct package
 
