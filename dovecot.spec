@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 1.2.11
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -41,12 +41,10 @@ Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 Obsoletes: dovecot-sqlite < 1:1.2.10-3
 Obsoletes: dovecot-ldap   < 1:1.2.10-3
 Obsoletes: dovecot-gssapi < 1:1.2.10-3
-#Provides: dovecot-ldap = %{epoch}:%{version}-%{release}
-#Provides: dovecot-sqlite = %{epoch}:%{version}-%{release}
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: openssl-devel, pam-devel, zlib-devel, libcap-devel
-BuildRequires: libtool autoconf automake pkgconfig
+BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
+BuildRequires: libtool, autoconf, automake, pkgconfig
 BuildRequires: sqlite-devel
 BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
@@ -81,8 +79,6 @@ The SQL drivers and authentication plug-ins are in their subpackages.
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Obsoletes: dovecot-sieve < 1:1.2.10-3
 Obsoletes: dovecot-managesieve < 1:1.2.10-3
-#Provides: dovecot-sieve = %{epoch}:%{version}-%{release}
-#Provides: dovecot-managesieve = %{epoch}:%{version}-%{release}
 Summary: Sieve and managesieve plug-in for dovecot
 Group: System Environment/Daemons
 License: MIT and LGPLv2
@@ -354,6 +350,9 @@ fi
 
 
 %changelog
+* Fri Mar 12 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.11-2
+- fix missing bzip2 support in zlib plugin (#572797)
+
 * Tue Mar 09 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.11-1
 - updated to 1.2.11
 - mbox: Message header reading was unnecessarily slow. Fetching a
