@@ -30,7 +30,7 @@ Source12: dovecot.1.gz
 Source13: doveadm.1.gz
 
 #our own
-Source14: dovecot.conf.5
+Source14: dovecot.conf.5.gz
 
 
 # 3x Fedora specific
@@ -165,7 +165,7 @@ install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 
 #install man pages
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man1,man8}
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man5}
 install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/
@@ -313,8 +313,8 @@ fi
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
 %{_mandir}/man1/doveadm.1.gz
+%{_mandir}/man1/dovecot.1.gz
 %{_mandir}/man5/dovecot.conf.5.gz
-%{_mandir}/man8/dovecot.8.gz
 
 %files devel
 %defattr(-,root,root,-)
