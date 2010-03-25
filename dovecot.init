@@ -35,7 +35,7 @@ fi
 RETVAL=0
 prog="Dovecot Imap"
 exec="/usr/sbin/dovecot"
-config="/etc/dovecot.conf"
+config="/etc/dovecot/dovecot.conf"
 pidfile="/var/run/dovecot/master.pid"
 lockfile="/var/lock/subsys/dovecot"
 

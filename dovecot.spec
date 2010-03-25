@@ -1,8 +1,9 @@
+%global betasuffix .beta4
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 1.2.11
-Release: 2%{?dist}
+Version: 2.0
+Release: 0.1.beta4%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -13,34 +14,29 @@ Group: System Environment/Daemons
 %define managesieve_version 0.11.11
 %define managesieve_name dovecot-1.2-managesieve
 
-%if %{?fedora}00%{?rhel} < 6
-%define _initddir %{_initrddir}
-%endif
-
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/1.2/%{name}-%{version}.tar.gz
+Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{betasuffix}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-Source3: maildir-migration.txt
-Source4: migrate-folders
-Source5: migrate-users
-Source6: perfect_maildir.pl
-Source8: http://www.rename-it.nl/dovecot/1.2/%{sieve_name}-%{sieve_version}.tar.gz
+#Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
+%global phsnap 940554ef4a55
+Source8: pigeonhole-snap%{phsnap}.tar.bzip2
 Source9: dovecot.sysconfig
-Source10: http://www.rename-it.nl/dovecot/1.2/%{managesieve_name}-%{managesieve_version}.tar.gz
-Source11: http://www.rename-it.nl/dovecot/1.2/dovecot-%{ver4mansieve}-managesieve-%{managesieve_version}.diff.gz
-Source12: dovecot.8
-Source13: dovecotpw.1
+
+#http://wiki2.dovecot.org/ManPages/dovecot?action=AttachFile&do=view&target=dovecot.1.gz
+Source12: dovecot.1.gz
+
+#http://wiki2.dovecot.org/ManPages/doveadm?action=AttachFile&do=view&target=doveadm.1.gz
+Source13: doveadm.1.gz
+
+#our own
 Source14: dovecot.conf.5
 
+
 # 3x Fedora specific
-Patch1: dovecot-1.1-default-settings.patch
+Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-Obsoletes: dovecot-sqlite < 1:1.2.10-3
-Obsoletes: dovecot-ldap   < 1:1.2.10-3
-Obsoletes: dovecot-gssapi < 1:1.2.10-3
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -65,7 +61,6 @@ Requires(post): /sbin/chkconfig, /usr/sbin/useradd, /sbin/chkconfig
 Requires(preun): /usr/sbin/userdel, /usr/sbin/groupdel, /sbin/chkconfig, /sbin/service
 Requires(postun): /sbin/service
 
-%define docdir %{_docdir}/%{name}
 %define ssldir %{_sysconfdir}/pki/%{name}
 
 %description
@@ -108,70 +103,60 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q
-zcat %{SOURCE11} | patch -p1 --fuzz=0 -s
-%setup -q -D -T -a 8 -a 10
+%setup -q -n %{name}-%{version}%{?betasuffix}
+%setup -q  -n %{name}-%{version}%{?betasuffix} -D -T -a 8 
 
-%patch1 -p1 -b .default-settings
+#%patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 
 %build
-rm -f ./"configure"
-autoreconf -i -f
-%configure                           \
+%configure                       \
     INSTALL_DATA="install -c -p -m644" \
+    --docdir=%{_docdir}/%{name}-%{version}     \
     --enable-header-install      \
     --disable-static             \
-    --with-libcap                \
+    --with-nss                   \
+    --with-shadow                \
+    --with-pam                   \
+    --with-gssapi=plugin         \
+    --with-ldap=plugin           \
+    --with-sql=plugin            \
     --with-pgsql                 \
     --with-mysql                 \
     --with-sqlite                \
-    --with-sql=plugin            \
-    --with-sql-drivers           \
+    --with-zlib                  \
+    --with-libcap                \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
-    --with-ldap=plugin           \
-    --with-gssapi=plugin
+    --with-docs
+
+sed -i 's|/etc/ssl|/etc/pki|' doc/mkcert.sh doc/example-config/conf.d/ssl.conf
 
 make %{?_smp_mflags}
 
-#sieve
-pushd %{sieve_name}-%{sieve_version}
-rm -f ./"configure"
-autoreconf -i -f
+#pigeonhole
+pushd dovecot-2-0-pigeonhole-%{phsnap}
+autoreconf -fiv
 %configure                             \
     INSTALL_DATA="install -c -p -m644" \
     --disable-static                   \
     --with-dovecot=../                 \
-    --with-unfinished-features
-
-make %{?_smp_mflags}
-popd
-
-#managesieve
-pushd %{managesieve_name}-%{managesieve_version}
-rm -f ./"configure"
-autoreconf -i -f
-%configure                           \
-    INSTALL_DATA="install -c -p -m644" \
-    --disable-static                 \
-    --with-dovecot=../               \
-    --with-dovecot-sieve=../%{sieve_name}-%{sieve_version}/
+    --without-unfinished-features
 
 make %{?_smp_mflags}
 popd
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
 make install DESTDIR=$RPM_BUILD_ROOT
-rm -rf $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-%if %{?fedora}00%{?rhel} < 6
-sed -i 's|password-auth|system-auth|' %{SOURCE2}
-%endif
+pushd dovecot-2-0-pigeonhole-%{phsnap}
+make install DESTDIR=$RPM_BUILD_ROOT
+popd
 
-install -p -m 755 src/plugins/convert/convert-tool $RPM_BUILD_ROOT%{_libexecdir}/%{name}
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?betasuffix}/docinstall
 
 install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 
@@ -179,13 +164,13 @@ install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 
 install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man5,man8}
-install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_mandir}/man8/
+#install man pages
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man1,man8}
+install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/
-find $RPM_BUILD_ROOT%{_mandir} -type f -exec gzip '{}' \;
 
-# generate ghost .pem file
+# generate ghost .pem files
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/certs
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/private
 touch $RPM_BUILD_ROOT%{ssldir}/certs/dovecot.pem
@@ -197,31 +182,18 @@ mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/login
 chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 
-# Install dovecot.conf and dovecot-openssl.cnf
-mkdir -p $RPM_BUILD_ROOT%{ssldir}
-install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot.conf
-install -p -m644 dovecot-example.conf $RPM_BUILD_ROOT%{docdir}/dovecot.conf.default
-rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot-*example.conf # dovecot seems to install this by itself
-install -p -m644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
+# Install dovecot configuration and dovecot-openssl.cnf
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 docinstall/example-config/dovecot.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot
+install -p -m 644 docinstall/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 docinstall/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
 
-# Install the licensing files into the documentation area
-install -p -m644 COPYING* $RPM_BUILD_ROOT%{docdir}
-
-mkdir -p $RPM_BUILD_ROOT%{docdir}/examples/
 install -p -m755 doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{name}/mkcert.sh
-for f in `cd doc; echo *.conf`; do
-     install -p -m644 doc/$f $RPM_BUILD_ROOT%{docdir}/examples/$f;
-done
-
-install -p -m755 -d $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
-for f in %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6}
-do
-    install -p -m644 $f $RPM_BUILD_ROOT%{docdir}/UW-to-Dovecot-Migration
-done
 
 # fix encoding
-pushd $RPM_BUILD_ROOT
-for fe in ./%{docdir}/auth-protocol.txt
+pushd docinstall
+for fe in auth-protocol.txt
 do
   iconv -f iso-8859-1 -t utf-8 <$fe >$fe.new
   touch -r $fe $fe.new
@@ -229,29 +201,17 @@ do
 done
 popd
 
-mv $RPM_BUILD_ROOT%{docdir} $RPM_BUILD_ROOT%{docdir}-%{version}
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
-
-
-# sieve
-pushd %{sieve_name}-%{sieve_version}
-make install DESTDIR=$RPM_BUILD_ROOT
-popd
-
-# managesieve
-pushd %{managesieve_name}-%{managesieve_version}
-make install DESTDIR=$RPM_BUILD_ROOT
-popd
 
 #remove the libtool archives
 find $RPM_BUILD_ROOT%{_libdir}/%{name}/ -name '*.la' | xargs rm -f
 
-#prepare the filelist
-(
-    find ${RPM_BUILD_ROOT}%{_libdir}/%{name} -type d | sed -e "s|^|%dir |";
-    find ${RPM_BUILD_ROOT}%{_libdir}/%{name} -! -type d | \
-        grep -v 'dovecot-config\|lib90_cmusieve_plugin\.so\|libdriver_.*\.so\|libauthdb_.*\.so\|libmech_.*\.so';
-) | sed -e "s|$RPM_BUILD_ROOT||" >libs.filelist
+#remove what we don't want
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/README
+pushd docinstall
+#rm -f dovecot-initd.sh dovecot-openssl.cnf Makefile* 
+rm -f securecoding.txt thread-refs.txt
+popd
 
 
 %clean
@@ -289,67 +249,112 @@ if [ "$1" -ge "1" ]; then
 fi
 
 
-%files -f libs.filelist
+#files -f libs.filelist
+%files
 %defattr(-,root,root,-)
-%doc %{docdir}-%{version}
+%doc docinstall/* AUTHORS ChangeLog COPYING COPYING.LGPL COPYING.MIT NEWS README
 %{_sbindir}/dovecot
-%{_sbindir}/dovecotpw
-%config(noreplace) %{_sysconfdir}/dovecot.conf
+
+%{_bindir}/doveadm
+%{_bindir}/doveconf
+%{_bindir}/dsync
+
+%dir %{_sysconfdir}/dovecot
+%dir %{_sysconfdir}/dovecot/conf.d
+%config(noreplace) %{_sysconfdir}/dovecot/dovecot.conf
+
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-checkpassword.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-deny.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-ldap.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-master.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-passwdfile.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-sql.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-system.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-vpopmail.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/imap.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/lda.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/lmtp.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/logging.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/mail.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/master.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/plugin.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/pop3.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/ssl.conf
+
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
+
 %{_initddir}/dovecot
+
 %dir %{ssldir}
 %dir %{ssldir}/certs
 %dir %{ssldir}/private
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/certs/dovecot.pem
 %attr(0600,root,root) %ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{ssldir}/private/dovecot.pem
-%{_libdir}/%{name}/sql/libdriver_sqlite.so
-%{_libdir}/%{name}/auth/libmech_gssapi.so
-%{_libdir}/%{name}/auth/libauthdb_ldap.so
-%{_libdir}/%{name}/auth/libdriver_sqlite.so
-%{_libdir}/%{name}/dict/libdriver_sqlite.so
-%{_libexecdir}/%{name}
+
+%dir %{_libdir}/dovecot
+%dir %{_libdir}/dovecot/auth
+%dir %{_libdir}/dovecot/dict
+%{_libdir}/dovecot/doveadm
+%{_libdir}/dovecot/*_plugin.so
+%{_libdir}/dovecot/*.so.*
+%{_libdir}/dovecot/auth/libauthdb_ldap.so
+%{_libdir}/dovecot/auth/libmech_gssapi.so
+%{_libdir}/dovecot/auth/libdriver_sqlite.so
+%{_libdir}/dovecot/dict/libdriver_sqlite.so
+%{_libdir}/dovecot/libdriver_sqlite.so
+
+%{_libexecdir}/dovecot
+
 %attr(0755,root,dovecot) %dir /var/run/dovecot
 %attr(0750,root,dovecot) %dir /var/run/dovecot/login
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
-%{_mandir}/man1/dovecotpw.1.gz
+
+%{_mandir}/man1/doveadm.1.gz
 %{_mandir}/man5/dovecot.conf.5.gz
 %{_mandir}/man8/dovecot.8.gz
 
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/dovecot
+%{_datadir}/aclocal/dovecot.m4
+%{_libdir}/dovecot/libdovecot*.so
+%{_libdir}/dovecot/dovecot-config
+
 %files pigeonhole
 %defattr(-,root,root,-)
-#%{_libdir}/%{name}/lda/lib90_cmusieve_plugin.so
-%{_bindir}/sieve-filter
 %{_bindir}/sieve-test
 %{_bindir}/sievec
 %{_bindir}/sieved
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/sieve.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/managesieve.conf
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
-%{_mandir}/man1/sieve-filter.1.gz
+%dir %{_libdir}/dovecot/settings
+%{_libdir}/dovecot/settings/libmanagesieve_*.so
+
 %{_mandir}/man1/sieve-test.1.gz
 %{_mandir}/man1/sievec.1.gz
 %{_mandir}/man1/sieved.1.gz
 
 %files mysql
 %defattr(-,root,root,-)
-%{_libdir}/%{name}/sql/libdriver_mysql.so
+%{_libdir}/%{name}/libdriver_mysql.so
 %{_libdir}/%{name}/auth/libdriver_mysql.so
 %{_libdir}/%{name}/dict/libdriver_mysql.so
 
 %files pgsql
 %defattr(-,root,root,-)
-%{_libdir}/%{name}/sql/libdriver_pgsql.so
+%{_libdir}/%{name}/libdriver_pgsql.so
 %{_libdir}/%{name}/auth/libdriver_pgsql.so
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
-%files devel
-%defattr(-,root,root,-)
-%{_includedir}/%{name}
-%{_libdir}/%{name}/dovecot-config
-
-
 %changelog
+* Thu Mar 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.1.beta4
+- dovecot updated to 2.0 beta 4
+
 * Fri Mar 12 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:1.2.11-2
 - fix missing bzip2 support in zlib plugin (#572797)
 
