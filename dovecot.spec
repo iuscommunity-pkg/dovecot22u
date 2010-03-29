@@ -1,9 +1,11 @@
 %global betasuffix .beta4
+%global snapsuffix .aefa279e2c70
+
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.1.beta4%{?dist}
+Release: 0.2%{?betasuffix}%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -15,7 +17,7 @@ Group: System Environment/Daemons
 %define managesieve_name dovecot-1.2-managesieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{betasuffix}.tar.gz
+Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{?betasuffix}%{?snapsuffix}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
@@ -352,6 +354,10 @@ fi
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 29 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.2.beta4.aefa279e2c70
+- update to snapshot aefa279e2c70 from 2010-03-27
+- fixes complains about missing tcpwrap (#577426)
+
 * Thu Mar 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.1.beta4
 - dovecot updated to 2.0 beta 4
 
