@@ -1,11 +1,11 @@
 %global betasuffix .beta4
-%global snapsuffix .aefa279e2c70
+%global snapsuffix 20100330
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.2%{?betasuffix}%{?snapsuffix}%{?dist}
+Release: 0.3%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -17,7 +17,8 @@ Group: System Environment/Daemons
 %define managesieve_name dovecot-1.2-managesieve
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{?betasuffix}%{?snapsuffix}.tar.gz
+#Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{?betasuffix}%{?snapsuffix}.tar.gz
+Source: http://www.dovecot.org/nightly/%{name}-%{snapsuffix}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
@@ -113,6 +114,13 @@ This package provides the development files for dovecot.
 %patch3 -p1 -b .mkcert-paths
 
 %build
+#autotools hacks can be removed later, nightly does not support --docdir
+aclocal -I . --force
+libtoolize --copy --force
+autoconf --force
+autoheader --force
+automake --add-missing --copy --force-missing
+#autoreconf -fiv
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
     --docdir=%{_docdir}/%{name}-%{version}     \
@@ -133,7 +141,7 @@ This package provides the development files for dovecot.
     --with-ssldir=%{ssldir}      \
     --with-docs
 
-sed -i 's|/etc/ssl|/etc/pki|' doc/mkcert.sh doc/example-config/conf.d/ssl.conf
+sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/ssl.conf
 
 make %{?_smp_mflags}
 
@@ -354,6 +362,9 @@ fi
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Mar 30 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.3.beta4.20100330
+- fix certs location in ssl.conf
+
 * Mon Mar 29 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.2.beta4.aefa279e2c70
 - update to snapshot aefa279e2c70 from 2010-03-27
 - fixes complains about missing tcpwrap (#577426)
