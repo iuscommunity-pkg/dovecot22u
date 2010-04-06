@@ -1,11 +1,11 @@
 %global betasuffix .beta4
-%global snapsuffix 20100330
+%global snapsuffix 20100406
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.3%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.4%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -40,6 +40,8 @@ Source14: dovecot.conf.5.gz
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+
+Patch4: dovecot-2.0-betahotfix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -112,6 +114,7 @@ This package provides the development files for dovecot.
 #%patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
+%patch4 -p1 -b .betahotfix
 
 %build
 #autotools hacks can be removed later, nightly does not support --docdir
@@ -362,6 +365,16 @@ fi
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Mar 30 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.4.beta4.20100406
+- updated to snapshot 20100406
+- auth: If userdb lookup fails internally, don't cache the result.
+- Added support for userdb lookup to fail with a reason
+- sdbox: mailbox_update() could have changed UIDVALIDITY incorrectly
+- layout=maildir++: Fixed deleting mailboxes with mailbox=file storages
+- Fixed potential problems with parsing invalid address groups.
+- dsync: Don't repeatedly try to keep opening the same failing mailbox
+- lib-storage: Don't crash if root mail directory isn't given.
+
 * Tue Mar 30 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.3.beta4.20100330
 - fix certs location in ssl.conf
 
