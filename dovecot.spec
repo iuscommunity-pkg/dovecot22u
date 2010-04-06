@@ -365,7 +365,7 @@ fi
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
-* Tue Mar 30 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.4.beta4.20100406
+* Tue Apr 06 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.4.beta4.20100406
 - updated to snapshot 20100406
 - auth: If userdb lookup fails internally, don't cache the result.
 - Added support for userdb lookup to fail with a reason
