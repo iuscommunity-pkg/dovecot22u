@@ -22,6 +22,7 @@ Source: http://www.dovecot.org/nightly/%{name}-%{snapsuffix}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
+#we use this ^^^ repository snapshost just renamed to contain last commit in name
 %global phsnap 940554ef4a55
 Source8: pigeonhole-snap%{phsnap}.tar.bzip2
 Source9: dovecot.sysconfig
@@ -35,12 +36,12 @@ Source13: doveadm.1.gz
 #our own
 Source14: dovecot.conf.5.gz
 
-
 # 3x Fedora specific
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
+#contains changes required to clean bumpy ride during beta/snap/rc releases
 Patch4: dovecot-2.0-betahotfix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -56,15 +57,15 @@ BuildRequires: krb5-devel
 # presence of AM_ICONV
 BuildRequires: gettext-devel
 
-# Explicit Runtime Requirements
+# Explicit Runtime Requirements for executalbe
 Requires: openssl >= 0.9.7f-4
 
 # Package includes an initscript service file, needs to require initscripts package
 Requires: initscripts
-Requires(pre): /usr/sbin/useradd
-Requires(post): /sbin/chkconfig, /usr/sbin/useradd, /sbin/chkconfig
-Requires(preun): /usr/sbin/userdel, /usr/sbin/groupdel, /sbin/chkconfig, /sbin/service
-Requires(postun): /sbin/service
+Requires(pre): shadow-utils
+Requires(post): chkconfig shadow-utils
+Requires(preun): shadow-utils chkconfig initscripts
+Requires(postun): initscripts
 
 %define ssldir %{_sysconfdir}/pki/%{name}
 
@@ -111,7 +112,7 @@ This package provides the development files for dovecot.
 %setup -q -n %{name}-%{version}%{?betasuffix}
 %setup -q  -n %{name}-%{version}%{?betasuffix} -D -T -a 8 
 
-#%patch1 -p1 -b .default-settings
+%patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .betahotfix
@@ -169,6 +170,7 @@ pushd dovecot-2-0-pigeonhole-%{phsnap}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
+#move doc dir back to build dir so doc macro in files section can use it
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?betasuffix}/docinstall
 
 install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
@@ -275,7 +277,7 @@ fi
 %dir %{_sysconfdir}/dovecot
 %dir %{_sysconfdir}/dovecot/conf.d
 %config(noreplace) %{_sysconfdir}/dovecot/dovecot.conf
-
+#list all so we'll be noticed if upstream changes anything
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-checkpassword.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-deny.conf.ext
@@ -311,6 +313,7 @@ fi
 %dir %{_libdir}/dovecot/auth
 %dir %{_libdir}/dovecot/dict
 %{_libdir}/dovecot/doveadm
+#these are plugins (*.so files) not a devel files
 %{_libdir}/dovecot/*_plugin.so
 %{_libdir}/dovecot/*.so.*
 %{_libdir}/dovecot/auth/libauthdb_ldap.so
@@ -345,6 +348,7 @@ fi
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/managesieve.conf
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
+
 %dir %{_libdir}/dovecot/settings
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
 
