@@ -1,11 +1,11 @@
 %global betasuffix .beta4
-%global snapsuffix 20100406
+%global snapsuffix 20100414
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.4%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.5%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -18,12 +18,13 @@ Group: System Environment/Daemons
 
 URL: http://www.dovecot.org/
 #Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{?betasuffix}%{?snapsuffix}.tar.gz
+#we use nightly snapshots for now: 
 Source: http://www.dovecot.org/nightly/%{name}-%{snapsuffix}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 940554ef4a55
+%global phsnap ece958a18920
 Source8: pigeonhole-snap%{phsnap}.tar.bzip2
 Source9: dovecot.sysconfig
 
@@ -115,7 +116,7 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .betahotfix
+#%patch4 -p1 -b .betahotfix not needed this time
 
 %build
 #autotools hacks can be removed later, nightly does not support --docdir
@@ -124,12 +125,11 @@ libtoolize --copy --force
 autoconf --force
 autoheader --force
 automake --add-missing --copy --force-missing
-#autoreconf -fiv
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
     --docdir=%{_docdir}/%{name}-%{version}     \
-    --enable-header-install      \
     --disable-static             \
+    --disable-rpath              \
     --with-nss                   \
     --with-shadow                \
     --with-pam                   \
@@ -145,7 +145,7 @@ automake --add-missing --copy --force-missing
     --with-ssldir=%{ssldir}      \
     --with-docs
 
-sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/ssl.conf
+sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10-ssl.conf
 
 make %{?_smp_mflags}
 
@@ -224,7 +224,6 @@ find $RPM_BUILD_ROOT%{_libdir}/%{name}/ -name '*.la' | xargs rm -f
 #remove what we don't want
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/README
 pushd docinstall
-#rm -f dovecot-initd.sh dovecot-openssl.cnf Makefile* 
 rm -f securecoding.txt thread-refs.txt
 popd
 
@@ -263,8 +262,10 @@ if [ "$1" -ge "1" ]; then
     /sbin/service %{name} condrestart >/dev/null 2>&1 || :
 fi
 
+%check
+make check
+#add pigeonhole make check when it's ready
 
-#files -f libs.filelist
 %files
 %defattr(-,root,root,-)
 %doc docinstall/* AUTHORS ChangeLog COPYING COPYING.LGPL COPYING.MIT NEWS README
@@ -278,8 +279,17 @@ fi
 %dir %{_sysconfdir}/dovecot/conf.d
 %config(noreplace) %{_sysconfdir}/dovecot/dovecot.conf
 #list all so we'll be noticed if upstream changes anything
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-auth.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-logging.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-mail.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-master.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-ssl.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/15-lda.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-imap.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-lmtp.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-pop3.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-plugin.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-checkpassword.conf.ext
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-deny.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-ldap.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-master.conf.ext
@@ -287,15 +297,6 @@ fi
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-sql.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-system.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-vpopmail.conf.ext
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/imap.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/lda.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/lmtp.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/logging.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/mail.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/master.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/plugin.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/pop3.conf
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/ssl.conf
 
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
@@ -369,6 +370,17 @@ fi
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Apr 14 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.5.beta4.20100414
+- updated to snapshot 20100414
+- config: Added nn- prefix to *.conf files so the sort ordering makes more sense
+- lib-master: Log an error if login client disconnects too early
+- mdbox: If purging found corrupted files, it didn't auto-rebuild storage
+- lib-storage: Added support for searching save date
+- and more...
+- pigeonhole updated:
+- Mailbox extension: fixed memory leak in the mailboxexists test
+- added login failure handler
+
 * Tue Apr 06 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.4.beta4.20100406
 - updated to snapshot 20100406
 - auth: If userdb lookup fails internally, don't cache the result.
