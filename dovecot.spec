@@ -371,6 +371,7 @@ make check
 
 %changelog
 * Wed Apr 14 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.5.beta4.20100414
+- add make check
 - updated to snapshot 20100414
 - config: Added nn- prefix to *.conf files so the sort ordering makes more sense
 - lib-master: Log an error if login client disconnects too early
