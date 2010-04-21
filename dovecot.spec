@@ -1,11 +1,11 @@
 %global betasuffix .beta4
-%global snapsuffix 20100414
+%global snapsuffix 20100421
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.5%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.6%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -370,6 +370,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Apr 21 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.6.beta4.20100421
+- updated to snapshot 20100424
+- mdbox: Purge crashed if it purged all messages from a file
+- lib-storage: Shared namespace's prefix_len wasn't updated after prefix was truncated
+- imap-quota: Iterate quota roots only once when replying to GETQUOTAROOT
+- idle: Do cork/uncork when sending "OK Still here" notification
+- login: If proxy returns ssl=yes and no port, switch port to imaps/pop3s
+
 * Wed Apr 14 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.5.beta4.20100414
 - add make check
 - updated to snapshot 20100414
