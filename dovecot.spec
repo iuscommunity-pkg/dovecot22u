@@ -116,7 +116,7 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-#%patch4 -p1 -b .betahotfix not needed this time
+%patch4 -p1 -b .betahotfix
 
 %build
 #autotools hacks can be removed later, nightly does not support --docdir
