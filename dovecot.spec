@@ -371,7 +371,7 @@ make check
 
 %changelog
 * Wed Apr 21 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.6.beta4.20100421
-- updated to snapshot 20100424
+- updated to snapshot 20100421
 - mdbox: Purge crashed if it purged all messages from a file
 - lib-storage: Shared namespace's prefix_len wasn't updated after prefix was truncated
 - imap-quota: Iterate quota roots only once when replying to GETQUOTAROOT
