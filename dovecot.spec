@@ -1,11 +1,11 @@
 %global betasuffix .beta4
-%global snapsuffix 20100421
+%global snapsuffix 20100427
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.6%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.7%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -370,6 +370,12 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Apr 28 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.7.beta4.20100427
+- updated to snapshot 20100427
+- doveconf <setting name> now prints only the one setting's value
+- mdbox: Automatically delete old temp.* files from storage/ directory
+- mdbox: use flock locking by default
+
 * Wed Apr 21 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.6.beta4.20100421
 - updated to snapshot 20100421
 - mdbox: Purge crashed if it purged all messages from a file
