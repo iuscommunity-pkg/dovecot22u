@@ -1,17 +1,19 @@
-diff -up dovecot-2.0.beta4/dovecot-2-0-pigeonhole-ece958a18920/src/managesieve-login/client.c.betahotfix dovecot-2.0.beta4/dovecot-2-0-pigeonhole-ece958a18920/src/managesieve-login/client.c
---- dovecot-2.0.beta4/dovecot-2-0-pigeonhole-ece958a18920/src/managesieve-login/client.c.betahotfix	2010-04-21 18:01:20.668855900 +0200
-+++ dovecot-2.0.beta4/dovecot-2-0-pigeonhole-ece958a18920/src/managesieve-login/client.c	2010-04-21 18:01:20.689708242 +0200
-@@ -32,6 +32,13 @@ const char *login_protocol = "managesiev
- const char *login_process_name = "managesieve-login";
- unsigned int login_default_port = 4190;
+diff -up dovecot-2.0.beta4/src/lib-sql/Makefile.am.betahotfix dovecot-2.0.beta4/src/lib-sql/Makefile.am
+--- dovecot-2.0.beta4/src/lib-sql/Makefile.am.betahotfix	2010-05-05 04:00:03.000000000 +0200
++++ dovecot-2.0.beta4/src/lib-sql/Makefile.am	2010-05-05 11:34:17.286805721 +0200
+@@ -38,13 +38,13 @@ if ! SQL_PLUGINS
+ driver_sources = \
+ 	driver-mysql.c \
+ 	driver-pgsql.c \
+-	driver-sqlpool.c \
+ 	driver-sqlite.c
+ endif
  
-+const struct login_binary login_binary = {
-+	.protocol = "managesieve",
-+	.process_name = "managesieve-login",
-+	.default_port = 4190,
-+	.default_ssl_port = 0
-+};
-+
- void login_process_preinit(void)
- {
- 	login_set_roots = managesieve_login_settings_set_roots;
+ libsql_la_SOURCES = \
+ 	$(dist_sources) \
+-	$(driver_sources)
++	$(driver_sources) \
++	driver-sqlpool.c
+ nodist_libsql_la_SOURCES = sql-drivers-register.c
+ 
+ if SQL_PLUGINS
