@@ -1,11 +1,11 @@
-%global betasuffix .beta4
-%global snapsuffix 20100505
+%global betasuffix .beta5
+%global snapsuffix 20100515
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.8%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.10%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -24,7 +24,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 861ffb523cb9
+%global phsnap d84aaca546b9
 Source8: pigeonhole-snap%{phsnap}.tar.bzip2
 Source9: dovecot.sysconfig
 
@@ -147,7 +147,7 @@ automake --add-missing --copy --force-missing
 
 sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10-ssl.conf
 
-make %{?_smp_mflags}
+make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS"
 
 #pigeonhole
 pushd dovecot-2-0-pigeonhole-%{phsnap}
@@ -236,6 +236,8 @@ rm -rf $RPM_BUILD_ROOT
 getent group dovecot >/dev/null || groupadd -r dovecot
 getent passwd dovecot >/dev/null || \
 useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot IMAP server" dovecot
+getent passwd dovenull >/dev/null || \
+useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot login process" dovenul
 exit 0
 
 %post
@@ -326,7 +328,7 @@ make check
 %{_libexecdir}/dovecot
 
 %attr(0755,root,dovecot) %dir /var/run/dovecot
-%attr(0750,root,dovecot) %dir /var/run/dovecot/login
+%attr(0750,root,dovenull) %dir /var/run/dovecot/login
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
 %{_mandir}/man1/doveadm.1.gz
@@ -370,6 +372,10 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon May 15 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.9.beta5.20100515
+- pigeonhole and dovecot updated to snapshot 20100515
+- fix crash for THREAD command
+
 * Wed May 05 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.8.beta4.20100505
 - pigeonhole and dovecot updated to snapshot 20100505
 - mdbox: Avoid rebuilding storage if another process already did it
