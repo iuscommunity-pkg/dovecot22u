@@ -25,7 +25,7 @@ Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
 %global phsnap d84aaca546b9
-Source8: pigeonhole-snap%{phsnap}.tar.bzip2
+Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
 #http://wiki2.dovecot.org/ManPages/dovecot?action=AttachFile&do=view&target=dovecot.1.gz
