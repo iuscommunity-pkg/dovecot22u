@@ -372,7 +372,7 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
-* Mon May 15 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.9.beta5.20100515
+* Mon May 17 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.9.beta5.20100515
 - pigeonhole and dovecot updated to snapshot 20100515
 - fix crash for THREAD command
 
