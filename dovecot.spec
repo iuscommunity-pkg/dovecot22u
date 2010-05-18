@@ -6,15 +6,11 @@ Name: dovecot
 Epoch: 1
 Version: 2.0
 Release: 0.12%{?betasuffix}.%{?snapsuffix}%{?dist}
-#dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
-License: MIT and LGPLv2 and GPLv2+
+#dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
+License: MIT and LGPLv2
 Group: System Environment/Daemons
 
-%define ver4mansieve 1.2.10
-%define sieve_version 0.1.15
-%define sieve_name dovecot-1.2-sieve
-%define managesieve_version 0.11.11
-%define managesieve_name dovecot-1.2-managesieve
+%define pigeonhole_version 20100516
 
 URL: http://www.dovecot.org/
 #Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{?betasuffix}%{?snapsuffix}.tar.gz
@@ -37,7 +33,7 @@ Source13: doveadm.1.gz
 #our own
 Source14: dovecot.conf.5.gz
 
-# 3x Fedora specific
+# 3x Fedora/RHEL specific
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
@@ -86,7 +82,7 @@ Group: System Environment/Daemons
 License: MIT and LGPLv2
 
 %description pigeonhole
-This package provides sieve %{sieve_version} and managesieve %{managesieve_version} plug-in for dovecot LDA.
+This package provides sieve and managesieve plug-in for dovecot LDA.
 
 %package pgsql
 Requires: %{name} = %{epoch}:%{version}-%{release}
@@ -147,7 +143,7 @@ automake --add-missing --copy --force-missing
 
 sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10-ssl.conf
 
-make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS"
+make %{?_smp_mflags}
 
 #pigeonhole
 pushd dovecot-2-0-pigeonhole-%{phsnap}
