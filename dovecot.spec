@@ -5,7 +5,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.10%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.11%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, (manage)sieve is LGPLv2, perfect_maildir.pl is GPLv2+
 License: MIT and LGPLv2 and GPLv2+
 Group: System Environment/Daemons
@@ -237,7 +237,7 @@ getent group dovecot >/dev/null || groupadd -r dovecot
 getent passwd dovecot >/dev/null || \
 useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot IMAP server" dovecot
 getent passwd dovenull >/dev/null || \
-useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot login process" dovenul
+useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot login process" dovenull
 exit 0
 
 %post
@@ -372,6 +372,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue May 18 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.11.beta5.20100515
+- fix typo in dovenull username
+
 * Mon May 17 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.9.beta5.20100515
 - pigeonhole and dovecot updated to snapshot 20100515
 - fix crash for THREAD command
