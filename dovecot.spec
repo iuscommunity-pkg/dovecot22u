@@ -189,7 +189,7 @@ chmod 600 $RPM_BUILD_ROOT%{ssldir}/certs/dovecot.pem
 touch $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 chmod 600 $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 
-mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/login
+mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
 chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
 chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 
@@ -325,6 +325,7 @@ make check
 %{_libexecdir}/dovecot
 
 %attr(0755,root,dovecot) %dir /var/run/dovecot
+%dir /var/run/dovecot/empty
 %attr(0750,root,dovenull) %dir /var/run/dovecot/login
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
