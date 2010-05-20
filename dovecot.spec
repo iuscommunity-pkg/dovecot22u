@@ -229,10 +229,12 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %pre
-getent group dovecot >/dev/null || groupadd -r dovecot
-getent group dovenull >/dev/null || groupadd -r dovenull
+#dovecot uig and gid are reserved, see /usr/share/doc/setup-*/uidgid 
+getent group dovecot >/dev/null || groupadd -r --gid 97 dovecot
 getent passwd dovecot >/dev/null || \
-useradd -r -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot IMAP server" dovecot
+useradd -r --uid 97 -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot IMAP server" dovecot
+
+getent group dovenull >/dev/null || groupadd -r dovenull
 getent passwd dovenull >/dev/null || \
 useradd -r -g dovenull -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot's unauthorized user" dovenull
 exit 0
