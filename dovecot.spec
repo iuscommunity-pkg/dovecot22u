@@ -49,6 +49,7 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
+BuildRequires: libcurl-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
