@@ -1,11 +1,11 @@
 %global betasuffix .beta5
-%global snapsuffix 20100515
+%global snapsuffix 20100529
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.12%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.13%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -20,7 +20,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap d84aaca546b9
+%global phsnap b877a1db00a5
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -139,6 +139,7 @@ automake --add-missing --copy --force-missing
     --with-libcap                \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
+    --with-solr                  \
     --with-docs
 
 sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10-ssl.conf
@@ -372,6 +373,12 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon May 31 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.13.beta5.20100529
+- dovecot and pigeonhole updated
+- enable solr fulltext search
+- master: Fixed crash on config reload
+- lib-storage: Don't assert-crash when copying a mail fails
+
 * Tue May 18 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.12.beta5.20100515
 - dovenull is unauthorized user, needs own dovenull group
 
