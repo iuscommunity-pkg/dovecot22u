@@ -122,6 +122,8 @@ libtoolize --copy --force
 autoconf --force
 autoheader --force
 automake --add-missing --copy --force-missing
+#required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
+export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
     --docdir=%{_docdir}/%{name}-%{version}     \
