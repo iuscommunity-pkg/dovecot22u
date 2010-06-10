@@ -376,7 +376,7 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
-* Mon May 31 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.14.beta5.20100610
+* Thu Jun 10 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.14.beta5.20100610
 - dovecot updated 
 - lib-storage: Fixed accessing uncommitted saved mails with dsync
 - example-config: Moved ACL and quota settings to a separate .conf files
