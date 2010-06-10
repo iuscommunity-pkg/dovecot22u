@@ -1,11 +1,11 @@
 %global betasuffix .beta5
-%global snapsuffix 20100529
+%global snapsuffix 20100610
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.13%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.14%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -376,6 +376,12 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon May 31 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.14.beta5.20100610
+- dovecot updated 
+- lib-storage: Fixed accessing uncommitted saved mails with dsync
+- example-config: Moved ACL and quota settings to a separate .conf files
+- dbox, mdbox: Fixed race conditions when creating mailboxes
+
 * Mon May 31 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.13.beta5.20100529
 - dovecot and pigeonhole updated
 - enable solr fulltext search
