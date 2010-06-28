@@ -172,7 +172,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
 pushd dovecot-2-0-man-%{mansnap}/doc/man
-install -D -m644 *.1 $RPM_BUILD_ROOT%{_mandir}/man1/
+for f in `find . -regex '.*\.[12345678]$'`
+do
+  install -D -m644 $f $RPM_BUILD_ROOT%{_mandir}/man${f##*.}/$f
+done
 popd
 
 #move doc dir back to build dir so doc macro in files section can use it
@@ -344,6 +347,7 @@ make check
 %{_mandir}/man1/dovecot*.1.gz
 %{_mandir}/man1/dsync.1.gz
 %{_mandir}/man5/dovecot.conf.5.gz
+%{_mandir}/man7/doveadm-search-query.7.gz
 
 %files devel
 %defattr(-,root,root,-)
