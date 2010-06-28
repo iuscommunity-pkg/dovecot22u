@@ -1,11 +1,11 @@
-%global betasuffix .beta5
-%global snapsuffix 20100610
+%global betasuffix .beta6
+%global snapsuffix 20100626
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.14%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.15%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -20,18 +20,16 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap b877a1db00a5
+%global phsnap 1def8519d775
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
-
-#http://wiki2.dovecot.org/ManPages/dovecot?action=AttachFile&do=view&target=dovecot.1.gz
-Source12: dovecot.1.gz
-
-#http://wiki2.dovecot.org/ManPages/doveadm?action=AttachFile&do=view&target=doveadm.1.gz
-Source13: doveadm.1.gz
+#Source10: http://hg.localdomain.org/dovecot-2.0-man/archive/tip.tar.bz2
+#we use this ^^^ repository snapshost just renamed to contain last commit in name
+%global mansnap bda145878452
+Source10: dovecot-2.0-man-%{mansnap}.tar.bz2
 
 #our own
-Source14: dovecot.conf.5.gz
+Source14: dovecot.conf.5
 
 # 3x Fedora/RHEL specific
 Patch1: dovecot-2.0-defaultconfig.patch
@@ -108,12 +106,13 @@ This package provides the development files for dovecot.
 
 %prep
 %setup -q -n %{name}-%{version}%{?betasuffix}
-%setup -q  -n %{name}-%{version}%{?betasuffix} -D -T -a 8 
+%setup -q -n %{name}-%{version}%{?betasuffix} -D -T -a 8 -a 10
 
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .betahotfix
+sed -i 's|^sysconfdir *=|sysconfdir =/etc|' dovecot-2-0-man-%{mansnap}/doc/man/Makefile
 
 %build
 #autotools hacks can be removed later, nightly does not support --docdir
@@ -161,6 +160,8 @@ autoreconf -fiv
 make %{?_smp_mflags}
 popd
 
+make -C dovecot-2-0-man-%{mansnap}/doc/man
+
 %install
 rm -rf $RPM_BUILD_ROOT
 
@@ -168,6 +169,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 pushd dovecot-2-0-pigeonhole-%{phsnap}
 make install DESTDIR=$RPM_BUILD_ROOT
+popd
+
+pushd dovecot-2-0-man-%{mansnap}/doc/man
+install -D -m644 *.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 popd
 
 #move doc dir back to build dir so doc macro in files section can use it
@@ -181,8 +186,6 @@ install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 
 #install man pages
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man5}
-install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_mandir}/man1/
-install -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/
 
 # generate ghost .pem files
@@ -335,8 +338,11 @@ make check
 %attr(0750,root,dovenull) %dir /var/run/dovecot/login
 %attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
 
-%{_mandir}/man1/doveadm.1.gz
-%{_mandir}/man1/dovecot.1.gz
+%{_mandir}/man1/deliver.1.gz
+%{_mandir}/man1/doveadm*.1.gz
+%{_mandir}/man1/doveconf.1.gz
+%{_mandir}/man1/dovecot*.1.gz
+%{_mandir}/man1/dsync.1.gz
 %{_mandir}/man5/dovecot.conf.5.gz
 
 %files devel
@@ -376,6 +382,13 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Jun 28 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.15.beta6.20100626
+- updated dovecot, pigeonhole and man pages
+- moved disable_plaintext_auth to 10-auth.conf
+- mdbox: Fixed assert-crash on storage rebuild if file got lost
+- lib-charset: Don't assert-crash when iconv() skips lots of invalid input
+- master: Fixed crash on deinit (maybe also on reload)
+
 * Thu Jun 10 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.14.beta5.20100610
 - dovecot updated 
 - lib-storage: Fixed accessing uncommitted saved mails with dsync
