@@ -196,16 +196,6 @@ install -p -m 644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-opens
 
 install -p -m755 doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{name}/mkcert.sh
 
-# fix encoding
-pushd docinstall
-for fe in auth-protocol.txt
-do
-  iconv -f iso-8859-1 -t utf-8 <$fe >$fe.new
-  touch -r $fe $fe.new
-  mv -f $fe.new $fe
-done
-popd
-
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
 
 #remove the libtool archives
