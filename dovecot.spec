@@ -1,5 +1,5 @@
 %global betasuffix .beta6
-%global snapsuffix 20100626
+%global snapsuffix 20100629
 
 Summary: Secure imap and pop3 server
 Name: dovecot
@@ -23,10 +23,6 @@ Source2: dovecot.pam
 %global phsnap 1def8519d775
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
-#Source10: http://hg.localdomain.org/dovecot-2.0-man/archive/tip.tar.bz2
-#we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global mansnap bda145878452
-Source10: dovecot-2.0-man-%{mansnap}.tar.bz2
 
 #our own
 Source14: dovecot.conf.5
@@ -105,14 +101,12 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q -n %{name}-%{version}%{?betasuffix}
-%setup -q -n %{name}-%{version}%{?betasuffix} -D -T -a 8 -a 10
+%setup -q -n %{name}-%{version}%{?betasuffix} -a 8
 
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .betahotfix
-sed -i 's|^sysconfdir *=|sysconfdir =/etc|' dovecot-2-0-man-%{mansnap}/doc/man/Makefile
 
 %build
 #autotools hacks can be removed later, nightly does not support --docdir
@@ -160,8 +154,6 @@ autoreconf -fiv
 make %{?_smp_mflags}
 popd
 
-make -C dovecot-2-0-man-%{mansnap}/doc/man
-
 %install
 rm -rf $RPM_BUILD_ROOT
 
@@ -169,13 +161,6 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 pushd dovecot-2-0-pigeonhole-%{phsnap}
 make install DESTDIR=$RPM_BUILD_ROOT
-popd
-
-pushd dovecot-2-0-man-%{mansnap}/doc/man
-for f in `find . -regex '.*\.[12345678]$'`
-do
-  install -D -m644 $f $RPM_BUILD_ROOT%{_mandir}/man${f##*.}/$f
-done
 popd
 
 #move doc dir back to build dir so doc macro in files section can use it
@@ -188,8 +173,7 @@ install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 
 #install man pages
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/{man1,man5}
-install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/
+install -p -D -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/dovecot.conf.5
 
 # generate ghost .pem files
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/certs
@@ -291,6 +275,7 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/dovecot.conf
 #list all so we'll be noticed if upstream changes anything
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-auth.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-director.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-logging.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-mail.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-master.conf
@@ -299,6 +284,8 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-imap.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-lmtp.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-pop3.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-acl.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-quota.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-plugin.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-checkpassword.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-deny.conf.ext
@@ -306,6 +293,7 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-master.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-passwdfile.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-sql.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-static.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-system.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-vpopmail.conf.ext
 
