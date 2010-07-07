@@ -1,0 +1,46 @@
+diff -up dovecot-2.0.rc1/src/dsync/test-dsync-brain.c.betahotfix dovecot-2.0.rc1/src/dsync/test-dsync-brain.c
+--- dovecot-2.0.rc1/src/dsync/test-dsync-brain.c.betahotfix	2010-07-02 04:00:08.000000000 +0200
++++ dovecot-2.0.rc1/src/dsync/test-dsync-brain.c	2010-07-07 13:45:59.887603676 +0200
+@@ -211,9 +211,9 @@ static void test_dsync_brain(void)
+ 	test_assert(!test_dsync_worker_next_box_event(src_test_worker, &box_event));
+ 	test_assert(!test_dsync_worker_next_box_event(dest_test_worker, &box_event));
+ 
++	dsync_brain_deinit(&brain);
+ 	dsync_worker_deinit(&src_worker);
+ 	dsync_worker_deinit(&dest_worker);
+-	dsync_brain_deinit(&brain);
+ 
+ 	test_end();
+ }
+@@ -268,9 +268,9 @@ static void test_dsync_brain_full(void)
+ 	test_assert(!test_dsync_worker_next_box_event(src_test_worker, &box_event));
+ 	test_assert(!test_dsync_worker_next_box_event(dest_test_worker, &box_event));
+ 
++	dsync_brain_deinit(&brain);
+ 	dsync_worker_deinit(&src_worker);
+ 	dsync_worker_deinit(&dest_worker);
+-	dsync_brain_deinit(&brain);
+ 
+ 	test_end();
+ }
+diff -up dovecot-2.0.rc1/src/plugins/fts-solr/fts-backend-solr.c.betahotfix dovecot-2.0.rc1/src/plugins/fts-solr/fts-backend-solr.c
+--- dovecot-2.0.rc1/src/plugins/fts-solr/fts-backend-solr.c.betahotfix	2010-06-23 04:00:03.000000000 +0200
++++ dovecot-2.0.rc1/src/plugins/fts-solr/fts-backend-solr.c	2010-07-07 13:39:18.847854145 +0200
+@@ -57,7 +57,7 @@ static void fts_box_name_get_root(struct
+ 		*ns = (*ns)->alias_for;
+ 
+ 	if (**name == '\0' && *ns != orig_ns &&
+-	    ((*ns)->flags & NAMESPACE_FLAG_INBOX) != 0) {
++	    ((*ns)->flags & NAMESPACE_FLAG_INBOX_USER) != 0) {
+ 		/* ugly workaround to allow selecting INBOX from a Maildir/
+ 		   when it's not in the inbox=yes namespace. */
+ 		*name = "INBOX";
+@@ -747,7 +747,7 @@ static bool solr_virtual_uid_map(const c
+ 	bool convert_inbox;
+ 
+ 	ns = solr_get_namespaces(ctx->backend, ctx->box, ns_prefix);
+-	convert_inbox = (ns->flags & NAMESPACE_FLAG_INBOX) != 0 &&
++	convert_inbox = (ns->flags & NAMESPACE_FLAG_INBOX_USER) != 0 &&
+ 		strcmp(mailbox, "INBOX") == 0;
+ 	for (; ns != NULL; ns = ns->alias_chain_next) {
+ 		vname = convert_inbox ? ns->prefix :
