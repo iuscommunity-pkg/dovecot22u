@@ -249,7 +249,8 @@ fi
 
 %check
 make check
-#add pigeonhole make check when it's ready
+cd dovecot-2-0-pigeonhole-%{phsnap}
+make test
 
 %files
 %defattr(-,root,root,-)
