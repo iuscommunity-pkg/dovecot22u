@@ -1,11 +1,11 @@
 %global betasuffix .rc2
-%global snapsuffix 20100712
+%global snapsuffix 20100716
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.17%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.18%{?betasuffix}.%{?snapsuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -20,7 +20,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 843ba8e66e1b
+%global phsnap 29ae07044ec2
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -101,7 +101,9 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q -n %{name}-%{version}%{?betasuffix} -a 8
+#%setup -q -n %{name}-%{version}%{?betasuffix} -a 8
+%setup -q -n %{name}-%{snapsuffix} -a 8
+ln -s %{name}-%{snapsuffix} ../%{name}-%{version}%{?betasuffix}
 
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
@@ -365,6 +367,13 @@ make test
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Jul 16 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.18.rc2.20100716
+- dovecot and pigeonhole updated
+- enabled pigeonhole's build time test suite
+- acl: Fixed crashon FS layout with non-default hierarchy separator
+- dbox renamed to sdbox
+- dsync fixes and improvements
+
 * Mon Jul 12 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.17.rc2.20100712
 - dovecot and pigeonhole updated
 - fixed a crash with empty mail_plugins
