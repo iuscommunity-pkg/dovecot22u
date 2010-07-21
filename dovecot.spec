@@ -1,11 +1,10 @@
-%global betasuffix .rc2
-%global snapsuffix 20100716
+%global betasuffix .rc3
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.18%{?betasuffix}.%{?snapsuffix}%{?dist}
+Release: 0.19%{?betasuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -13,14 +12,12 @@ Group: System Environment/Daemons
 %define pigeonhole_version 20100516
 
 URL: http://www.dovecot.org/
-#Source: http://www.dovecot.org/releases/2.0/beta/%{name}-%{version}%{?betasuffix}%{?snapsuffix}.tar.gz
-#we use nightly snapshots for now: 
-Source: http://www.dovecot.org/nightly/%{name}-%{snapsuffix}.tar.gz
+Source: http://www.dovecot.org/releases/2.0/rc/%{name}-%{version}%{?betasuffix}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 29ae07044ec2
+%global phsnap 01ee63b788c9
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -31,9 +28,6 @@ Source14: dovecot.conf.5
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-#contains changes required to clean bumpy ride during beta/snap/rc releases
-Patch4: dovecot-2.0-betahotfix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -47,7 +41,7 @@ BuildRequires: libcurl-devel expat-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
-BuildRequires: gettext-devel
+#BuildRequires: gettext-devel
 
 # Explicit Runtime Requirements for executalbe
 Requires: openssl >= 0.9.7f-4
@@ -101,22 +95,12 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-#%setup -q -n %{name}-%{version}%{?betasuffix} -a 8
-%setup -q -n %{name}-%{snapsuffix} -a 8
-ln -s %{name}-%{snapsuffix} ../%{name}-%{version}%{?betasuffix}
-
+%setup -q -n %{name}-%{version}%{betasuffix} -a 8
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .betahotfix
 
 %build
-#autotools hacks can be removed later, nightly does not support --docdir
-aclocal -I . --force
-libtoolize --copy --force
-autoconf --force
-autoheader --force
-automake --add-missing --copy --force-missing
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
 export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 %configure                       \
@@ -252,7 +236,7 @@ fi
 %check
 make check
 cd dovecot-2-0-pigeonhole-%{phsnap}
-make test
+make check
 
 %files
 %defattr(-,root,root,-)
@@ -367,6 +351,14 @@ make test
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Jul 21 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.19.rc3
+- dovecot and pigeonhole updated
+- fixed lda + sieve crash
+- added mail_temp_dir setting, used by deliver and lmtp for creating
+  temporary mail files. Default is /tmp.
+- imap: Fixed checking if list=children namespace has children.
+- mdbox: Race condition fixes related to copying and purging
+
 * Fri Jul 16 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.18.rc2.20100716
 - dovecot and pigeonhole updated
 - enabled pigeonhole's build time test suite
