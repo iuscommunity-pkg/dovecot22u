@@ -37,7 +37,6 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
-BuildRequires: libcurl-devel expat-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -54,6 +53,13 @@ Requires(preun): shadow-utils chkconfig initscripts
 Requires(postun): initscripts
 
 %define ssldir %{_sysconfdir}/pki/%{name}
+
+%if %{?fedora}00%{?rhel} < 6
+%define _initddir %{_initrddir}
+BuildRequires: curl-devel expat-devel
+%else
+BuildRequires: libcurl-devel expat-devel
+%endif
 
 %description
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
@@ -153,6 +159,10 @@ popd
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?betasuffix}/docinstall
 
 install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
+
+%if %{?fedora}00%{?rhel} < 6
+sed -i 's|password-auth|system-auth|' %{SOURCE2}
+%endif
 
 install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 
