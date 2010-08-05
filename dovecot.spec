@@ -1,10 +1,10 @@
-%global betasuffix .rc3
+%global betasuffix .rc4
 
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0
-Release: 0.19%{?betasuffix}%{?dist}
+Release: 0.20%{?betasuffix}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -17,7 +17,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 01ee63b788c9
+%global phsnap cac6acdc4d0e
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -361,6 +361,13 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Aug 05 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.20.rc4
+- dovecot and pigeonhole updated
+- doveadm mailbox status: Fixed listing non-ASCII mailbox names. 
+- doveadm fetch: Fixed output when fetching message header or body
+- doveadm director map/add/remove: Fixed handling IP address as parameter. 
+- dsync: A few more fixes
+
 * Wed Jul 21 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.19.rc3
 - dovecot and pigeonhole updated
 - fixed lda + sieve crash
