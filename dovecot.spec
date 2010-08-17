@@ -1,10 +1,8 @@
-%global betasuffix .rc5
-
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0
-Release: 0.21%{?betasuffix}%{?dist}
+Version: 2.0.0
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -12,12 +10,12 @@ Group: System Environment/Daemons
 %define pigeonhole_version 20100516
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.0/rc/%{name}-%{version}%{?betasuffix}.tar.gz
+Source: http://www.dovecot.org/releases/2.0/%{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 0592366457df
+%global phsnap 1ae9569b0383
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -101,7 +99,7 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q -n %{name}-%{version}%{betasuffix} -a 8
+%setup -q -a 8
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
@@ -156,7 +154,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
 #move doc dir back to build dir so doc macro in files section can use it
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?betasuffix}/docinstall
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}/docinstall
 
 install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 
@@ -361,6 +359,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Aug 17 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-1
+- dovecot and pigeonhole updated
+- dict quota didn't always decrease quota when messages were expunged
+- Shared INBOX wasn't always listed with FS layout
+
 * Wed Aug 11 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-0.21.rc5
 - dovecot and pigeonhole updated
 - Using more than 2 plugins could have caused broken behavior
