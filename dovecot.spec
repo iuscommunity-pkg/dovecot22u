@@ -331,9 +331,9 @@ make check
 
 %files pigeonhole
 %defattr(-,root,root,-)
+%{_bindir}/sieve-dump
 %{_bindir}/sieve-test
 %{_bindir}/sievec
-%{_bindir}/sieved
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-managesieve.conf
 %{_libexecdir}/%{name}/managesieve
@@ -343,8 +343,10 @@ make check
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
 
 %{_mandir}/man1/sieve-test.1.gz
+%{_mandir}/man1/sieve-dump.1.gz
 %{_mandir}/man1/sievec.1.gz
 %{_mandir}/man1/sieved.1.gz
+%{_mandir}/man7/pigeonhole.7.gz
 
 %files mysql
 %defattr(-,root,root,-)
@@ -360,7 +362,13 @@ make check
 
 %changelog
 * Wed Aug 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.1-1
-- dovecot updated
+- dovecot and pigeonhole updated
+- sieve: sieved renamed to sieve-dump
+- when dsync is started as root, remote dsync command is now also executed 
+  as root instead of with dropped privileges.
+- IMAP: QRESYNC parameters for SELECT weren't handled correctly.
+- UTF-8 string validity checking wasn't done correctly
+- dsync: Fixed a random assert-crash with remote dsyncing
 
 * Tue Aug 17 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-1
 - dovecot and pigeonhole updated
