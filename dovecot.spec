@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.0
+Version: 2.0.1
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
@@ -15,7 +15,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 1ae9569b0383
+%global phsnap d51650c8af85
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -359,6 +359,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Aug 25 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.1-1
+- dovecot updated
+
 * Tue Aug 17 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0-1
 - dovecot and pigeonhole updated
 - dict quota didn't always decrease quota when messages were expunged
