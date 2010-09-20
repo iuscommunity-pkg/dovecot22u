@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.2
+Version: 2.0.3
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
@@ -15,7 +15,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap fbcb05e7eda1
+%global phsnap cb4c1ebecff3
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -361,6 +361,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Sep 20 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.3-1
+- dovecot updated to 2.0.3
+- dovecot-lda: Removed use of non-standard Envelope-To: header as 
+  a default for -a
+- dsync: Fixed handling \Noselect mailboxes
+- Fixed an infinite loop introduced by v2.0.2's message parser changes.
+- Fixed a crash introduced by v2.0.2's istream-crlf changes.
+
 * Thu Sep 16 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.2-1
 - dovecot updated
 - vpopmail support is disabled for now, since it's broken. You can use
