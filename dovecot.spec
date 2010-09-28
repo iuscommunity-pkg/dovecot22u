@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.3
+Version: 2.0.4
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
@@ -15,7 +15,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap cb4c1ebecff3
+%global phsnap 824454514f08
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -361,6 +361,13 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Sep 28 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.4-1
+- dovecot updated to 2.0.4
+- multi-dbox: If :INDEX=path is specified, keep storage/dovecot.map.index* 
+  files also in the index path rather than in the main storage directory.
+- dsync: POP3 UIDLs weren't copied with Maildir
+- dict file: Fixed fd leak (showed up easily with LMTP + quota)
+
 * Mon Sep 20 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.3-1
 - dovecot updated to 2.0.3
 - dovecot-lda: Removed use of non-standard Envelope-To: header as 
