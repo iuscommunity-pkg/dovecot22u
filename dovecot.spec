@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.5
+Version: 2.0.6
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
@@ -15,7 +15,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap a50464354f5a
+%global phsnap 2023f8c74250
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -361,6 +361,21 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Oct 22 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.6-1
+- dovecot updated to 2.0.6
+- Pre-login CAPABILITY includes IDLE again. Mainly to make Blackberry
+  servers happy.
+- auth: auth_cache_negative_ttl default was 0 in earlier v2.0.x, but it
+  was supposed to be 1 hour as in v1.x. Changed it back to 1h.
+- doveadm: Added import command for importing mails from other storages.
+- Reduced NFS I/O operations for index file accesses
+- dbox, Maildir: When copying messages, copy also already cached fields
+  from dovecot.index.cache
+- Maildir: LDA/LMTP assert-crashed sometimes when saving a mail.
+- Fixed leaking fds when writing to dovecot.mailbox.log.
+- Fixed rare dovecot.index.cache corruption
+- IMAP: SEARCH YOUNGER/OLDER wasn't working correctly
+
 * Mon Oct 04 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.5-1
 - dovecot updated to 2.0.5
 - acl: Fixed the logic of merging multiple ACL entries
