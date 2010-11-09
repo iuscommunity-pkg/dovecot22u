@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.6
+Version: 2.0.7
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
@@ -15,7 +15,7 @@ Source1: dovecot.init
 Source2: dovecot.pam
 #Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
 #we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap 2023f8c74250
+%global phsnap a8cc6294071e
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
 
@@ -361,6 +361,15 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Nov 09 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.7-1
+- dovecot updated to 2.0.7
+- IMAP: Fixed LIST-STATUS when listing subscriptions with subscriptions=no namespaces.
+- IMAP: Fixed SELECT QRESYNC not to crash on mailbox close if a lot of changes were being sent. 
+- quota: Don't count virtual mailboxes in quota
+- doveadm expunge didn't always actually do the physical expunging
+- Fixed some index reading optimizations introduced by v2.0.5.
+- LMTP proxying fixes
+
 * Fri Oct 22 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.6-1
 - dovecot updated to 2.0.6
 - Pre-login CAPABILITY includes IDLE again. Mainly to make Blackberry
