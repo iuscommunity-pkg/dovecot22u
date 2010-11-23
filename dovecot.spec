@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -26,6 +26,9 @@ Source14: dovecot.conf.5
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+
+#for dovecot < 2.0.8
+Patch4: dovecot-2.0-bz654083.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -361,6 +364,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Nov 23 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.7-2
+- fix regression with  valid_chroot_dirs being ignored (#654083)
+
 * Tue Nov 09 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.7-1
 - dovecot updated to 2.0.7
 - IMAP: Fixed LIST-STATUS when listing subscriptions with subscriptions=no namespaces.
