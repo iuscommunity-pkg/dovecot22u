@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.7
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -18,6 +18,7 @@ Source2: dovecot.pam
 %global phsnap a8cc6294071e
 Source8: pigeonhole-snap%{phsnap}.tar.bz2
 Source9: dovecot.sysconfig
+Source10: dovecot.tmpfilesd
 
 #our own
 Source14: dovecot.conf.5
@@ -180,9 +181,11 @@ chmod 600 $RPM_BUILD_ROOT%{ssldir}/certs/dovecot.pem
 touch $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 chmod 600 $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+install -p -D -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/dovecot.conf
+%endif
+
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
-chmod 755 $RPM_BUILD_ROOT/var/run/dovecot
-chmod 700 $RPM_BUILD_ROOT/var/run/dovecot/login
 
 # Install dovecot configuration and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
@@ -228,15 +231,22 @@ if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
          %{_libexecdir}/%{name}/mkcert.sh &> /dev/null
 fi
 
-if ! test -f /var/run/dovecot/login/ssl-parameters.dat; then
-    dovecot --build-ssl-parameters &>/dev/null
+if [ ! -f /var/lib/dovecot/ssl-parameters.dat ]; then
+    /usr/libexec/dovecot/ssl-params &>/dev/null
 fi
+
+install -d -m 0755 -g dovecot -d /var/run/dovecot
+install -d -m 0755 -d /var/run/dovecot/empty
+install -d -m 0750 -g dovenull /var/run/dovecot/login
+restorecon -R /var/run/dovecot
+
 exit 0
 
 %preun
 if [ $1 = 0 ]; then
     /sbin/service %{name} stop > /dev/null 2>&1
     /sbin/chkconfig --del %{name}
+    rm -rf /var/run/dovecot
 fi
 
 %postun
@@ -257,6 +267,11 @@ make check
 %{_bindir}/doveadm
 %{_bindir}/doveconf
 %{_bindir}/dsync
+
+
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+%config(noreplace) %{_sysconfdir}/tmpfiles.d/dovecot.conf
+%endif
 
 %dir %{_sysconfdir}/dovecot
 %dir %{_sysconfdir}/dovecot/conf.d
@@ -301,7 +316,7 @@ make check
 %dir %{_libdir}/dovecot/auth
 %dir %{_libdir}/dovecot/dict
 %{_libdir}/dovecot/doveadm
-#these are plugins (*.so files) not a devel files
+#these (*.so files) are plugins not a devel files
 %{_libdir}/dovecot/*_plugin.so
 %{_libdir}/dovecot/*.so.*
 %{_libdir}/dovecot/auth/libauthdb_ldap.so
@@ -312,10 +327,8 @@ make check
 
 %{_libexecdir}/dovecot
 
-%attr(0755,root,dovecot) %dir /var/run/dovecot
-%dir /var/run/dovecot/empty
-%attr(0750,root,dovenull) %dir /var/run/dovecot/login
-%attr(0750,dovecot,dovecot) %dir /var/lib/dovecot
+%ghost /var/run/dovecot
+%attr(0750,dovecot,dovecot) /var/lib/dovecot
 
 %{_mandir}/man1/deliver.1.gz
 %{_mandir}/man1/doveadm*.1.gz
@@ -364,6 +377,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Nov 29 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.7-3
+- make it work with /var/run on tmpfs (#656577)
+
 * Tue Nov 23 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.7-2
 - fix regression with  valid_chroot_dirs being ignored (#654083)
 
