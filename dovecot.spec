@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.7
-Release: 3%{?dist}
+Version: 2.0.8
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -13,10 +13,8 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.0/%{name}-%{version}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-#Source8: http://hg.rename-it.nl/dovecot-2.0-pigeonhole/archive/tip.tar.bz2
-#we use this ^^^ repository snapshost just renamed to contain last commit in name
-%global phsnap a8cc6294071e
-Source8: pigeonhole-snap%{phsnap}.tar.bz2
+%global pigeonholever 0.2.2
+Source8: http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
 
@@ -130,6 +128,9 @@ export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
     --with-solr                  \
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+    --with-systemdsystemunitdir=/lib/systemd/system/  \
+%endif
     --with-docs
 
 sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10-ssl.conf
@@ -137,7 +138,7 @@ sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10
 make %{?_smp_mflags}
 
 #pigeonhole
-pushd dovecot-2-0-pigeonhole-%{phsnap}
+pushd dovecot-2.0-pigeonhole-%{pigeonholever}
 autoreconf -fiv
 %configure                             \
     INSTALL_DATA="install -c -p -m644" \
@@ -153,7 +154,7 @@ rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT
 
-pushd dovecot-2-0-pigeonhole-%{phsnap}
+pushd dovecot-2.0-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -224,7 +225,15 @@ useradd -r -g dovenull -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot's un
 exit 0
 
 %post
-/sbin/chkconfig --add %{name}
+if [ $1 -eq 1 ]
+then
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%else
+  /sbin/chkconfig --add %{name}
+%endif
+fi
+
 # generate the ssl certificates
 if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
     SSLDIR=%{ssldir} OPENSSLCONFIG=%{ssldir}/dovecot-openssl.cnf \
@@ -244,19 +253,28 @@ exit 0
 
 %preun
 if [ $1 = 0 ]; then
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+        /bin/systemctl disable dovecot.service dovecot.socket >/dev/null 2>&1 || :
+        /bin/systemctl stop dovecot.service dovecot.socket >/dev/null 2>&1 || :
+%else
     /sbin/service %{name} stop > /dev/null 2>&1
     /sbin/chkconfig --del %{name}
+%endif
     rm -rf /var/run/dovecot
 fi
 
 %postun
 if [ "$1" -ge "1" ]; then
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+    /bin/systemctl try-restart foobar.service >/dev/null 2>&1 || :
+%else
     /sbin/service %{name} condrestart >/dev/null 2>&1 || :
+%endif
 fi
 
 %check
 make check
-cd dovecot-2-0-pigeonhole-%{phsnap}
+cd dovecot-2.0-pigeonhole-%{pigeonholever}
 make check
 
 %files
@@ -271,6 +289,8 @@ make check
 
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/dovecot.conf
+/lib/systemd/system/dovecot.service
+/lib/systemd/system/dovecot.socket
 %endif
 
 %dir %{_sysconfdir}/dovecot
@@ -377,6 +397,15 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Dec 07 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-1
+- dovecot updated to 2.0.8, pigeonhole updated to 0.2.2
+- services' default vsz_limits weren't being enforced correctly
+- added systemd support
+- dbox: Fixes to handling external mail attachments
+- imap, pop3: When service { client_count } was larger than 1, the
+  log messages didn't use the correct prefix
+- MySQL: Only the first specified host was ever used
+
 * Mon Nov 29 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.7-3
 - make it work with /var/run on tmpfs (#656577)
 
