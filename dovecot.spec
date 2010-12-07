@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -266,7 +266,7 @@ fi
 %postun
 if [ "$1" -ge "1" ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-    /bin/systemctl try-restart foobar.service >/dev/null 2>&1 || :
+    /bin/systemctl try-restart dovecot.service >/dev/null 2>&1 || :
 %else
     /sbin/service %{name} condrestart >/dev/null 2>&1 || :
 %endif
@@ -397,6 +397,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Dec 07 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-2
+- fix s/foobar/dovecot/ typo in post script
+
 * Tue Dec 07 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-1
 - dovecot updated to 2.0.8, pigeonhole updated to 0.2.2
 - services' default vsz_limits weren't being enforced correctly
