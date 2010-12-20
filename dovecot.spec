@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -397,6 +397,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Dec 20 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-3
+- add full path to restorecon in post
+
 * Tue Dec 07 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-2
 - fix s/foobar/dovecot/ typo in post script
 
