@@ -247,7 +247,7 @@ fi
 install -d -m 0755 -g dovecot -d /var/run/dovecot
 install -d -m 0755 -d /var/run/dovecot/empty
 install -d -m 0750 -g dovenull /var/run/dovecot/login
-/sbin/restorecon -R /var/run/dovecot
+[ -x /sbin/restorecon ] && /sbin/restorecon -R /var/run/dovecot
 
 exit 0
 
@@ -398,7 +398,7 @@ make check
 
 %changelog
 * Mon Dec 20 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-3
-- add full path to restorecon in post
+- add full path and check to restorecon in post
 
 * Tue Dec 07 2010 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.8-2
 - fix s/foobar/dovecot/ typo in post script
