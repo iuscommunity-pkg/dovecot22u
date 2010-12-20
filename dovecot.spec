@@ -247,7 +247,7 @@ fi
 install -d -m 0755 -g dovecot -d /var/run/dovecot
 install -d -m 0755 -d /var/run/dovecot/empty
 install -d -m 0750 -g dovenull /var/run/dovecot/login
-restorecon -R /var/run/dovecot
+/sbin/restorecon -R /var/run/dovecot
 
 exit 0
 
