@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.9
-Release: 3%{?dist}
+Version: 2.0.11
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -25,8 +25,6 @@ Source14: dovecot.conf.5
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-Patch4: dovecot-2.0.9-systd.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -104,7 +102,6 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .systd
 
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
@@ -397,6 +394,12 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 07 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-1
+- IMAP: Fixed hangs with COMPRESS extension
+- IMAP: Fixed a hang when trying to COPY to a nonexistent mailbox. 
+- IMAP: Fixed hang/crash with SEARCHRES + pipelining $.
+- IMAP: Fixed assert-crash if IDLE+DONE is sent in same TCP packet.
+
 * Thu Feb 17 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.9-3
 - add missing section to dovecot's systemd service file
 
