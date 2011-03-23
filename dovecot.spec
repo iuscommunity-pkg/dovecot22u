@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.11
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -394,6 +394,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Mar 23 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-2
+- rebuild because of updated dependencies
+
 * Mon Mar 07 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-1
 - IMAP: Fixed hangs with COMPRESS extension
 - IMAP: Fixed a hang when trying to COPY to a nonexistent mailbox. 
