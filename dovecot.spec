@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.11
-Release: 4%{?dist}
+Release: 5%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -105,6 +105,7 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
+%patch4 -p1 -b .settings
 
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
@@ -397,6 +398,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 28 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-5
+- rebuild with new patch
+
 * Mon Mar 28 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-4
 - fix regression in config file parsing (#690401)
 
