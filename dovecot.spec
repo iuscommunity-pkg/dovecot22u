@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.11
-Release: 3%{?dist}
+Release: 4%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -25,6 +25,9 @@ Source14: dovecot.conf.5
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+
+#for < 2.0.12, rhbz#690401
+Patch4: dovecot-2.0.11-settings.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -394,6 +397,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 28 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-4
+- fix regression in config file parsing (#690401)
+
 * Wed Mar 23 2011 Dan Horák <dan@danny.cz> - 1:2.0.11-3
 - rebuilt for mysql 5.5.10 (soname bump in libmysqlclient)
 
