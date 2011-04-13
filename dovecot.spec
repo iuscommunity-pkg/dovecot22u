@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.11
-Release: 5%{?dist}
+Version: 2.0.12
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -25,9 +25,6 @@ Source14: dovecot.conf.5
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-
-#for < 2.0.12, rhbz#690401
-Patch4: dovecot-2.0.11-settings.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -105,7 +102,6 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .settings
 
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
@@ -398,6 +394,12 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Apr 13 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.12-1
+- dbox: Fixes to handling external attachments
+- dsync: More fixes to avoid hanging with remote syncs
+- dsync: Many other syncing/correctness fixes
+- doveconf: v2.0.10 and v2.0.11 didn't output plugin {} section right
+
 * Mon Mar 28 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.11-5
 - rebuild with new patch
 
