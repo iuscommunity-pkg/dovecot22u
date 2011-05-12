@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.12
-Release: 2%{?dist}
+Version: 2.0.13
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -394,6 +394,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu May 12 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.13-1
+- dovecot updated to 2.0.13
+- mdbox purge: Fixed wrong warning about corrupted extrefs.
+- script-login binary wasn't actually dropping privileges to the
+  user/group/chroot specified by its service settings.
+- Fixed potential crashes and other problems when parsing header names
+  that contained NUL characters.
+
 * Fri Apr 15 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.12-2
 - pigeonhole updated to 0.2.3, which includes:
 - managesieve: fixed bug in UTF-8 checking of string values
