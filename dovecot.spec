@@ -43,11 +43,16 @@ BuildRequires: krb5-devel
 Requires: openssl >= 0.9.7f-4
 
 # Package includes an initscript service file, needs to require initscripts package
-Requires: initscripts
 Requires(pre): shadow-utils
 Requires(post): chkconfig shadow-utils
 Requires(preun): shadow-utils chkconfig initscripts
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+Requires: systemd
+Requires(postun): systemd
+%else
+Requires: initscripts
 Requires(postun): initscripts
+%endif
 
 %define ssldir %{_sysconfdir}/pki/%{name}
 
@@ -136,7 +141,7 @@ make %{?_smp_mflags}
 
 #pigeonhole
 pushd dovecot-2.0-pigeonhole-%{pigeonholever}
-autoreconf -fiv
+#autoreconf -fiv
 %configure                             \
     INSTALL_DATA="install -c -p -m644" \
     --disable-static                   \
@@ -158,7 +163,6 @@ popd
 #move doc dir back to build dir so doc macro in files section can use it
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}/docinstall
 
-install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 
 %if %{?fedora}00%{?rhel} < 6
 sed -i 's|password-auth|system-auth|' %{SOURCE2}
@@ -181,6 +185,8 @@ chmod 600 $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
 install -p -D -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/dovecot.conf
+%else
+install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 %endif
 
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
@@ -288,6 +294,8 @@ make check
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/dovecot.conf
 /lib/systemd/system/dovecot.service
 /lib/systemd/system/dovecot.socket
+%else
+%{_initddir}/dovecot
 %endif
 
 %dir %{_sysconfdir}/dovecot
@@ -320,8 +328,6 @@ make check
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
-
-%{_initddir}/dovecot
 
 %dir %{ssldir}
 %dir %{ssldir}/certs
