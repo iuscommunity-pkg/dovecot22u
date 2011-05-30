@@ -170,8 +170,6 @@ sed -i 's|password-auth|system-auth|' %{SOURCE2}
 
 install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 
-install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
-
 #install man pages
 install -p -D -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/dovecot.conf.5
 
@@ -187,6 +185,7 @@ chmod 600 $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 install -p -D -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/dovecot.conf
 %else
 install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
+install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 %endif
 
 mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
@@ -296,6 +295,7 @@ make check
 /lib/systemd/system/dovecot.socket
 %else
 %{_initddir}/dovecot
+%attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %endif
 
 %dir %{_sysconfdir}/dovecot
@@ -325,7 +325,6 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-system.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-vpopmail.conf.ext
 
-%attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
 %config(noreplace) %{_sysconfdir}/pam.d/dovecot
 %config(noreplace) %{ssldir}/dovecot-openssl.cnf
 
