@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.13
-Release: 2%{?dist}
+Version: 2.0.14
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -399,6 +399,22 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Aug 29 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.14-1
+- dovecot updated to 2.0.14
+- userdb extra fields can now return name+=value to append to an
+  existing name
+- script-login attempted an unnecessary config lookup, which usually
+  failed with "Permission denied".
+- lmtp: Fixed parsing quoted strings with spaces as local-part for
+  MAIL FROM and RCPT TO.
+- imap: FETCH BODY[HEADER.FIELDS (..)] may have crashed or not
+  returned all data sometimes.
+- ldap: Fixed random assert-crashing with with sasl_bind=yes.
+- Fixes to handling mail chroots
+- Fixed renaming mailboxes under different parent with FS layout when
+  using separate ALT, INDEX or CONTROL paths.
+- zlib: Fixed reading concatenated .gz files.
+
 * Fri Jul 15 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.13-2
 - do not include sysv init script
 
