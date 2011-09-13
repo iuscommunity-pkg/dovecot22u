@@ -2,7 +2,7 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.0.14
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -399,6 +399,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Sep 13 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.14-2
+- do not enable insecure connections by default
+
 * Mon Aug 29 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.14-1
 - dovecot updated to 2.0.14
 - userdb extra fields can now return name+=value to append to an

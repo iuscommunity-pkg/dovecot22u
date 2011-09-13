@@ -1,7 +1,7 @@
-diff -up dovecot-2.0.beta4/doc/example-config/conf.d/10-mail.conf.defconf dovecot-2.0.beta4/doc/example-config/conf.d/10-mail.conf
---- dovecot-2.0.beta4/doc/example-config/conf.d/10-mail.conf.defconf	2010-03-25 15:13:01.458494067 +0100
-+++ dovecot-2.0.beta4/doc/example-config/conf.d/10-mail.conf	2010-03-25 15:13:01.459364459 +0100
-@@ -262,6 +262,7 @@
+diff -up dovecot-2.0.14/doc/example-config/conf.d/10-mail.conf.default-settings dovecot-2.0.14/doc/example-config/conf.d/10-mail.conf
+--- dovecot-2.0.14/doc/example-config/conf.d/10-mail.conf.default-settings	2010-12-30 10:42:54.000000000 +0100
++++ dovecot-2.0.14/doc/example-config/conf.d/10-mail.conf	2011-09-13 16:53:45.692814486 +0200
+@@ -267,6 +267,7 @@
  # them simultaneously.
  #mbox_read_locks = fcntl
  #mbox_write_locks = dotlock fcntl
@@ -9,3 +9,16 @@ diff -up dovecot-2.0.beta4/doc/example-config/conf.d/10-mail.conf.defconf doveco
  
  # Maximum time to wait for lock (all of them) before aborting.
  #mbox_lock_timeout = 5 mins
+diff -up dovecot-2.0.14/doc/example-config/dovecot.conf.default-settings dovecot-2.0.14/doc/example-config/dovecot.conf
+--- dovecot-2.0.14/doc/example-config/dovecot.conf.default-settings	2011-09-13 16:53:59.810895551 +0200
++++ dovecot-2.0.14/doc/example-config/dovecot.conf	2011-09-13 16:54:07.496939845 +0200
+@@ -17,7 +17,8 @@
+ # --sysconfdir=/etc --localstatedir=/var
+ 
+ # Protocols we want to be serving.
+-#protocols = imap pop3 lmtp
++#protocols = imap imaps pop3 pop3s lmtp
++protocols = imaps pop3s lmtp
+ 
+ # A comma separated list of IPs or hosts where to listen in for connections. 
+ # "*" listens in all IPv4 interfaces, "::" listens in all IPv6 interfaces.
