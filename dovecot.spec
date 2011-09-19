@@ -1,8 +1,8 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.14
-Release: 2%{?dist}
+Version: 2.0.15
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -399,6 +399,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Sep 19 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.15-1
+- dovecot updated to 2.0.15
+- v2.0.14: Index reading could have eaten a lot of memory in some
+  situations
+- mbox: Fixed crash during mail delivery when mailbox didn't yet have
+  GUID assigned to it.
+- zlib+mbox: Fetching last message from compressed mailboxes crashed.
+
 * Tue Sep 13 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.14-2
 - do not enable insecure connections by default
 
