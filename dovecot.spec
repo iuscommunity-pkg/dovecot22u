@@ -1,8 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.0.16
-Release: 1%{?dist}
+Version: 2.1
+%global prever .rc1
+Release: 0.1%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -10,11 +11,12 @@ Group: System Environment/Daemons
 %define pigeonhole_version 20100516
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.0/%{name}-%{version}.tar.gz
+Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}.rc1.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.2.3
-Source8: http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-%{pigeonholever}.tar.gz
+%global pigeonholever b3bff60a18da
+#Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
+Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
 
@@ -103,7 +105,7 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q -a 8
+%setup -q -n %{name}-%{version}%{prever} -a 8
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
@@ -140,7 +142,8 @@ sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10
 make %{?_smp_mflags}
 
 #pigeonhole
-pushd dovecot-2.0-pigeonhole-%{pigeonholever}
+pushd dovecot-2-1-pigeonhole-%{pigeonholever}
+./autogen.sh
 #autoreconf -fiv
 %configure                             \
     INSTALL_DATA="install -c -p -m644" \
@@ -156,12 +159,12 @@ rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT
 
-pushd dovecot-2.0-pigeonhole-%{pigeonholever}
+pushd dovecot-2-1-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
 #move doc dir back to build dir so doc macro in files section can use it
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}/docinstall
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{prever}/docinstall
 
 
 %if %{?fedora}00%{?rhel} < 6
@@ -276,7 +279,7 @@ fi
 
 %check
 make check
-cd dovecot-2.0-pigeonhole-%{pigeonholever}
+cd dovecot-2-1-pigeonhole-%{pigeonholever}
 make check
 
 %files
@@ -338,9 +341,10 @@ make check
 %dir %{_libdir}/dovecot/auth
 %dir %{_libdir}/dovecot/dict
 %{_libdir}/dovecot/doveadm
-#these (*.so files) are plugins not a devel files
-%{_libdir}/dovecot/*_plugin.so
 %{_libdir}/dovecot/*.so.*
+#these (*.so files) are plugins, not a devel files
+%{_libdir}/dovecot/*_plugin.so
+%{_libdir}/dovecot/auth/libauthdb_imap.so
 %{_libdir}/dovecot/auth/libauthdb_ldap.so
 %{_libdir}/dovecot/auth/libmech_gssapi.so
 %{_libdir}/dovecot/auth/libdriver_sqlite.so
@@ -399,6 +403,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Nov 30 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.1.rc1
+- updated to 2.1.rc1
+- major changes since 2.0.x:
+- plugins now use UTF-8 mailbox names rather than mUTF-7
+- auth_username_format default changed to %Lu
+- solr full text search backend changed to use mailbox GUIDs instead of
+  mailbox names, requiring reindexing everything
+
 * Mon Nov 21 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.0.16-1
 - dovecot updated to 2.0.16
 
