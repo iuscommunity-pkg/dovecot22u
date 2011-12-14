@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1
 %global prever .rc1
-Release: 0.1%{prever}%{?dist}
+Release: 0.2%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -403,6 +403,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Dec 14 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.2.rc1
+- allow imap+TLS and pop3+TLS by default
+
 * Wed Nov 30 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.1.rc1
 - updated to 2.1.rc1
 - major changes since 2.0.x:
