@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1
 %global prever .rc1
-Release: 0.2%{prever}%{?dist}
+Release: 0.3%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -219,7 +219,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %pre
-#dovecot uig and gid are reserved, see /usr/share/doc/setup-*/uidgid 
+#dovecot uid and gid are reserved, see /usr/share/doc/setup-*/uidgid 
 getent group dovecot >/dev/null || groupadd -r --gid 97 dovecot
 getent passwd dovecot >/dev/null || \
 useradd -r --uid 97 -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot IMAP server" dovecot
@@ -269,6 +269,10 @@ if [ $1 = 0 ]; then
 fi
 
 %postun
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%endif
+
 if [ "$1" -ge "1" ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
     /bin/systemctl try-restart dovecot.service >/dev/null 2>&1 || :
@@ -403,8 +407,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
-* Wed Dec 14 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.2.rc1
+* Wed Dec 14 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.3.rc1
 - allow imap+TLS and pop3+TLS by default
+
+* Fri Dec 02 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.2.rc1
+- call systemd reload in postun
 
 * Wed Nov 30 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.1.rc1
 - updated to 2.1.rc1
