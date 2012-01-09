@@ -2,8 +2,8 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.1
-%global prever .rc1
-Release: 0.3%{prever}%{?dist}
+%global prever .rc3
+Release: 0.4%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -11,7 +11,7 @@ Group: System Environment/Daemons
 %define pigeonhole_version 20100516
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}.rc1.tar.gz
+Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 %global pigeonholever b3bff60a18da
@@ -316,6 +316,7 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-master.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/10-ssl.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/15-lda.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/15-mailboxes.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-imap.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-lmtp.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-pop3.conf
@@ -407,6 +408,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Jan 09 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.4.rc3
+- updated to 2.1.rc3
+- dsync was merged into doveadm
+- added pop3c (= POP3 client) storage backend
+
 * Wed Dec 14 2011 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.3.rc1
 - allow imap+TLS and pop3+TLS by default
 
