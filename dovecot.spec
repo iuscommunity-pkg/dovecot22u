@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1
 %global prever .rc5
-Release: 0.5%{prever}%{?dist}
+Release: 0.6%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -24,10 +24,11 @@ Source10: dovecot.tmpfilesd
 #our own
 Source14: dovecot.conf.5
 
-# 3x Fedora/RHEL specific
+# 4x Fedora/RHEL specific
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
+Patch4: dovecot-2.1-privatetmp.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -110,6 +111,7 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
+%patch4 -p1 -b .privatetmp
 
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
@@ -411,6 +413,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Feb 07 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.5.rc6
+- use PraveTmp in systemd unit file
+
 * Tue Feb 07 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.5.rc5
 - updated to 2.1.rc5
 - director: With >2 directors ring syncing might have stalled during
