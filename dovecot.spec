@@ -2,8 +2,8 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.1
-%global prever .rc3
-Release: 0.4%{prever}%{?dist}
+%global prever .rc5
+Release: 0.5%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,8 +14,9 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever b3bff60a18da
+%global pigeonholever a130a50f82e1
 #Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
+#wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -379,6 +380,7 @@ make check
 %files pigeonhole
 %defattr(-,root,root,-)
 %{_bindir}/sieve-dump
+%{_bindir}/sieve-filter
 %{_bindir}/sieve-test
 %{_bindir}/sievec
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
@@ -389,8 +391,9 @@ make check
 %dir %{_libdir}/dovecot/settings
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
 
-%{_mandir}/man1/sieve-test.1.gz
 %{_mandir}/man1/sieve-dump.1.gz
+%{_mandir}/man1/sieve-filter.1.gz
+%{_mandir}/man1/sieve-test.1.gz
 %{_mandir}/man1/sievec.1.gz
 %{_mandir}/man1/sieved.1.gz
 %{_mandir}/man7/pigeonhole.7.gz
@@ -408,6 +411,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Feb 07 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.5.rc5
+- updated to 2.1.rc5
+- director: With >2 directors ring syncing might have stalled during
+  director connect/disconnect, causing logins to fail.
+- LMTP client/proxy: Fixed potential hanging when sending (big) mails
+- Compressed mails with external attachments (dbox + SIS + zlib) failed
+  sometimes with bogus "cached message size wrong" errors.
+
 * Mon Jan 09 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.4.rc3
 - updated to 2.1.rc3
 - dsync was merged into doveadm
