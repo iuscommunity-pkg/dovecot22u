@@ -2,8 +2,8 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.1
-%global prever .rc5
-Release: 0.6%{prever}%{?dist}
+%global prever .rc6
+Release: 0.7%{prever}%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever a130a50f82e1
+%global pigeonholever b2a456e15ed5
 #Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
@@ -413,8 +413,15 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
-* Tue Feb 07 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.5.rc6
-- use PraveTmp in systemd unit file
+* Tue Feb 14 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.7.rc6
+- updated to 2.1.rc6
+- dbox: Fixed error handling when saving failed or was aborted
+- IMAP: Using COMPRESS extension may have caused assert-crashes
+- IMAP: THREAD REFS sometimes returned invalid (0) nodes.
+- dsync: Fixed handling non-ASCII characters in mailbox names.
+
+* Tue Feb 07 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.6.rc5
+- use PrivateTmp in systemd unit file
 
 * Tue Feb 07 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.5.rc5
 - updated to 2.1.rc5
