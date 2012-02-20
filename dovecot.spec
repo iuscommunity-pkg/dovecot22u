@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1
-%global prever .rc6
-Release: 0.7%{prever}%{?dist}
+Version: 2.1.0
+#global prever .rc6
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,10 +14,10 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever b2a456e15ed5
-#Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
+%global pigeonholever 0.3.0
+Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
-Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
+#Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
 
@@ -107,7 +107,7 @@ Group: Development/Libraries
 This package provides the development files for dovecot.
 
 %prep
-%setup -q -n %{name}-%{version}%{prever} -a 8
+%setup -q -n %{name}-%{version}%{?prever} -a 8
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
@@ -167,7 +167,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
 #move doc dir back to build dir so doc macro in files section can use it
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{prever}/docinstall
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
 
 
 %if %{?fedora}00%{?rhel} < 6
@@ -413,6 +413,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Feb 20 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.0-1
+- updated to 2.1.0 (no major changes since .rc6)
+
 * Tue Feb 14 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.7.rc6
 - updated to 2.1.rc6
 - dbox: Fixed error handling when saving failed or was aborted
