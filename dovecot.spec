@@ -145,7 +145,7 @@ sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10
 make %{?_smp_mflags}
 
 #pigeonhole
-pushd dovecot-2-1-pigeonhole-%{pigeonholever}
+pushd dovecot-2.1-pigeonhole-%{pigeonholever}
 ./autogen.sh
 #autoreconf -fiv
 %configure                             \
@@ -162,7 +162,7 @@ rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT
 
-pushd dovecot-2-1-pigeonhole-%{pigeonholever}
+pushd dovecot-2.1-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -286,7 +286,7 @@ fi
 
 %check
 make check
-cd dovecot-2-1-pigeonhole-%{pigeonholever}
+cd dovecot-2.1-pigeonhole-%{pigeonholever}
 make check
 
 %files
