@@ -146,7 +146,7 @@ make %{?_smp_mflags}
 
 #pigeonhole
 pushd dovecot-2.1-pigeonhole-%{pigeonholever}
-./autogen.sh
+#./autogen.sh
 #autoreconf -fiv
 %configure                             \
     INSTALL_DATA="install -c -p -m644" \
