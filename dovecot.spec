@@ -8,8 +8,6 @@ Release: 1%{?dist}
 License: MIT and LGPLv2
 Group: System Environment/Daemons
 
-%define pigeonhole_version 20100516
-
 URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
@@ -162,12 +160,17 @@ rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT
 
-pushd dovecot-2.1-pigeonhole-%{pigeonholever}
-make install DESTDIR=$RPM_BUILD_ROOT
-popd
-
 #move doc dir back to build dir so doc macro in files section can use it
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
+
+
+pushd dovecot-2.1-pigeonhole-%{pigeonholever}
+make install DESTDIR=$RPM_BUILD_ROOT
+
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
+
+install -m 644 AUTHORS ChangeLog COPYING COPYING.LGPL INSTALL NEWS README $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
+popd
 
 
 %if %{?fedora}00%{?rhel} < 6
@@ -200,7 +203,9 @@ mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
 install -p -m 644 docinstall/example-config/dovecot.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot
 install -p -m 644 docinstall/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
 install -p -m 644 docinstall/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d ||:
 install -p -m 644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
 
 install -p -m755 doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{name}/mkcert.sh
@@ -387,6 +392,9 @@ make check
 %{_bindir}/sievec
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-managesieve.conf
+
+%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
+
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
 
@@ -415,6 +423,7 @@ make check
 %changelog
 * Mon Feb 20 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.0-1
 - updated to 2.1.0 (no major changes since .rc6)
+- include pigeonhole doc files (NEWS, README, ...)
 
 * Tue Feb 14 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1-0.7.rc6
 - updated to 2.1.rc6
