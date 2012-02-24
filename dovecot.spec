@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.0
+Version: 2.1.1
 #global prever .rc6
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -424,6 +424,17 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Feb 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.1-1
+- dovecot updated to 2.1.1
+- acl plugin + autocreated mailboxes crashed when listing mailboxes
+- doveadm force-resync: Don't skip autocreated mailboxes (especially
+  INBOX). 
+- If process runs out of fds, stop listening for new connections only
+  temporarily, not permanently (avoids hangs with process_limit=1
+  services)
+- auth: passdb imap crashed for non-login authentication (e.g. smtp).
+
+
 * Mon Feb 20 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.0-1
 - updated to 2.1.0 (no major changes since .rc6)
 - include pigeonhole doc files (NEWS, README, ...)
