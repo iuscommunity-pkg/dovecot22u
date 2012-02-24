@@ -46,13 +46,13 @@ Requires: openssl >= 0.9.7f-4
 
 # Package includes an initscript service file, needs to require initscripts package
 Requires(pre): shadow-utils
-Requires(post): chkconfig shadow-utils
-Requires(preun): shadow-utils chkconfig initscripts
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
 Requires: systemd
 Requires(postun): systemd
 %else
 Requires: initscripts
+Requires(post): chkconfig
+Requires(preun): chkconfig initscripts
 Requires(postun): initscripts
 %endif
 
@@ -357,14 +357,17 @@ make check
 %{_libdir}/dovecot/*.so.*
 #these (*.so files) are plugins, not a devel files
 %{_libdir}/dovecot/*_plugin.so
+%exclude %{_libdir}/dovecot/*_sieve_plugin.so
 %{_libdir}/dovecot/auth/libauthdb_imap.so
 %{_libdir}/dovecot/auth/libauthdb_ldap.so
 %{_libdir}/dovecot/auth/libmech_gssapi.so
 %{_libdir}/dovecot/auth/libdriver_sqlite.so
 %{_libdir}/dovecot/dict/libdriver_sqlite.so
 %{_libdir}/dovecot/libdriver_sqlite.so
+%dir %{_libdir}/dovecot/settings
 
-%{_libexecdir}/dovecot
+%{_libexecdir}/%{name}
+%exclude %{_libexecdir}/%{name}/managesieve*
 
 %ghost /var/run/dovecot
 %attr(0750,dovecot,dovecot) /var/lib/dovecot
@@ -398,7 +401,7 @@ make check
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
 
-%dir %{_libdir}/dovecot/settings
+%{_libdir}/dovecot/*_sieve_plugin.so
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
 
 %{_mandir}/man1/sieve-dump.1.gz
