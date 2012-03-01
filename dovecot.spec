@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.1
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -36,6 +36,7 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
+BuildRequires: clucene-core-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -110,6 +111,7 @@ This package provides the development files for dovecot.
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .privatetmp
+sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
@@ -130,6 +132,7 @@ export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
     --with-sqlite                \
     --with-zlib                  \
     --with-libcap                \
+    --with-lucene                \
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
     --with-solr                  \
@@ -424,6 +427,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Mar 01 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.1-2
+- enable fts_lucene plugin (#798661)
+
 * Fri Feb 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.1-1
 - dovecot updated to 2.1.1
 - acl plugin + autocreated mailboxes crashed when listing mailboxes
