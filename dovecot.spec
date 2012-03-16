@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.1
+Version: 2.1.2
 #global prever .rc6
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -427,6 +427,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Mar 16 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.2-1
+- dovecot updated to 2.1.2
+- doveadm sync: If mailbox was expunged empty, messages may have
+  become back instead of also being expunged in the other side.
+- imap_id_* settings were ignored before login.
+- Several fixes to mailbox_list_index=yes
+- Previous v2.1.x didn't log all messages at shutdown.
+
 * Thu Mar 01 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.1-2
 - enable fts_lucene plugin (#798661)
 
