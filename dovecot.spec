@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.2
+Version: 2.1.3
 #global prever .rc6
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -293,7 +293,7 @@ if [ "$1" -ge "1" ]; then
 fi
 
 %check
-make check
+#make check # waiting for rhbz#798968
 cd dovecot-2.1-pigeonhole-%{pigeonholever}
 make check
 
@@ -427,6 +427,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 19 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.3-1
+- dovecot updated to 2.1.3
+- multi-dbox format in dovecot 2.1.2 was broken
+- temporarily disable check phase until bug #798968 is fixed
+
 * Fri Mar 16 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.2-1
 - dovecot updated to 2.1.2
 - doveadm sync: If mailbox was expunged empty, messages may have
