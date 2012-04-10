@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.3
+Version: 2.1.4
 #global prever .rc6
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -27,6 +27,7 @@ Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 Patch4: dovecot-2.1-privatetmp.patch
+Patch5: dovecot-2.1.4-postreleasefix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -111,6 +112,7 @@ This package provides the development files for dovecot.
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .privatetmp
+%patch5 -p1 -b .postreleasefix
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -427,6 +429,18 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Apr 10 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.4-1
+- dovecot updated to 2.1.4
+- Proxying SSL connections crashed in v2.1.[23]
+- fts-solr: Indexing mail bodies was broken.
+- director: Several changes to significantly improve error handling
+- doveadm import didn't import messages' flags
+- mail_full_filesystem_access=yes was broken
+- Make sure IMAP clients can't create directories when accessing
+  nonexistent users' mailboxes via shared namespace.
+- Dovecot auth clients authenticating via TCP socket could have failed
+  with bogus "PID already in use" errors.
+
 * Mon Mar 19 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.3-1
 - dovecot updated to 2.1.3
 - multi-dbox format in dovecot 2.1.2 was broken
