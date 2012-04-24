@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.4
+Version: 2.1.5
 #global prever .rc6
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -27,7 +27,6 @@ Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 Patch4: dovecot-2.1-privatetmp.patch
-Patch5: dovecot-2.1.4-postreleasefix.patch
 Patch6: dovecot-2.0.19-systemdfix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -113,7 +112,6 @@ This package provides the development files for dovecot.
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .privatetmp
-%patch5 -p1 -b .postreleasefix
 %patch6 -p1 -b .systemdfix
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
@@ -431,6 +429,15 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Apr 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.5-1
+- IMAP: Several fixes related to mailbox listing in some configs
+- director: A lot of fixes and performance improvements
+- mbox: Deleting a mailbox didn't delete its index files.
+- pop3c: TOP command was sent incorrectly
+- trash plugin didn't work properly
+- LMTP: Don't add a duplicate Return-Path: header when proxying.
+- listescape: Don't unescape namespace prefixes.
+
 * Tue Apr 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.4-2
 - close systemd extra sockets that are not configured
 
