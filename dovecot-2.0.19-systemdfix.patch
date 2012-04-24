@@ -1,0 +1,102 @@
+diff -up dovecot-2.0.20/src/master/service-listen.c.systemdfix dovecot-2.0.20/src/master/service-listen.c
+--- dovecot-2.0.20/src/master/service-listen.c.systemdfix	2011-12-13 12:38:27.000000000 +0100
++++ dovecot-2.0.20/src/master/service-listen.c	2012-04-13 18:29:37.724290656 +0200
+@@ -14,6 +14,7 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <sys/stat.h>
++#include <sys/socket.h>
+ 
+ #define MIN_BACKLOG 4
+ #define MAX_BACKLOG 511
+@@ -231,16 +232,90 @@ static int service_listen(struct service
+ 	return ret;
+ }
+ 
++static int get_socket_info(int fd, unsigned int *family, unsigned int *port)
++{
++	union sockaddr_union {
++		struct sockaddr sa;
++		struct sockaddr_in in4;
++		struct sockaddr_in6 in6;
++	} sockaddr;
++	socklen_t l;
++
++	if (port) *port = -1;
++	if (family) *family = -1;
++
++	memset(&sockaddr, 0, sizeof(sockaddr));
++	l = sizeof(sockaddr);
++
++	if (getsockname(fd, &sockaddr.sa, &l) < 0)
++	      return -errno;
++
++	if (family) *family = sockaddr.sa.sa_family;
++	if (port) {
++		if (sockaddr.sa.sa_family == AF_INET) {
++			if (l < sizeof(struct sockaddr_in))
++				return -EINVAL;
++
++			*port = ntohs(sockaddr.in4.sin_port);
++		} else {
++			if (l < sizeof(struct sockaddr_in6))
++				return -EINVAL;
++
++			*port = ntohs(sockaddr.in6.sin6_port);
++		}
++	}
++	return 0;
++}
++
+ int services_listen(struct service_list *service_list)
+ {
+ 	struct service *const *services;
+ 	int ret = 1, ret2;
+ 
+ 	array_foreach(&service_list->services, services) {
+ 		ret2 = service_listen(*services);
+ 		if (ret2 < ret)
+ 			ret = ret2;
+ 	}
++
++	static int sd_fds = -1;
++	int fd, fd_max;
++
++	if (sd_fds < 0) {
++		sd_fds = sd_listen_fds(0);
++		if (sd_fds == -1) {
++			i_error("sd_listen_fds() failed: %m");
++			return -1;
++		}
++	}
++
++	fd_max = SD_LISTEN_FDS_START + sd_fds - 1;
++	for (fd = SD_LISTEN_FDS_START; fd <= fd_max; fd++) {
++		if (sd_is_socket_inet(fd, 0, SOCK_STREAM, 1, 0) > 0) {
++			int found = FALSE;
++			unsigned int port, family;
++			get_socket_info(fd, &family, &port);
++			
++			array_foreach(&service_list->services, services) {
++			        struct service_listener *const *listeners;
++				array_foreach(&(*services)->listeners, listeners) {
++					struct service_listener *l = *listeners;
++					if (l->type != SERVICE_LISTENER_INET) continue;	
++					if (l->set.inetset.set->port == port && l->set.inetset.ip.family == family) {
++						found = TRUE;
++						break;
++					}
++				}
++				if (found) break;
++			}
++			if (!found) {
++				i_error("we've got socket that listens on port %d, but it's not configured. Closing.",port);
++				if (shutdown(fd,SHUT_RDWR) < 0 && errno != ENOTCONN) i_error("shutdown() failed: %m");
++				close(fd);
++			}
++		}
++	}
++
+ 	return ret;
+ }
+ 

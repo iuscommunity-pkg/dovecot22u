@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.4
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -28,6 +28,7 @@ Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 Patch4: dovecot-2.1-privatetmp.patch
 Patch5: dovecot-2.1.4-postreleasefix.patch
+Patch6: dovecot-2.0.19-systemdfix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -113,6 +114,7 @@ This package provides the development files for dovecot.
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .privatetmp
 %patch5 -p1 -b .postreleasefix
+%patch6 -p1 -b .systemdfix
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -429,6 +431,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Apr 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.4-2
+- close systemd extra sockets that are not configured
+
 * Tue Apr 10 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.4-1
 - dovecot updated to 2.1.4
 - Proxying SSL connections crashed in v2.1.[23]
