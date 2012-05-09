@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.5
+Version: 2.1.6
 #global prever .rc6
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -27,7 +27,6 @@ Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 Patch4: dovecot-2.1-privatetmp.patch
-Patch6: dovecot-2.0.19-systemdfix.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -112,7 +111,6 @@ This package provides the development files for dovecot.
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .privatetmp
-%patch6 -p1 -b .systemdfix
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -429,6 +427,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed May 09 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.6-1
+- v2.1.5: Using "~/" as mail_location or elsewhere failed to actually
+  expand it to home directory.
+- dbox: Fixed potential assert-crash when reading dbox files.
+- trash plugin: Fixed behavior when quota is already over limit.
+- Proxying to backend server with SSL: Verifying server certificate
+  name always failed, because it was compared to an IP address.
+
 * Tue Apr 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.5-1
 - IMAP: Several fixes related to mailbox listing in some configs
 - director: A lot of fixes and performance improvements
