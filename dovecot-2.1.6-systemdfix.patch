@@ -1,0 +1,12 @@
+diff -up dovecot-2.1.6/src/master/service-listen.c.systemdfix dovecot-2.1.6/src/master/service-listen.c
+--- dovecot-2.1.6/src/master/service-listen.c.systemdfix	2012-05-04 23:14:02.000000000 +0200
++++ dovecot-2.1.6/src/master/service-listen.c	2012-05-09 13:07:39.827730993 +0200
+@@ -339,7 +339,7 @@ int services_listen(struct service_list
+ 	}
+ 
+ #ifdef HAVE_SYSTEMD
+-	if (ret == 0)
++ 	if (ret > 0)
+ 		services_verify_systemd(service_list);
+ #endif
+ 	return ret;
