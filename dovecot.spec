@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.7
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -427,6 +427,18 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed May 30 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-2
+- fix changelog, 2.1.7-1 had copy-pasted upstream changelog, which was wrong
+- director: Don't crash with quickly disconnecting incoming director
+  connections.
+- mdbox: If mail was originally saved to non-INBOX, and namespace
+  prefix is non-empty, don't assert-crash when rebuilding indexes.
+- sdbox: Don't use more fds than necessary when copying mails.
+- auth: Fixed crash with DIGEST-MD5 when attempting to do master user
+  login without master passdbs. 
+- Several fixes to mail_shared_explicit_inbox=no
+- imapc: Use imapc_list_prefix also for listing subscriptions.
+
 * Wed May 30 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-1
 - updated to 2.1.7
 - v2.1.5: Using "~/" as mail_location or elsewhere failed to actually
