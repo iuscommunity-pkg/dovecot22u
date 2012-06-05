@@ -36,7 +36,6 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
-BuildRequires: clucene-core-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -55,6 +54,11 @@ Requires: initscripts
 Requires(post): chkconfig
 Requires(preun): chkconfig initscripts
 Requires(postun): initscripts
+%endif
+
+%if %{?fedora}0 > 150 || %{?rhel}0 >60
+#clucene in fedora <=15 and rhel<=6 is too old
+BuildRequires: clucene-core-devel
 %endif
 
 %define ssldir %{_sysconfdir}/pki/%{name}
@@ -132,7 +136,9 @@ export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
     --with-sqlite                \
     --with-zlib                  \
     --with-libcap                \
+%if %{?fedora}0 > 150 || %{?rhel}0 >60
     --with-lucene                \
+%endif
     --with-ssl=openssl           \
     --with-ssldir=%{ssldir}      \
     --with-solr                  \
