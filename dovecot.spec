@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.7
 #global prever .rc6
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -69,6 +69,8 @@ BuildRequires: curl-devel expat-devel
 %else
 BuildRequires: libcurl-devel expat-devel
 %endif
+
+%global restart_flag /var/run/%{name}/%{name}-restart-after-rpm-install
 
 %description
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
@@ -244,7 +246,18 @@ useradd -r --uid 97 -g dovecot -d /usr/libexec/dovecot -s /sbin/nologin -c "Dove
 getent group dovenull >/dev/null || groupadd -r dovenull
 getent passwd dovenull >/dev/null || \
 useradd -r -g dovenull -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot's unauthorized user" dovenull
-exit 0
+
+# do not let dovecot run during upgrade rhbz#134325
+if [ "$1" = "2" ]; then
+  rm -f %restart_flag
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+  /bin/systemctl is-active %{name}.service >/dev/null 2>&1 && touch %restart_flag ||:
+  /bin/systemctl stop %{name}.service >/dev/null 2>&1
+%else
+  /sbin/service %{name} status >/dev/null 2>&1 && touch %restart_flag ||:
+  /sbin/service %{name} stop >/dev/null 2>&1
+%endif
+fi
 
 %post
 if [ $1 -eq 1 ]
@@ -271,8 +284,6 @@ install -d -m 0755 -d /var/run/dovecot/empty
 install -d -m 0750 -g dovenull /var/run/dovecot/login
 [ -x /sbin/restorecon ] && /sbin/restorecon -R /var/run/dovecot
 
-exit 0
-
 %preun
 if [ $1 = 0 ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
@@ -290,12 +301,25 @@ fi
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 %endif
 
-if [ "$1" -ge "1" ]; then
+if [ "$1" -ge "1" -a -e %restart_flag ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-    /bin/systemctl try-restart dovecot.service >/dev/null 2>&1 || :
+    /bin/systemctl start dovecot.service >/dev/null 2>&1 || :
 %else
-    /sbin/service %{name} condrestart >/dev/null 2>&1 || :
+    /sbin/service %{name} start >/dev/null 2>&1 || :
 %endif
+rm -f %restart_flag
+fi
+
+%posttrans
+# dovecot should be started again in %postun, but it's not executed on reinstall
+# if it was already started, restart_flag won't be here, so it's ok to test it again
+if [ "$1" -ge "1" -a -e %restart_flag ]; then
+%if %{?fedora}0 > 140 || %{?rhel}0 > 60
+    /bin/systemctl start dovecot.service >/dev/null 2>&1 || :
+%else
+    /sbin/service %{name} start >/dev/null 2>&1 || :
+%endif
+rm -f %restart_flag
 fi
 
 %check
@@ -433,6 +457,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Jun 15 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-3
+- do not let dovecot run during upgrade (#134325)
+
 * Wed May 30 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-2
 - fix changelog, 2.1.7-1 had copy-pasted upstream changelog, which was wrong
 - director: Don't crash with quickly disconnecting incoming director
