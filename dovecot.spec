@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.7
 #global prever .rc6
-Release: 3%{?dist}
+Release: 4%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -313,7 +313,7 @@ fi
 %posttrans
 # dovecot should be started again in %postun, but it's not executed on reinstall
 # if it was already started, restart_flag won't be here, so it's ok to test it again
-if [ "$1" -ge "1" -a -e %restart_flag ]; then
+if [ -e %restart_flag ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
     /bin/systemctl start dovecot.service >/dev/null 2>&1 || :
 %else
@@ -457,6 +457,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Jun 22 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-4
+- posttrans argument is always zero
+
 * Fri Jun 15 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-3
 - do not let dovecot run during upgrade (#134325)
 
