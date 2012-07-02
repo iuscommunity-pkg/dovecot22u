@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.7
 #global prever .rc6
-Release: 4%{?dist}
+Release: 5%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -36,6 +36,7 @@ BuildRequires: postgresql-devel
 BuildRequires: mysql-devel
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
+BuildRequires: quota-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -457,6 +458,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Jul 02 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-5
+- make quota work with NFS mounted mailboxes
+
 * Fri Jun 22 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-4
 - posttrans argument is always zero
 
