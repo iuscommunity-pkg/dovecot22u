@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.8
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -12,7 +12,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.3.0
+%global pigeonholever 0.3.1
 Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
@@ -458,6 +458,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Jul 03 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.8-2
+- pigeonhole updated to 0.3.1
+- Fixed several small issues, including a few potential segfault bugs, based
+  on static source code analysis.
+
 * Tue Jul 03 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.8-1
 - dovecot updated to 2.1.8
 - imap: Mailbox names were accidentally sent as UTF-8 instead of mUTF-7
