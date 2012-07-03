@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.7
+Version: 2.1.8
 #global prever .rc6
-Release: 5%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -458,6 +458,19 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Jul 03 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.8-1
+- dovecot updated to 2.1.8
+- imap: Mailbox names were accidentally sent as UTF-8 instead of mUTF-7
+  in previous v2.1.x releases for STATUS, MYRIGHTS and GETQUOTAROOT commands.
+- lmtp proxy: Don't timeout connections too early when mail has a lot of RCPT TOs.
+- director: Don't crash if the director is working alone.
+- shared mailboxes: Avoid doing "@domain" userdb lookups.
+- doveadm: Fixed crash with proxying some commands.
+- fts-squat: Fixed handling multiple SEARCH parameters.
+- imapc: Fixed a crash when message had more than 8 keywords.
+- imapc: Don't crash on APPEND/COPY if server doesn't support UIDPLUS.
+
+
 * Mon Jul 02 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.7-5
 - make quota work with NFS mounted mailboxes
 
