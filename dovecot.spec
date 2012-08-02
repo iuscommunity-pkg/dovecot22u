@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.8
+Version: 2.1.9
 #global prever .rc6
-Release: 3%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -458,6 +458,18 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Aug 02 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.9-1
+- dovecot updated to 2.1.9
+- Full text search indexing might have failed for some messages,
+  always causing indexer-worker process to run out of memory.
+- fts-lucene: Fixed handling SEARCH HEADER FROM/TO/SUBJECT/CC/BCC when
+  the header wasn't lowercased.
+- fts-squat: Fixed crash when searching a virtual mailbox.
+- pop3: Fixed assert crash when doing UIDL on empty mailbox on some
+  setups. 
+- auth: GSSAPI RFC compliancy and error handling fixes.
+- Various fixes related to handling shared namespaces
+
 * Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:2.1.8-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
