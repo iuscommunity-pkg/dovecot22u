@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.9
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -49,7 +49,9 @@ Requires: openssl >= 0.9.7f-4
 Requires(pre): shadow-utils
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
 Requires: systemd
-Requires(postun): systemd
+Requires(post): systemd-units
+Requires(preun): systemd-units
+Requires(postun): systemd-units
 %else
 Requires: initscripts
 Requires(post): chkconfig
@@ -264,7 +266,7 @@ fi
 if [ $1 -eq 1 ]
 then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+  %systemd_post dovecot.service
 %else
   /sbin/chkconfig --add %{name}
 %endif
@@ -458,6 +460,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Aug 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.9-2
+- use new systemd rpm macros (#851238)
+
 * Thu Aug 02 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.9-1
 - dovecot updated to 2.1.9
 - Full text search indexing might have failed for some messages,
