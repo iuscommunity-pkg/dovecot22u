@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.9
+Version: 2.1.10
 #global prever .rc6
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -12,7 +12,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.3.1
+%global pigeonholever 0.3.3
 Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
@@ -460,6 +460,15 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Sep 19 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.10-1
+- dovecot updated to 2.1.10, pigeonhole updated to 0.3.3
+- director: In some conditions director may have disconnected from
+  another director (without logging about it), thinking it was sending
+  invalid data.
+- imap: Various fixes to listing mailboxes.
+- login processes crashed if there were a lot of local {} or remote {}
+  settings blocks.
+
 * Fri Aug 24 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.9-2
 - use new systemd rpm macros (#851238)
 
