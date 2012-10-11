@@ -326,7 +326,7 @@ rm -f %restart_flag
 fi
 
 %check
-#make check # waiting for rhbz#798968
+make check
 cd dovecot-2.1-pigeonhole-%{pigeonholever}
 make check
 
