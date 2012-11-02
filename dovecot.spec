@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.10
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -22,11 +22,14 @@ Source10: dovecot.tmpfilesd
 #our own
 Source14: dovecot.conf.5
 
-# 4x Fedora/RHEL specific
+# 3x Fedora/RHEL specific
 Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
-Patch4: dovecot-2.1-privatetmp.patch
+
+
+Patch4: dovecot-2.1.10-reload.patch
+Patch5: dovecot-2.1-privatetmp.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -119,7 +122,8 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .privatetmp
+%patch4 -p1 -b .reload
+%patch5 -p1 -b .privatetmp
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -460,6 +464,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Nov 02 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.10-2
+- add reload command to service file
+
 * Wed Sep 19 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.10-1
 - dovecot updated to 2.1.10, pigeonhole updated to 0.3.3
 - director: In some conditions director may have disconnected from

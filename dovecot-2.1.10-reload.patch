@@ -1,0 +1,11 @@
+diff -up dovecot-2.1.10/dovecot.service.in.reload dovecot-2.1.10/dovecot.service.in
+--- dovecot-2.1.10/dovecot.service.in.reload	2012-11-02 10:25:41.416181031 +0100
++++ dovecot-2.1.10/dovecot.service.in	2012-11-02 10:26:17.014467872 +0100
+@@ -5,6 +5,7 @@ After=local-fs.target network.target
+ [Service]
+ Type=simple
+ ExecStart=@sbindir@/dovecot -F
++ExecReload=/bin/kill -HUP $MAINPID
+ NonBlocking=yes
+ 
+ [Install]
