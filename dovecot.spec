@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.10
 #global prever .rc6
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -30,6 +30,10 @@ Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
 Patch4: dovecot-2.1.10-reload.patch
 Patch5: dovecot-2.1-privatetmp.patch
+
+#wait for network
+Patch6: dovecot-2.1.10-waitonline.patch
+Source15: prestartscript
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
@@ -124,6 +128,7 @@ This package provides the development files for dovecot.
 %patch3 -p1 -b .mkcert-paths
 %patch4 -p1 -b .reload
 %patch5 -p1 -b .privatetmp
+%patch6 -p1 -b .waitonline
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -199,6 +204,9 @@ install -p -D -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/dovecot
 
 #install man pages
 install -p -D -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_mandir}/man5/dovecot.conf.5
+
+#install waitonline script
+install -p -D -m 755 %{SOURCE15} $RPM_BUILD_ROOT%{_libexecdir}/dovecot/prestartscript
 
 # generate ghost .pem files
 mkdir -p $RPM_BUILD_ROOT%{ssldir}/certs
@@ -464,6 +472,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Nov 08 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.10-3
+- fix network still not ready race condition (#871623)
+
 * Fri Nov 02 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.10-2
 - add reload command to service file
 

@@ -1,0 +1,3 @@
+#!/bin/sh
+/bin/systemctl -q is-enabled NetworkManager.service && /usr/bin/nm-online -q --timeout 30 ||:
+
