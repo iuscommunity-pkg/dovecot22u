@@ -1,9 +1,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.10
+Version: 2.1.12
 #global prever .rc6
-Release: 3%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -472,6 +472,12 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Dec 03 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.12-1
+- dovecot updated to 2.1.12
+- lmtp proxy: Fixed hanging if remote server was down.
+- doveadm: Various fixes to handling doveadm-server connections.
+- auth: passdb imap was broken in v2.1.10.
+
 * Thu Nov 08 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.10-3
 - fix network still not ready race condition (#871623)
 
