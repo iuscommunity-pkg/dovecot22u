@@ -1,7 +1,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.12
+Version: 2.1.13
 #global prever .rc6
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -472,6 +472,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Jan 15 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.13-1
+- dovecot updated to 2.1.13
+- Some fixes to cache file changes in v2.1.11.
+- virtual storage: Sorting mailbox by from/to/cc/bcc didn't work.
+
 * Mon Dec 03 2012 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.12-1
 - dovecot updated to 2.1.12
 - lmtp proxy: Fixed hanging if remote server was down.
