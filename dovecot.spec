@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.1.14
 #global prever .rc6
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -134,6 +134,7 @@ sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
 export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
+export LDFLAGS="-Wl,-z,now -Wl,-z,relro"
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
     --docdir=%{_docdir}/%{name}-%{version}     \
@@ -157,7 +158,7 @@ export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
     --with-ssldir=%{ssldir}      \
     --with-solr                  \
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-    --with-systemdsystemunitdir=/lib/systemd/system/  \
+    --with-systemdsystemunitdir=%{_unitdir}  \
 %endif
     --with-docs
 
@@ -354,8 +355,8 @@ make check
 
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/dovecot.conf
-/lib/systemd/system/dovecot.service
-/lib/systemd/system/dovecot.socket
+%{_unitdir}/dovecot.service
+%{_unitdir}/dovecot.socket
 %else
 %{_initddir}/dovecot
 %attr(0600,root,root) %config(noreplace) %{_sysconfdir}/sysconfig/dovecot
@@ -472,6 +473,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Feb 05 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.14-2
+- spec clean up
+
 * Thu Jan 31 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.14-1
 - dovecot updated to 2.1.14
 - v2.1.11+ had a race condition where it sometimes overwrote data in
