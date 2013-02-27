@@ -1,19 +1,21 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.1.15
-#global prever .rc6
-Release: 1%{?dist}
+Version: 2.2
+%global prever .rc2
+Release: 0%{?dist}.1
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.1/%{name}-%{version}%{?prever}.tar.gz
+Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.3.3
-Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
+%global pigeonholever 99eec511aa2c
+#pigeonhole for dovecot 2.2 has not been released yet, only repo snapshot
+Source8: pigeonhole-99eec511aa2c.tar.bz2
+#Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source9: dovecot.sysconfig
@@ -167,9 +169,12 @@ sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10
 make %{?_smp_mflags}
 
 #pigeonhole
-pushd dovecot-2.1-pigeonhole-%{pigeonholever}
-#./autogen.sh
-#autoreconf -fiv
+pushd dovecot-2-2-pigeonhole-%{pigeonholever}
+
+# required for snapshot
+[ -f configure ] || autoreconf -fiv
+[ -f ChangeLog ] || echo "Pigeonhole ChangeLog is not available, yet" >ChangeLog
+
 %configure                             \
     INSTALL_DATA="install -c -p -m644" \
     --disable-static                   \
@@ -188,7 +193,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
 
 
-pushd dovecot-2.1-pigeonhole-%{pigeonholever}
+pushd dovecot-2-2-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
@@ -340,7 +345,7 @@ fi
 
 %check
 make check
-cd dovecot-2.1-pigeonhole-%{pigeonholever}
+cd dovecot-2-2-pigeonhole-%{pigeonholever}
 make check
 
 %files
@@ -413,6 +418,7 @@ make check
 %{_libdir}/dovecot/auth/libdriver_sqlite.so
 %{_libdir}/dovecot/dict/libdriver_sqlite.so
 %{_libdir}/dovecot/libdriver_sqlite.so
+%{_libdir}/dovecot/libssl_iostream_openssl.so
 %dir %{_libdir}/dovecot/settings
 
 %{_libexecdir}/%{name}
@@ -473,6 +479,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Feb 27 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2-0.1
+- major update to dovecot 2.2 RC2
+
 * Mon Feb 11 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.1.15-1
 - dovecot updated to 2.1.15
 - v2.1.14's dovecot.index.cache fixes caused Dovecot to use more disk I/O

@@ -1,6 +1,6 @@
 diff -up dovecot-2.1.10/dovecot.service.in.waitonline dovecot-2.1.10/dovecot.service.in
---- dovecot-2.1.10/dovecot.service.in.waitonline	2012-11-08 17:09:14.025772652 +0100
-+++ dovecot-2.1.10/dovecot.service.in	2012-11-08 17:10:06.472155786 +0100
+--- dovecot-2.1.10/dovecot.service.in.waitonline	2012-11-20 14:19:47.000000000 +0100
++++ dovecot-2.1.10/dovecot.service.in	2012-11-20 14:20:29.245076250 +0100
 @@ -4,6 +4,7 @@ After=local-fs.target network.target
  
  [Service]
