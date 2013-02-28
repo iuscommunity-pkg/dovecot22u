@@ -3,7 +3,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2
 %global prever .rc2
-Release: 0%{?dist}.1
+Release: 0%{?dist}.2
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -479,6 +479,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Feb 28 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2-0.2
+- do not print error when NetworkManager is not installed (#916456)
+
 * Wed Feb 27 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2-0.1
 - major update to dovecot 2.2 RC2
 
