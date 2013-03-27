@@ -2,8 +2,8 @@ Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
 Version: 2.2
-%global prever .rc2
-Release: 0%{?dist}.2
+%global prever .rc3
+Release: 0%{?dist}.3
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -137,6 +137,7 @@ sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
 export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro"
+autoreconf -I . -fiv #required for aarch64 support
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
     --docdir=%{_docdir}/%{name}-%{version}     \
@@ -479,6 +480,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Mar 27 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2-0.3
+- dovecot updated to 2.2 RC3
+- Fixed a crash when decoding quoted-printable content.
+- dsync: Various bugfixes
+
 * Thu Feb 28 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2-0.2
 - do not print error when NetworkManager is not installed (#916456)
 
