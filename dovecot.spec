@@ -49,7 +49,7 @@ BuildRequires: quota-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
-#BuildRequires: gettext-devel
+BuildRequires: gettext-devel
 
 # Explicit Runtime Requirements for executalbe
 Requires: openssl >= 0.9.7f-4
