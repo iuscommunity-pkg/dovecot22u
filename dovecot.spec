@@ -2,9 +2,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2
-%global prever .rc4
-Release: 0%{?dist}.4
+Version: 2.2.0
+%global prever %{nil}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -482,6 +482,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Apr 15 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.0-1
+- dovecot updated to 2.2.0
+- Mailbox list indexes weren't using proper file permissions based
+  on the root directory.
+- replicator: doveadm commands and user list export may have skipped
+  some users.
+- Various fixes to mailbox_list_index=yes
+
 * Fri Apr 05 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2-0.4
 - dovecot updated to 2.2 RC4
 - various bugfixes to LDAP changes in rc3
