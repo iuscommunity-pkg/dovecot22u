@@ -136,8 +136,9 @@ sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src
 
 %build
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
-export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
-export LDFLAGS="-Wl,-z,now -Wl,-z,relro"
+%global _hardened_build 1
+export CFLAGS="%{__global_cflags} -fno-strict-aliasing"
+export LDFLAGS="-Wl,-z,now -Wl,-z,relro %{__global_ldflags}"
 autoreconf -I . -fiv #required for aarch64 support
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
