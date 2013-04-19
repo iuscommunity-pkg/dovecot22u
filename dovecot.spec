@@ -2,7 +2,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.0
+Version: 2.2.1
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -482,6 +482,15 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Apr 19 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.1-1
+- dovecot updated to 2.2.1
+- mailbox_list_index=yes was broken.
+- LAYOUT=index didn't list subscriptions.
+- auth: Multiple master passdbs didn't work.
+- Message parsing (e.g. during search) crashed when multipart message
+  didn't actually contain any parts.
+- dovecot updated to 2.2.1
+
 * Mon Apr 15 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.0-1
 - dovecot updated to 2.2.0
 - Mailbox list indexes weren't using proper file permissions based
