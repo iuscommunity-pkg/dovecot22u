@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.1
 %global prever %{nil}
-Release: 3%{?dist}
+Release: 4%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,10 +14,8 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 99eec511aa2c
-#pigeonhole for dovecot 2.2 has not been released yet, only repo snapshot
-Source8: pigeonhole-99eec511aa2c.tar.bz2
-#Source8: http://www.rename-it.nl/dovecot/2.1/dovecot-2.1-pigeonhole-%{pigeonholever}.tar.gz
+%global pigeonholever 0.4.0
+Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 Source9: dovecot.sysconfig
@@ -173,7 +171,7 @@ sed -i 's|/etc/ssl|/etc/pki/dovecot|' doc/mkcert.sh doc/example-config/conf.d/10
 make %{?_smp_mflags}
 
 #pigeonhole
-pushd dovecot-2-2-pigeonhole-%{pigeonholever}
+pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 
 # required for snapshot
 [ -f configure ] || autoreconf -fiv
@@ -197,7 +195,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
 
 
-pushd dovecot-2-2-pigeonhole-%{pigeonholever}
+pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 
 mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
@@ -349,7 +347,7 @@ fi
 
 %check
 make check
-cd dovecot-2-2-pigeonhole-%{pigeonholever}
+cd dovecot-2*2-pigeonhole-%{pigeonholever}
 make check
 
 %files
@@ -452,8 +450,9 @@ make check
 %{_bindir}/sieve-filter
 %{_bindir}/sieve-test
 %{_bindir}/sievec
-%config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/20-managesieve.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve-extprograms.conf
 
 %{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
 
@@ -462,6 +461,7 @@ make check
 
 %{_libdir}/dovecot/*_sieve_plugin.so
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
+%{_libdir}/dovecot/sieve/
 
 %{_mandir}/man1/sieve-dump.1.gz
 %{_mandir}/man1/sieve-filter.1.gz
@@ -483,6 +483,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu May 16 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.1-4
+- update pigeonhole to 0.4.0
+
 * Mon Apr 29 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.1-3
 - revert last change and use different fix
 
