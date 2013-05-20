@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.1
+Version: 2.2.2
 %global prever %{nil}
-Release: 4%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -389,6 +389,7 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-plugin.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-checkpassword.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-deny.conf.ext
+%config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-dict.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-ldap.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-master.conf.ext
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/auth-passwdfile.conf.ext
@@ -483,6 +484,19 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon May 20 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.2-1
+- dovecot updated to 2.2.2
+- IMAP: Various URLAUTH fixes.
+- IMAP: Fixed a hang with invalid APPEND parameters.
+- IMAP LIST-EXTENDED: INBOX was never listed with \Subscribed flag.
+- mailbox_list_index=yes still caused crashes.
+- maildir: Fixed a crash after dovecot-keywords file was re-read.
+- maildir: If files had reappeared unexpectedly to a Maildir, they
+  were ignored until index files were deleted.
+- Maildir: Fixed handling over 26 keywords in a mailbox. 
+- imap/pop3-login proxying: Fixed a crash if TCP connection succeeded,
+  but the remote login timed out.
+
 * Thu May 16 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.1-4
 - update pigeonhole to 0.4.0
 
