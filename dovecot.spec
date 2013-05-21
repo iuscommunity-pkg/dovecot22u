@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.2
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -225,7 +225,7 @@ touch $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 chmod 600 $RPM_BUILD_ROOT%{ssldir}/private/dovecot.pem
 
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-install -p -D -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/dovecot.conf
+install -p -D -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_tmpfilesdir}/dovecot.conf
 %else
 install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
@@ -361,7 +361,7 @@ make check
 
 
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-%config(noreplace) %{_sysconfdir}/tmpfiles.d/dovecot.conf
+%_tmpfilesdir/dovecot.conf
 %{_unitdir}/dovecot.service
 %{_unitdir}/dovecot.socket
 %else
@@ -484,6 +484,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue May 21 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.2-2
+- fix location of tmpfiles configuration (#964448)
+
 * Mon May 20 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.2-1
 - dovecot updated to 2.2.2
 - IMAP: Various URLAUTH fixes.
@@ -1371,7 +1374,7 @@ make check
 * Wed Feb 20 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 1:1.0.10-5
 - Autorebuild for GCC 4.3
 
-* Fri Jan 07 2008 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.10-4
+* Mon Jan 07 2008 Tomas Janousek <tjanouse@redhat.com> - 1:1.0.10-4
 - update to latest upstream stable (1.0.10)
 
 * Wed Dec 05 2007 Jesse Keating <jkeating@redhat.com> - 1:1.0.7-3
@@ -1627,7 +1630,7 @@ make check
 - add UW to Dovecot migration documentation and scripts, bug #139954
   fix SSL documentation and scripts, add missing documentation, bug #139276
 
-* Thu Nov 15 2004 Warren Togami <wtogami@redhat.com> 0.99.11-2.FC4.1
+* Mon Nov 15 2004 Warren Togami <wtogami@redhat.com> 0.99.11-2.FC4.1
 - rebuild against MySQL4
 
 * Thu Oct 21 2004 John Dennis <jdennis@redhat.com>
