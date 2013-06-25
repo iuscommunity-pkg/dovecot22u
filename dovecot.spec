@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.3
+Version: 2.2.4
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -484,6 +484,13 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Jun 25 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.4-1
+- dovecot updated to 2.2.4
+- imap/pop3 proxy: Master user logins were broken in v2.2.3
+- sdbox/mdbox: A corrupted index header with wrong size was never
+  automatically fixed in v2.2.3.
+- mbox: Fixed assert-crashes related to locking.
+
 * Mon Jun 17 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.3-1
 - dovecot updated to 2.2.3
 - IMAP: If subject contained only whitespace, Dovecot returned an
