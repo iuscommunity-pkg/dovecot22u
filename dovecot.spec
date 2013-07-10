@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.4
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -35,6 +35,7 @@ Patch5: dovecot-2.1-privatetmp.patch
 
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
+Patch7: dovecot-2.2.4-saslconflict.patch
 Source15: prestartscript
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -131,6 +132,7 @@ This package provides the development files for dovecot.
 %patch4 -p1 -b .reload
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
+%patch7 -p1 -b .saslconflict
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -484,6 +486,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Jul 10 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.4-2
+- fix name conflict with cyrus-sasl (#975869)
+
 * Tue Jun 25 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.4-1
 - dovecot updated to 2.2.4
 - imap/pop3 proxy: Master user logins were broken in v2.2.3
