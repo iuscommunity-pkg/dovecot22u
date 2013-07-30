@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.4
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.0
+%global pigeonholever 0.4.1
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.1-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.1-pigeonhole-%{pigeonholever}.tar.bz2
@@ -486,6 +486,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Jul 30 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.4-3
+- dovecot pigeonhole updated to 0.4.1
+
 * Wed Jul 10 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.4-2
 - fix name conflict with cyrus-sasl (#975869)
 
