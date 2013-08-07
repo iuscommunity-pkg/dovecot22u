@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.4
+Version: 2.2.5
 %global prever %{nil}
-Release: 3%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -35,7 +35,6 @@ Patch5: dovecot-2.1-privatetmp.patch
 
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
-Patch7: dovecot-2.2.4-saslconflict.patch
 Source15: prestartscript
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -132,7 +131,6 @@ This package provides the development files for dovecot.
 %patch4 -p1 -b .reload
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
-%patch7 -p1 -b .saslconflict
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -486,6 +484,17 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Aug 07 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.5-1
+- dovecot updated to 2.2.5
+- added some missing man pages (by Pascal Volk)
+- director: Users near expiration could have been redirected to
+  different servers at the same time.
+- pop3: Avoid assert-crash if client disconnects during LIST.
+- mdbox: Corrupted index header still wasn't automatically fixed.
+- dsync: Various fixes to work better with imapc and pop3c storages.
+- ldap: sasl_bind=yes caused crashes, because Dovecot's lib-sasl
+  symbols conflicted with Cyrus SASL library.
+
 * Tue Jul 30 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.4-3
 - dovecot pigeonhole updated to 0.4.1
 
