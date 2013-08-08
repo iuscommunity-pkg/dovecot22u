@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.5
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -141,7 +141,7 @@ export LDFLAGS="-Wl,-z,now -Wl,-z,relro %{__global_ldflags}"
 autoreconf -I . -fiv #required for aarch64 support
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
-    --docdir=%{_docdir}/%{name}-%{version}     \
+    --docdir=%{_docdir}/%{name}  \
     --disable-static             \
     --disable-rpath              \
     --with-nss                   \
@@ -192,15 +192,15 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
 #move doc dir back to build dir so doc macro in files section can use it
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
 
 
 pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version} $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name} $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole
 
-install -m 644 AUTHORS ChangeLog COPYING COPYING.LGPL INSTALL NEWS README $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
+install -m 644 AUTHORS ChangeLog COPYING COPYING.LGPL INSTALL NEWS README $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole
 popd
 
 
@@ -237,9 +237,9 @@ mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
 install -p -m 644 docinstall/example-config/dovecot.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot
 install -p -m 644 docinstall/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
-install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
 install -p -m 644 docinstall/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
-install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d ||:
+install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d ||:
 install -p -m 644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
 
 install -p -m755 doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{name}/mkcert.sh
@@ -455,7 +455,7 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve-extprograms.conf
 
-%{_docdir}/%{name}-2.1-pigeonhole-%{pigeonholever}
+%{_docdir}/%{name}-pigeonhole
 
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
@@ -484,6 +484,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Aug 08 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.5-2
+- use unversioned doc dir (#993731)
+
 * Wed Aug 07 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.5-1
 - dovecot updated to 2.2.5
 - added some missing man pages (by Pascal Volk)
