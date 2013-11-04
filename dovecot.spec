@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.6
+Version: 2.2.7
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -484,6 +484,14 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Nov 04 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.7-1
+- dovecot updated to 2.2.7
+- master process was doing a hostname.domain lookup for each created
+  process, which may have caused a lot of unnecessary DNS lookups.
+- dsync: Syncing over 100 messages at once caused problems in some
+  situations, causing messages to get new UIDs.
+- fts-solr: Different Solr hosts for different users didn't work.
+
 * Tue Oct 01 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.6-1
 - dovecot updated to 2.2.6, pigeonhole updated to 0.4.2
 - director: v2.2.5 changes caused "SYNC lost" errors
