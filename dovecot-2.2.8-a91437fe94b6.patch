@@ -1,0 +1,32 @@
+
+# HG changeset patch
+# User Timo Sirainen <tss@iki.fi>
+# Date 1384951135 -7200
+# Node ID a91437fe94b67fc0b5ef8f3177a9ebe1deccc9e3
+# Parent  f4eb4b5884b2e89e146a32b2d1db1f14f753008f
+lib-storage: mail_get_*header*() were unnecessarily looking up the headers twice.
+
+diff -r f4eb4b5884b2 -r a91437fe94b6 src/lib-storage/index/index-mail-headers.c
+--- a/src/lib-storage/index/index-mail-headers.c	Wed Nov 20 14:37:44 2013 +0200
++++ b/src/lib-storage/index/index-mail-headers.c	Wed Nov 20 14:38:55 2013 +0200
+@@ -760,6 +760,9 @@
+ 			mail_cache_set_corrupted(_mail->box->cache,
+ 				"Broken header %s for mail UID %u",
+ 				field, _mail->uid);
++			/* retry by parsing the full header */
++		} else {
++			break;
+ 		}
+ 	}
+ 	return ret;
+@@ -788,6 +791,9 @@
+ 			mail_cache_set_corrupted(_mail->box->cache,
+ 				"Broken header %s for mail UID %u",
+ 				field, _mail->uid);
++			/* retry by parsing the full header */
++		} else {
++			break;
+ 		}
+ 	}
+ 	*value_r = list[0];
+

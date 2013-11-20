@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.7
+Version: 2.2.8
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -35,7 +35,11 @@ Patch5: dovecot-2.1-privatetmp.patch
 
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
-Patch7: dovecot-2.2.7-10c0aae82d0d.patch
+
+Patch7: dovecot-2.2.8-f4eb4b5884b2.patch
+Patch8: dovecot-2.2.8-a91437fe94b6.patch
+Patch9: dovecot-2.2.8-4ef184875799.patch
+Patch10: dovecot-2.2.8-47923cfd4b56.patch
 Source15: prestartscript
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -132,7 +136,10 @@ This package provides the development files for dovecot.
 %patch4 -p1 -b .reload
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
-%patch7 -p1 -b .10c0aae82d0d
+%patch7 -p1 -b .f4eb4b5884b2
+%patch8 -p1 -b .a91437fe94b6
+%patch9 -p1 -b .4ef184875799
+%patch10 -p1 -b .47923cfd4b56
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -486,6 +493,17 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Nov 20 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.8-1
+- Fixed infinite loop in message parsing if message ends with
+  "--boundary" and CR (without LF). Messages saved via SMTP/LMTP can't
+  trigger this, because messages must end with an "LF.". A user could
+  trigger this for him/herself though.
+- lmtp: Client was sometimes disconnected before all the output was
+  sent to it.
+- replicator: Database wasn't being exported to disk every 15 minutes
+  as it should have. Instead it was being imported, causing "doveadm
+  replicator remove" commands to not work very well.
+
 * Thu Nov 14 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.7-2
 - fix ostream infinite loop (#1029906)
 
