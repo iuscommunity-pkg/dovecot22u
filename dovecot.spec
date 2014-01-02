@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.9
+Version: 2.2.10
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -485,6 +485,21 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Jan 02 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.10-1
+- dovecot updated to 2.2.10
+- quota-status: quota_grace was ignored
+- ldap: Fixed memory leak with auth_bind=yes and without
+  auth_bind_userdn.
+- imap: Don't send HIGHESTMODSEQ anymore on SELECT/EXAMINE when
+  CONDSTORE/QRESYNC has never before been enabled for the mailbox.
+- imap: Fixes to handling mailboxes without permanent modseqs.
+  (When [NOMODSEQ] is returned by SELECT, mainly with in-memory
+  indexes.)
+- imap: Various fixes to METADATA support.
+- stats plugin: Processes that only temporarily dropped privileges
+  (e.g. indexer-worker) may have been logging errors about not being
+  able to open /proc/self/io.
+
 * Mon Nov 25 2013 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.9-1
 - improved cache file handling exposed several old bugs related to fetching 
   mail headers.
