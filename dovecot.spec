@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.10
+Version: 2.2.11
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -485,6 +485,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Feb 13 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.11-1
+- dovecot updated to 2.2.11
+- imap: SEARCH/SORT PARTIAL reponses may have been too large.
+- doveadm backup: Fixed assert-crash when syncing mailbox deletion.
+
 * Thu Jan 02 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.10-1
 - dovecot updated to 2.2.10
 - quota-status: quota_grace was ignored
