@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.11
+Version: 2.2.12
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -485,6 +485,10 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Feb 14 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.12-1
+- dovecot updated to 2.2.12
+- fixes pop3 crash
+
 * Thu Feb 13 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.11-1
 - dovecot updated to 2.2.11
 - imap: SEARCH/SORT PARTIAL reponses may have been too large.
