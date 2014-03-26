@@ -431,13 +431,13 @@ make check
 %ghost /var/run/dovecot
 %attr(0750,dovecot,dovecot) /var/lib/dovecot
 
-%{_mandir}/man1/deliver.1.gz
-%{_mandir}/man1/doveadm*.1.gz
-%{_mandir}/man1/doveconf.1.gz
-%{_mandir}/man1/dovecot*.1.gz
-%{_mandir}/man1/dsync.1.gz
-%{_mandir}/man5/dovecot.conf.5.gz
-%{_mandir}/man7/doveadm-search-query.7.gz
+%{_mandir}/man1/deliver.1*
+%{_mandir}/man1/doveadm*.1*
+%{_mandir}/man1/doveconf.1*
+%{_mandir}/man1/dovecot*.1*
+%{_mandir}/man1/dsync.1*
+%{_mandir}/man5/dovecot.conf.5*
+%{_mandir}/man7/doveadm-search-query.7*
 
 %files devel
 %defattr(-,root,root,-)
@@ -465,12 +465,12 @@ make check
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
 %{_libdir}/dovecot/sieve/
 
-%{_mandir}/man1/sieve-dump.1.gz
-%{_mandir}/man1/sieve-filter.1.gz
-%{_mandir}/man1/sieve-test.1.gz
-%{_mandir}/man1/sievec.1.gz
-%{_mandir}/man1/sieved.1.gz
-%{_mandir}/man7/pigeonhole.7.gz
+%{_mandir}/man1/sieve-dump.1*
+%{_mandir}/man1/sieve-filter.1*
+%{_mandir}/man1/sieve-test.1*
+%{_mandir}/man1/sievec.1*
+%{_mandir}/man1/sieved.1*
+%{_mandir}/man7/pigeonhole.7*
 
 %files mysql
 %defattr(-,root,root,-)
