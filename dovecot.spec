@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.12
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -137,8 +137,11 @@ sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src
 #required for fdpass.c line 125,190: dereferencing type-punned pointer will break strict-aliasing rules
 %global _hardened_build 1
 export CFLAGS="%{__global_cflags} -fno-strict-aliasing"
-export LDFLAGS="-Wl,-z,now -Wl,-z,relro %{__global_ldflags}"
+export LDFLAGS="-Wl,-z,now -Wl,-z,relro %{?__global_ldflags}"
+# el6 autoconf too old to regen; use packaged files (#1082384)
+%if %{?fedora}00%{?rhel} > 6
 autoreconf -I . -fiv #required for aarch64 support
+%endif
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
     --docdir=%{_docdir}/%{name}  \
@@ -482,6 +485,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Sun Mar 30 2014 John Morris <john@zultron.com> - 1:2.2.12-2
+- el6 build fixes (#1082384):
+- el6 autoconf too old to regen; use packaged files
+- fix compile error when __global_ldflags macro undefined
+
 * Fri Feb 14 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.12-1
 - dovecot updated to 2.2.12
 - fixes pop3 crash
