@@ -47,6 +47,7 @@ BuildRequires: mysql-devel
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
 BuildRequires: quota-devel
+BuildRequires: xz-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -74,10 +75,10 @@ Requires(postun): initscripts
 BuildRequires: clucene-core-devel
 %endif
 
-%define ssldir %{_sysconfdir}/pki/%{name}
+%global ssldir %{_sysconfdir}/pki/%{name}
 
 %if %{?fedora}00%{?rhel} < 6
-%define _initddir %{_initrddir}
+%global _initddir %{_initrddir}
 BuildRequires: curl-devel expat-devel
 %else
 BuildRequires: libcurl-devel expat-devel
@@ -94,8 +95,6 @@ The SQL drivers and authentication plug-ins are in their subpackages.
 
 %package pigeonhole
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Obsoletes: dovecot-sieve < 1:1.2.10-3
-Obsoletes: dovecot-managesieve < 1:1.2.10-3
 Summary: Sieve and managesieve plug-in for dovecot
 Group: System Environment/Daemons
 License: MIT and LGPLv2
@@ -232,7 +231,7 @@ install -p -D -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/dovecot
 install -p -D -m 600 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/dovecot
 %endif
 
-mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty}
+mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty,token-login}
 
 # Install dovecot configuration and dovecot-openssl.cnf
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
@@ -305,7 +304,8 @@ fi
 
 install -d -m 0755 -g dovecot -d /var/run/dovecot
 install -d -m 0755 -d /var/run/dovecot/empty
-install -d -m 0750 -g dovenull /var/run/dovecot/login
+install -d -m 0750 -g dovenull -d /var/run/dovecot/login
+install -d -m 0755 -g dovenull -d /var/run/dovecot/token-login
 [ -x /sbin/restorecon ] && /sbin/restorecon -R /var/run/dovecot
 
 %preun
@@ -335,7 +335,7 @@ rm -f %restart_flag
 fi
 
 %posttrans
-# dovecot should be started again in %postun, but it's not executed on reinstall
+# dovecot should be started again in %%postun, but it's not executed on reinstall
 # if it was already started, restart_flag won't be here, so it's ok to test it again
 if [ -e %restart_flag ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
@@ -352,7 +352,6 @@ cd dovecot-2*2-pigeonhole-%{pigeonholever}
 make check
 
 %files
-%defattr(-,root,root,-)
 %doc docinstall/* AUTHORS ChangeLog COPYING COPYING.LGPL COPYING.MIT NEWS README
 %{_sbindir}/dovecot
 
@@ -412,6 +411,7 @@ make check
 %dir %{_libdir}/dovecot/auth
 %dir %{_libdir}/dovecot/dict
 %{_libdir}/dovecot/doveadm
+%exclude %{_libdir}/dovecot/doveadm/*sieve*
 %{_libdir}/dovecot/*.so.*
 #these (*.so files) are plugins, not a devel files
 %{_libdir}/dovecot/*_plugin.so
@@ -440,14 +440,12 @@ make check
 %{_mandir}/man7/doveadm-search-query.7*
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/dovecot
 %{_datadir}/aclocal/dovecot.m4
 %{_libdir}/dovecot/libdovecot*.so
 %{_libdir}/dovecot/dovecot-config
 
 %files pigeonhole
-%defattr(-,root,root,-)
 %{_bindir}/sieve-dump
 %{_bindir}/sieve-filter
 %{_bindir}/sieve-test
@@ -461,6 +459,7 @@ make check
 %{_libexecdir}/%{name}/managesieve
 %{_libexecdir}/%{name}/managesieve-login
 
+%{_libdir}/dovecot/doveadm/*sieve*
 %{_libdir}/dovecot/*_sieve_plugin.so
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
 %{_libdir}/dovecot/sieve/
@@ -473,13 +472,11 @@ make check
 %{_mandir}/man7/pigeonhole.7*
 
 %files mysql
-%defattr(-,root,root,-)
 %{_libdir}/%{name}/libdriver_mysql.so
 %{_libdir}/%{name}/auth/libdriver_mysql.so
 %{_libdir}/%{name}/dict/libdriver_mysql.so
 
 %files pgsql
-%defattr(-,root,root,-)
 %{_libdir}/%{name}/libdriver_pgsql.so
 %{_libdir}/%{name}/auth/libdriver_pgsql.so
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
