@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.12
+Version: 2.2.13
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -485,6 +485,19 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon May 12 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.13-1
+- dovecot updated to 2.2.13
+- fixes CVE-2014-3430: denial of service through maxxing out SSL connections
+- pop3 server was still crashing in v2.2.12 
+- maildir: Various fixes and improvements to handling compressed mails
+- fts-lucene, fts-solr: Fixed crash on search when the index contained
+  duplicate entries.
+- mail_attachment_dir: Attachments with the last base64-encoded line
+  longer than the rest wasn't handled correctly.
+- IMAP: SEARCH/SORT PARTIAL was handled completely wrong in v2.2.11+
+- acl: Global ACL file handling was broken when multiple entries
+  matched the mailbox name
+
 * Sun Mar 30 2014 John Morris <john@zultron.com> - 1:2.2.12-2
 - el6 build fixes (#1082384):
 - el6 autoconf too old to regen; use packaged files
