@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.13
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -485,6 +485,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:2.2.13-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Mon May 12 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.13-1
 - dovecot updated to 2.2.13
 - fixes CVE-2014-3430: denial of service through maxxing out SSL connections
