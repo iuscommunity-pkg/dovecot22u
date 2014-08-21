@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.13
 %global prever %{nil}
-Release: 3%{?dist}
+Release: 4%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -35,6 +35,7 @@ Patch5: dovecot-2.1-privatetmp.patch
 
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
+Patch7: dovecot-2.2.13-online.patch
 
 Source15: prestartscript
 
@@ -131,6 +132,7 @@ This package provides the development files for dovecot.
 %patch4 -p1 -b .reload
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
+%patch7 -p1 -b .online
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -485,6 +487,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Aug 21 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.13-4
+- use network-online target instead of just network (#1119814)
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:2.2.13-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 

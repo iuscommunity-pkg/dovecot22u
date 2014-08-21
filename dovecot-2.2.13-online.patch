@@ -1,0 +1,11 @@
+diff -up dovecot-2.2.13/dovecot.service.in.online dovecot-2.2.13/dovecot.service.in
+--- dovecot-2.2.13/dovecot.service.in.online	2014-08-21 13:40:37.998225041 +0200
++++ dovecot-2.2.13/dovecot.service.in	2014-08-21 13:40:49.903167774 +0200
+@@ -1,6 +1,6 @@
+ [Unit]
+ Description=Dovecot IMAP/POP3 email server
+-After=local-fs.target network.target
++After=local-fs.target network-online.target
+ 
+ [Service]
+ Type=simple
