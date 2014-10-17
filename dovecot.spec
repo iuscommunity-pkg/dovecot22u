@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.13
+Version: 2.2.14
 %global prever %{nil}
-Release: 4%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.2
+%global pigeonholever 0.4.3
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
@@ -487,6 +487,16 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Oct 17 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.14-1
+- dovecot updated to 2.2.14, pigeonhole updated to 0.4.3
+- fixed several race conditions with dovecot.index.cache handling that
+  may have caused unnecessary "cache is corrupted" errors.
+- auth: If auth client listed userdb and disconnected before finishing,
+  the auth worker process got stuck
+- imap-login, pop3-login: Fixed potential crashes when client
+  disconnected unexpectedly.
+- imap proxy: The connection was hanging in some usage patterns.
+
 * Thu Aug 21 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.13-4
 - use network-online target instead of just network (#1119814)
 
