@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.14
+Version: 2.2.15
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -36,6 +36,7 @@ Patch5: dovecot-2.1-privatetmp.patch
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
+Patch8: d-2.2.15-pigeonbuildfix.patch
 
 Source15: prestartscript
 
@@ -133,6 +134,9 @@ This package provides the development files for dovecot.
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
+pushd dovecot-2*2-pigeonhole-%{pigeonholever}
+%patch8 -p1 -b .pigeonbuildfix
+popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -487,6 +491,11 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Oct 30 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.15-1
+- dovecot updated to 2.2.15
+- various race condition fixes to LAYOUT=index
+- v2.2.14 virtual plugin crashed in some situations
+
 * Fri Oct 17 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.14-1
 - dovecot updated to 2.2.14, pigeonhole updated to 0.4.3
 - fixed several race conditions with dovecot.index.cache handling that
