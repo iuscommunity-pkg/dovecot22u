@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.15
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.3
+%global pigeonholever 0.4.6
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
@@ -36,7 +36,7 @@ Patch5: dovecot-2.1-privatetmp.patch
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
-Patch8: d-2.2.15-pigeonbuildfix.patch
+Patch9: dovecot-2.2.15-03889e81929e.patch
 
 Source15: prestartscript
 
@@ -134,9 +134,9 @@ This package provides the development files for dovecot.
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
-pushd dovecot-2*2-pigeonhole-%{pigeonholever}
-%patch8 -p1 -b .pigeonbuildfix
-popd
+%patch9 -p1 -b .03889e81929e
+#pushd dovecot-2*2-pigeonhole-%{pigeonholever}
+#popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
 %build
@@ -471,6 +471,7 @@ make check
 %{_libdir}/dovecot/doveadm/*sieve*
 %{_libdir}/dovecot/*_sieve_plugin.so
 %{_libdir}/dovecot/settings/libmanagesieve_*.so
+%{_libdir}/dovecot/settings/libpigeonhole_*.so
 %{_libdir}/dovecot/sieve/
 
 %{_mandir}/man1/sieve-dump.1*
@@ -491,6 +492,10 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Jan 05 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.15-2
+- fix crash related to logging BYE notifications (#1176282)
+- update pigeonhole to 0.4.6
+
 * Thu Oct 30 2014 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.15-1
 - dovecot updated to 2.2.15
 - various race condition fixes to LAYOUT=index

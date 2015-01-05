@@ -1,0 +1,24 @@
+
+# HG changeset patch
+# User Timo Sirainen <tss@iki.fi>
+# Date 1414434274 -7200
+# Node ID 03889e81929ef19653fe8842abac515f7764a526
+# Parent  c77d602d4be48f705977cf0d4eca963408b7c1f0
+master: Don't send broken BYE notifications to log process.
+
+diff -r c77d602d4be4 -r 03889e81929e src/master/service-log.c
+--- a/src/master/service-log.c	Mon Oct 27 20:14:47 2014 +0200
++++ b/src/master/service-log.c	Mon Oct 27 20:24:34 2014 +0200
+@@ -55,6 +55,11 @@
+ {
+ 	const char *data;
+ 
++	if (process->service->log_process_internal_fd == -1) {
++		/* another log process was just destroyed */
++		return 0;
++	}
++
+ 	data = t_strdup_printf("%d %s BYE\n",
+ 			       process->service->log_process_internal_fd,
+ 			       dec2str(process->pid));
+
