@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.15
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -37,6 +37,8 @@ Patch5: dovecot-2.1-privatetmp.patch
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
 Patch9: dovecot-2.2.15-03889e81929e.patch
+Patch10: dovecot-2.2-31262a892ba7.patch
+Patch11: dovecot-2.2-80ed82a93c1a.patch
 
 Source15: prestartscript
 
@@ -135,6 +137,8 @@ This package provides the development files for dovecot.
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
 %patch9 -p1 -b .03889e81929e
+%patch10 -p1 -b .31262a892ba7
+%patch11 -p1 -b .80ed82a93c1a
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -492,6 +496,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Feb 05 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.15-3
+- fix mbox istream crashes (#1189198, #1186504)
+
 * Mon Jan 05 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.15-2
 - fix crash related to logging BYE notifications (#1176282)
 - update pigeonhole to 0.4.6
