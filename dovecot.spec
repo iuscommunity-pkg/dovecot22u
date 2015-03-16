@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.15
+Version: 2.2.16
 %global prever %{nil}
-Release: 3%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -36,9 +36,6 @@ Patch5: dovecot-2.1-privatetmp.patch
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
-Patch9: dovecot-2.2.15-03889e81929e.patch
-Patch10: dovecot-2.2-31262a892ba7.patch
-Patch11: dovecot-2.2-80ed82a93c1a.patch
 
 Source15: prestartscript
 
@@ -136,9 +133,6 @@ This package provides the development files for dovecot.
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
-%patch9 -p1 -b .03889e81929e
-%patch10 -p1 -b .31262a892ba7
-%patch11 -p1 -b .80ed82a93c1a
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -496,6 +490,19 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 16 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.16-1
+- dovecot updated to 2.2.16
+- auth: Don't crash if master user login is attempted without
+  any configured master=yes passdbs
+- Parsing UTF-8 text for mails could have caused broken results
+  sometimes if buffering was split in the middle of a UTF-8 character.
+  This affected at least searching messages.
+- String sanitization for some logged output wasn't done properly:
+  UTF-8 text could have been truncated wrongly or the truncation may
+  not have happened at all.
+- fts-lucene: Lookups from virtual mailbox consisting of over 32
+  physical mailboxes could have caused crashes.
+
 * Thu Feb 05 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.15-3
 - fix mbox istream crashes (#1189198, #1186504)
 
