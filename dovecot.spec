@@ -417,6 +417,7 @@ make check
 %dir %{_libdir}/dovecot
 %dir %{_libdir}/dovecot/auth
 %dir %{_libdir}/dovecot/dict
+%dir %{_libdir}/dovecot/stats
 %{_libdir}/dovecot/doveadm
 %exclude %{_libdir}/dovecot/doveadm/*sieve*
 %{_libdir}/dovecot/*.so.*
@@ -428,6 +429,7 @@ make check
 %{_libdir}/dovecot/auth/libmech_gssapi.so
 %{_libdir}/dovecot/auth/libdriver_sqlite.so
 %{_libdir}/dovecot/dict/libdriver_sqlite.so
+%{_libdir}/dovecot/stats/libstats_mail.so
 %{_libdir}/dovecot/libdriver_sqlite.so
 %{_libdir}/dovecot/libssl_iostream_openssl.so
 %dir %{_libdir}/dovecot/settings
