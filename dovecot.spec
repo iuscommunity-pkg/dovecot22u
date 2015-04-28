@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.16
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -36,6 +36,9 @@ Patch5: dovecot-2.1-privatetmp.patch
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
+
+# for dovecot <= 2.2.16, rhbz#1216057
+Patch8: dovecot-2.1.6-86f535375750.patch
 
 Source15: prestartscript
 
@@ -133,6 +136,7 @@ This package provides the development files for dovecot.
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
+%patch8 -p1 -b .86f535375750
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -492,6 +496,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Apr 28 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.16-2
+- fix CVE-2015-3420: SSL/TLS handshake failures leading to a crash of the login process
+
 * Mon Mar 16 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.16-1
 - dovecot updated to 2.2.16
 - auth: Don't crash if master user login is attempted without
