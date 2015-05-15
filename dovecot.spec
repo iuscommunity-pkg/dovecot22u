@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.16
+Version: 2.2.18
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.6
+%global pigeonholever 0.4.7
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
@@ -36,9 +36,6 @@ Patch5: dovecot-2.1-privatetmp.patch
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
-
-# for dovecot <= 2.2.16, rhbz#1216057
-Patch8: dovecot-2.1.6-86f535375750.patch
 
 Source15: prestartscript
 
@@ -136,7 +133,6 @@ This package provides the development files for dovecot.
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
-%patch8 -p1 -b .86f535375750
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -496,6 +492,27 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri May 15 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.18-1
+- director: Login UNIX sockets were normally detected as doveadm or
+  director ring sockets, causing it to break in existing installations.
+- sdbox: When copying a mail in alt storage, place the destination to
+  alt storage as well.
+
+* Thu May 14 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.17-1
+- dovecot updated to 2.2.17
+- pigeonhole updated to 0.4.7
+- auth: If auth_master_user_separator was set, auth process could be
+  crashed by trying to log in with empty master username.
+- imap-login, pop3-login: Fixed crash on handshake failures with new
+  OpenSSL versions (v1.0.2) when SSLv3 was disabled.
+- auth: If one passdb fails allow_nets check, it shouldn't have failed
+  all the other passdb checks later on.
+- imap: Server METADATA couldn't be accessed
+- imapc: Fixed \Muted label handling in gmail-migration.
+- imapc: Various bugfixes and improvements.
+- Trash plugin fixes by Alexei Gradinari
+- mbox: Fixed crash/corruption in some situations
+
 * Tue Apr 28 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.16-2
 - fix CVE-2015-3420: SSL/TLS handshake failures leading to a crash of the login process
 
