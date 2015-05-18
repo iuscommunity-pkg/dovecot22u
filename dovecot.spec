@@ -432,6 +432,7 @@ make check
 %{_libdir}/dovecot/stats/libstats_mail.so
 %{_libdir}/dovecot/libdriver_sqlite.so
 %{_libdir}/dovecot/libssl_iostream_openssl.so
+%{_libdir}/dovecot/libfs_compress.so
 %dir %{_libdir}/dovecot/settings
 
 %{_libexecdir}/%{name}
@@ -439,6 +440,8 @@ make check
 
 %ghost /var/run/dovecot
 %attr(0750,dovecot,dovecot) /var/lib/dovecot
+
+%{_datadir}/%{name}
 
 %{_mandir}/man1/deliver.1*
 %{_mandir}/man1/doveadm*.1*
