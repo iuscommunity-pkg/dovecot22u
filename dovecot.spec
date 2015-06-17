@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.18
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 3%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -495,6 +495,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:2.2.18-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
 * Mon May 18 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.18-2
 - update pigeonhole to 0.4.8
 - Fixed problem in address test: erroneously decoded mime-encoded words in
