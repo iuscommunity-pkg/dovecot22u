@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.18
 %global prever %{nil}
-Release: 4%{?dist}
+Release: 5%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -497,6 +497,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Aug 24 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.18-5
+- use the system crypto policy (#1109114)
+
 * Fri Jun 19 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.18-4
 - fix build for s390x and ppc64 (#1232650)
 
