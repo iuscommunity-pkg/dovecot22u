@@ -1,9 +1,10 @@
-diff -up dovecot-2.2.13/dovecot.service.in.online dovecot-2.2.13/dovecot.service.in
---- dovecot-2.2.13/dovecot.service.in.online	2014-08-21 13:40:37.998225041 +0200
-+++ dovecot-2.2.13/dovecot.service.in	2014-08-21 13:40:49.903167774 +0200
-@@ -1,6 +1,6 @@
- [Unit]
+diff -up dovecot-2.2.19/dovecot.service.in.online dovecot-2.2.19/dovecot.service.in
+--- dovecot-2.2.19/dovecot.service.in.online	2015-10-05 12:53:55.985729999 +0200
++++ dovecot-2.2.19/dovecot.service.in	2015-10-05 12:54:36.951526750 +0200
+@@ -20,7 +20,7 @@
  Description=Dovecot IMAP/POP3 email server
+ Documentation=man:dovecot(1)
+ Documentation=http://wiki2.dovecot.org/
 -After=local-fs.target network.target
 +After=local-fs.target network-online.target
  

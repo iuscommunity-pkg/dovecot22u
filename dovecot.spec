@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.18
+Version: 2.2.19
 %global prever %{nil}
-Release: 5%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.8
+%global pigeonholever 0.4.9
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
@@ -29,14 +29,11 @@ Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
-
-Patch4: dovecot-2.1.10-reload.patch
 Patch5: dovecot-2.1-privatetmp.patch
 
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
-Patch8: dovecot-2.2.18-fixbuild.patch
 
 Source15: prestartscript
 
@@ -130,11 +127,9 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch4 -p1 -b .reload
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
-%patch8 -p1 -b .fixbuild
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -497,6 +492,23 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Oct 05 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.19-1
+- dovecot updated to 2.2.19
+- mdbox: Rebuilding could have caused message's reference count to
+  overflow the 16bit number in some situations, causing problems when
+  trying to expunge the duplicates.
+- Various search fixes (fts, solr, tika, lib-charset, indexer)
+- Various virtual plugin fixes
+- Various fixes and optimizations to dsync, imapc and pop3-migration
+- imap: Various RFC compliancy and crash fixes to NOTIFY
+- pigeonhole updated to 0.4.9
+- ManageSieve: Fixed an assert failure occurring when a client
+  disconnects during the GETSCRIPT command.
+- doveadm sieve plugin: Fixed incorrect initialization (mem leaks) of mail user.
+- sieve-filter command line tool: Fixed handling of failure-related
+  implicit keep when there is an explicit default destination folder.
+- lib-sieve: Fixed bug in RFC5322 header folding.
+
 * Mon Aug 24 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.18-5
 - use the system crypto policy (#1109114)
 
