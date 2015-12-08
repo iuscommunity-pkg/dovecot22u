@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.20
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -35,9 +35,10 @@ Patch5: dovecot-2.1-privatetmp.patch
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
 
+Patch8: dovecot-2.2.20-initbysystemd.patch
+
 Source15: prestartscript
 
-Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
 BuildRequires: libtool, autoconf, automake, pkgconfig
 BuildRequires: sqlite-devel
@@ -130,6 +131,7 @@ This package provides the development files for dovecot.
 %patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
+%patch8 -p1 -b .initbysystemd
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -260,10 +262,6 @@ rm -f securecoding.txt thread-refs.txt
 popd
 
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-
 %pre
 #dovecot uid and gid are reserved, see /usr/share/doc/setup-*/uidgid 
 getent group dovecot >/dev/null || groupadd -r --gid 97 dovecot
@@ -294,16 +292,6 @@ then
 %else
   /sbin/chkconfig --add %{name}
 %endif
-fi
-
-# generate the ssl certificates
-if [ ! -f %{ssldir}/certs/%{name}.pem ]; then
-    SSLDIR=%{ssldir} OPENSSLCONFIG=%{ssldir}/dovecot-openssl.cnf \
-         %{_libexecdir}/%{name}/mkcert.sh &> /dev/null
-fi
-
-if [ ! -f /var/lib/dovecot/ssl-parameters.dat ]; then
-    /usr/libexec/dovecot/ssl-params &>/dev/null
 fi
 
 install -d -m 0755 -g dovecot -d /var/run/dovecot
@@ -367,6 +355,7 @@ make check
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
 %_tmpfilesdir/dovecot.conf
 %{_unitdir}/dovecot.service
+%{_unitdir}/dovecot-init.service
 %{_unitdir}/dovecot.socket
 %else
 %{_initddir}/dovecot
@@ -492,6 +481,9 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Dec 08 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.20-2
+- move ssl initialization from %post to dovecot-init.service
+
 * Tue Dec 08 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.20-1
 - dovecot updated to 2.2.20
 - director: Backend tags weren't working correctly.

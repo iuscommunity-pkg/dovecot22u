@@ -1,0 +1,51 @@
+diff -up dovecot-2.2.20/dovecot-init.service.initbysystemd dovecot-2.2.20/dovecot-init.service
+--- dovecot-2.2.20/dovecot-init.service.initbysystemd	2015-12-08 18:44:31.264563464 +0100
++++ dovecot-2.2.20/dovecot-init.service	2015-12-08 18:44:31.264563464 +0100
+@@ -0,0 +1,18 @@
++[Unit]
++Description=One-time Dovecot init service
++ConditionPathExists=|!/var/lib/dovecot/ssl-parameters.dat
++ConditionPathExists=|!/etc/pki/dovecot/certs/dovecot.pem
++
++[Service]
++Type=oneshot
++RemainAfterExit=no
++ExecStart=/bin/sh -c '\
++if [ ! -f /etc/pki/dovecot/certs/dovecot.pem ]; \
++then\
++  SSLDIR=/etc/pki/dovecot/ OPENSSLCONFIG=/etc/pki/dovecot/dovecot-openssl.cnf /usr/libexec/dovecot/mkcert.sh /dev/null 2>&1;\
++fi;\
++if [ ! -f /var/lib/dovecot/ssl-parameters.dat ]; \
++then\
++  /usr/libexec/dovecot/ssl-params >/dev/null 2>&1; \
++fi'
++
+diff -up dovecot-2.2.20/dovecot.service.in.initbysystemd dovecot-2.2.20/dovecot.service.in
+--- dovecot-2.2.20/dovecot.service.in.initbysystemd	2015-12-08 18:44:31.263563465 +0100
++++ dovecot-2.2.20/dovecot.service.in	2015-12-08 18:44:31.264563464 +0100
+@@ -20,7 +20,8 @@
+ Description=Dovecot IMAP/POP3 email server
+ Documentation=man:dovecot(1)
+ Documentation=http://wiki2.dovecot.org/
+-After=local-fs.target network-online.target
++After=local-fs.target network-online.target dovecot-init.service
++Requires=dovecot-init.service
+ 
+ [Service]
+ Type=simple
+diff -up dovecot-2.2.20/Makefile.am.initbysystemd dovecot-2.2.20/Makefile.am
+--- dovecot-2.2.20/Makefile.am.initbysystemd	2015-12-08 18:46:35.452435316 +0100
++++ dovecot-2.2.20/Makefile.am	2015-12-08 18:46:40.046430706 +0100
+@@ -54,9 +54,10 @@ if HAVE_SYSTEMD
+ 
+ systemdsystemunit_DATA = \
+         dovecot.socket \
+-        dovecot.service
++        dovecot.service \
++        dovecot-init.service
+ else
+-EXTRA_DIST += dovecot.socket dovecot.service.in
++EXTRA_DIST += dovecot.socket dovecot.service.in dovecot-init.service
+ endif
+ 
+ install-exec-hook:
