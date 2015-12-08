@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.19
+Version: 2.2.20
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -492,6 +492,29 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Dec 08 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.20-1
+- dovecot updated to 2.2.20
+- director: Backend tags weren't working correctly.
+- ldap: tls_* settings weren't used for ldaps URIs.
+- ldap, mysql: Fixed setting connect timeout.
+- auth: userdb lookups via auth-worker couldn't change username
+- dsync: Fixed handling deleted directories. Make sure we don't go to
+  infinite mailbox renaming loop.
+- imap: Fixed crash in NOTIFY when there were watched namespaces that
+  didn't support NOTIFY.
+- imap: After SETMETADATA was used, various commands (especially FETCH)
+  could have started hanging when their output was large.
+- stats: Idle sessions weren't refreshed often enough, causing stats
+  process to forget them and log errors about unknown sessions when
+  they were updated later.
+- stats: Fixed "Duplicate session ID" errors when LMTP delivered to
+  multiple recipients and fts_autoindex=yes.
+- zlib plugin: Fixed copying causing cache corruption when zlib_save
+  wasn't set, but the source message was compressed.
+- fts-solr: Fixed escaping Solr query parameters.
+- lmtp: quota_full_tempfail=yes was ignored with
+  lmtp_rcpt_check_quota=yes
+
 * Mon Oct 05 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.19-1
 - dovecot updated to 2.2.19
 - mdbox: Rebuilding could have caused message's reference count to
