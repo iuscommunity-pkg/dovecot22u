@@ -439,7 +439,7 @@ make check
 
 %files devel
 %{_includedir}/dovecot
-%{_datadir}/aclocal/dovecot.m4
+%{_datadir}/aclocal/dovecot*.m4
 %{_libdir}/dovecot/libdovecot*.so
 %{_libdir}/dovecot/dovecot-config
 
