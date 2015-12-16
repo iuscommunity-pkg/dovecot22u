@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.20
+Version: 2.2.21
 %global prever %{nil}
-Release: 2%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.9
+%global pigeonholever 0.4.10
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
@@ -481,6 +481,24 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Dec 16 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.21-1
+- dovecot updated to 2.2.21
+- doveadm mailbox list (and some others) were broken in v2.2.20
+- director: Fixed making backend changes when running with only a
+  single director server.
+- virtual plugin: Fixed crash when trying to open nonexistent
+  autocreated backend mailbox.
+- pigeonhole updated to 0.4.10
+- implemented the Sieve mime and foreverypart extensions (RFC 5703).
++ sieve body extension: Properly implemented the `:text' body
+  transform. It now extracts text for HTML message parts.
+- variables extension: Fixed handling of empty string by the `:length'
+  set modifier. An empty string yielded an empty string rather than "0".
+- Fixed memory leak in the Sieve script byte code dumping facility.
+  Extension contexts were never actually freed.
+- doveadm sieve plugin: Fixed crashes caused by incorrect context
+  allocation in the sieve command implementations.
+
 * Tue Dec 08 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.20-2
 - move ssl initialization from %post to dovecot-init.service
 
