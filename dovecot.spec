@@ -5,7 +5,7 @@ Name: dovecot
 Epoch: 1
 Version: 2.2.21
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 2%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.10
+%global pigeonholever 0.4.11
 Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 #wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
 #Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
@@ -481,6 +481,21 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Jan 28 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.21-2
+- pigeonhole updated to 0.4.11
+- Sieve mime extension: Fixed the header :mime :anychild test to work properly
+  outside a foreverypart loop.
+- Fixed assert failure occurring when text extraction is attempted on a
+  empty or broken text part.
+- Fixed assert failure in handling of body parts that are converted to text.
+- Fixed header unfolding for (mime) headers parsed from any mime part.
+- Fixed trimming for (mime) headers parsed from any mime part.
+- Fixed erroneous changes to the message part tree structure performed when
+  re-parsing the message.
+- LDA Sieve plugin: Fixed bug in error handling of script storage initialization
+- Fixed duplication of discard actions in the script result.
+- Made sure that quota errors never get logged as errors in syslog.
+
 * Wed Dec 16 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.21-1
 - dovecot updated to 2.2.21
 - doveadm mailbox list (and some others) were broken in v2.2.20
