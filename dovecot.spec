@@ -15,9 +15,7 @@ Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 %global pigeonholever 0.4.11
-Source8: http://www.rename-it.nl/dovecot/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
-#wget http://hg.rename-it.nl/dovecot-2.2-pigeonhole/archive/%{pigeonholever}.tar.bz2 -O dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
-#Source8: dovecot-2.2-pigeonhole-%{pigeonholever}.tar.bz2
+Source8: http://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
 
