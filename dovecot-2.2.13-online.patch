@@ -1,6 +1,6 @@
-diff -up dovecot-2.2.19/dovecot.service.in.online dovecot-2.2.19/dovecot.service.in
---- dovecot-2.2.19/dovecot.service.in.online	2015-10-05 12:53:55.985729999 +0200
-+++ dovecot-2.2.19/dovecot.service.in	2015-10-05 12:54:36.951526750 +0200
+diff -up dovecot-2.2.22/dovecot.service.in.online dovecot-2.2.22/dovecot.service.in
+--- dovecot-2.2.22/dovecot.service.in.online	2016-03-16 13:47:47.112491206 +0100
++++ dovecot-2.2.22/dovecot.service.in	2016-03-16 13:48:14.339355363 +0100
 @@ -20,7 +20,7 @@
  Description=Dovecot IMAP/POP3 email server
  Documentation=man:dovecot(1)
@@ -9,4 +9,4 @@ diff -up dovecot-2.2.19/dovecot.service.in.online dovecot-2.2.19/dovecot.service
 +After=local-fs.target network-online.target
  
  [Service]
- Type=simple
+ Type=forking

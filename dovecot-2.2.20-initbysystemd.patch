@@ -1,6 +1,6 @@
-diff -up dovecot-2.2.20/dovecot-init.service.initbysystemd dovecot-2.2.20/dovecot-init.service
---- dovecot-2.2.20/dovecot-init.service.initbysystemd	2015-12-08 18:44:31.264563464 +0100
-+++ dovecot-2.2.20/dovecot-init.service	2015-12-08 18:44:31.264563464 +0100
+diff -up dovecot-2.2.22/dovecot-init.service.initbysystemd dovecot-2.2.22/dovecot-init.service
+--- dovecot-2.2.22/dovecot-init.service.initbysystemd	2016-03-16 13:48:25.996297203 +0100
++++ dovecot-2.2.22/dovecot-init.service	2016-03-16 13:48:25.996297203 +0100
 @@ -0,0 +1,18 @@
 +[Unit]
 +Description=One-time Dovecot init service
@@ -20,9 +20,9 @@ diff -up dovecot-2.2.20/dovecot-init.service.initbysystemd dovecot-2.2.20/doveco
 +  /usr/libexec/dovecot/ssl-params >/dev/null 2>&1; \
 +fi'
 +
-diff -up dovecot-2.2.20/dovecot.service.in.initbysystemd dovecot-2.2.20/dovecot.service.in
---- dovecot-2.2.20/dovecot.service.in.initbysystemd	2015-12-08 18:44:31.263563465 +0100
-+++ dovecot-2.2.20/dovecot.service.in	2015-12-08 18:44:31.264563464 +0100
+diff -up dovecot-2.2.22/dovecot.service.in.initbysystemd dovecot-2.2.22/dovecot.service.in
+--- dovecot-2.2.22/dovecot.service.in.initbysystemd	2016-03-16 13:48:25.996297203 +0100
++++ dovecot-2.2.22/dovecot.service.in	2016-03-16 13:49:17.619039641 +0100
 @@ -20,7 +20,8 @@
  Description=Dovecot IMAP/POP3 email server
  Documentation=man:dovecot(1)
@@ -32,11 +32,11 @@ diff -up dovecot-2.2.20/dovecot.service.in.initbysystemd dovecot-2.2.20/dovecot.
 +Requires=dovecot-init.service
  
  [Service]
- Type=simple
-diff -up dovecot-2.2.20/Makefile.am.initbysystemd dovecot-2.2.20/Makefile.am
---- dovecot-2.2.20/Makefile.am.initbysystemd	2015-12-08 18:46:35.452435316 +0100
-+++ dovecot-2.2.20/Makefile.am	2015-12-08 18:46:40.046430706 +0100
-@@ -54,9 +54,10 @@ if HAVE_SYSTEMD
+ Type=forking
+diff -up dovecot-2.2.22/Makefile.am.initbysystemd dovecot-2.2.22/Makefile.am
+--- dovecot-2.2.22/Makefile.am.initbysystemd	2016-03-04 12:04:33.000000000 +0100
++++ dovecot-2.2.22/Makefile.am	2016-03-16 13:48:25.996297203 +0100
+@@ -51,9 +51,10 @@ if HAVE_SYSTEMD
  
  systemdsystemunit_DATA = \
          dovecot.socket \

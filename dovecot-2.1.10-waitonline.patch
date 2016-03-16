@@ -1,11 +1,11 @@
-diff -up dovecot-2.2.19/dovecot.service.in.waitonline dovecot-2.2.19/dovecot.service.in
---- dovecot-2.2.19/dovecot.service.in.waitonline	2015-10-05 12:51:42.578391891 +0200
-+++ dovecot-2.2.19/dovecot.service.in	2015-10-05 12:53:20.143907826 +0200
+diff -up dovecot-2.2.22/dovecot.service.in.waitonline dovecot-2.2.22/dovecot.service.in
+--- dovecot-2.2.22/dovecot.service.in.waitonline	2016-03-16 13:36:49.426772606 +0100
++++ dovecot-2.2.22/dovecot.service.in	2016-03-16 13:47:23.923606903 +0100
 @@ -24,6 +24,7 @@ After=local-fs.target network.target
  
  [Service]
- Type=simple
+ Type=forking
 +ExecStartPre=/usr/libexec/dovecot/prestartscript
- ExecStart=@sbindir@/dovecot -F $OPTIONS
- ExecReload=@sbindir@/dovecot reload
- PrivateTmp=true
+ ExecStart=@sbindir@/dovecot
+ PIDFile=@rundir@/master.pid
+ ExecReload=@bindir@/doveadm reload

@@ -3,9 +3,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.21
+Version: 2.2.22
 %global prever %{nil}
-Release: 4%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -27,13 +27,12 @@ Patch1: dovecot-2.0-defaultconfig.patch
 Patch2: dovecot-1.0.beta2-mkcert-permissions.patch
 Patch3: dovecot-1.0.rc7-mkcert-paths.patch
 
-Patch5: dovecot-2.1-privatetmp.patch
-
 #wait for network
 Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
 
 Patch8: dovecot-2.2.20-initbysystemd.patch
+Patch9: dovecot-2.2.22-systemd_w_protectsystem.patch
 
 Source15: prestartscript
 
@@ -126,10 +125,10 @@ This package provides the development files for dovecot.
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
-%patch5 -p1 -b .privatetmp
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
 %patch8 -p1 -b .initbysystemd
+%patch9 -p1 -b .systemd_w_protectsystem
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -479,6 +478,24 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Mar 16 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.22-1
+- dovecot updated to 2.2.22
+- auth: Auth caching was done too aggressively when %variables were
+  used in default_fields, override_fields or LDAP pass/user_attrs.
+  userdb result_* were also ignored when user was found from cache.
+- imap: Fixed various assert-crashes caused v2.2.20+. Some of them
+  caught actual hangs or otherwise unwanted behavior towards IMAP
+  clients.
+- Expunges were forgotten in some situations, for example when
+  pipelining multiple IMAP MOVE commands.
+- quota: Per-namespaces quota were broken for dict and count backends
+  in v2.2.20+
+- fts-solr: Search queries were using OR instead of AND as the
+  separator for multi-token search queries in v2.2.20+.
+- Single instance storage support wasn't really working in v2.2.16+
+- dbox: POP3 message ordering wasn't working correctly.
+- virtual plugin: Fixed crashes related to backend mailbox deletions.
+
 * Mon Feb 08 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.21-4
 - pigeonhole updated to 0.4.12
 - multiscript: Fixed bug in handling of (implicit) keep; final keep action was

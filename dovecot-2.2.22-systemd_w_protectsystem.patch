@@ -1,0 +1,12 @@
+diff -up dovecot-2.2.22/dovecot.service.in.systemd_w_protectsystem dovecot-2.2.22/dovecot.service.in
+--- dovecot-2.2.22/dovecot.service.in.systemd_w_protectsystem	2016-03-16 13:49:46.678894652 +0100
++++ dovecot-2.2.22/dovecot.service.in	2016-03-16 13:49:46.690894592 +0100
+@@ -33,7 +33,7 @@ ExecStop=@bindir@/doveadm stop
+ PrivateTmp=true
+ NonBlocking=yes
+ # Enable this if your systemd is new enough to support it:
+-#ProtectSystem=full
++ProtectSystem=full
+ 
+ [Install]
+ WantedBy=multi-user.target
