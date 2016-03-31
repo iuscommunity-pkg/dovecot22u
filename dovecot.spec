@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.22
+Version: 2.2.23
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.12
+%global pigeonholever 0.4.13
 Source8: http://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -479,6 +479,17 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Mar 31 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.23-1
+- dovecot updated to 2.2.23, pigeonhole updated to 0.4.13
+- Various fixes to doveadm. Especially running commands via
+  doveadm-server was broken.
+- director: Fixed user weakness getting stuck in some situations
+- director: Fixed a situation where directors keep re-sending
+  different states to each others and never becoming synced.
+- director: Fixed assert-crash related to a slow "user killed" reply
+- Fixed assert-crash related to istream-concat, which could have
+  been triggered at least by a Sieve script.
+
 * Wed Mar 16 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.22-1
 - dovecot updated to 2.2.22
 - auth: Auth caching was done too aggressively when %variables were
