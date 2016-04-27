@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.23
+Version: 2.2.24
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -14,7 +14,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.13
+%global pigeonholever 0.4.14
 Source8: http://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -479,6 +479,27 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Apr 27 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.24-1
+- dovecot updated to 2.2.24
+- Huge header lines could have caused Dovecot to use too much memory
+- dsync: Detect and handle invalid/stale -s state string better.
+- dsync: Fixed crash caused by specific mailbox renames
+- auth: Auth cache is now disabled passwd-file. 
+- fts-tika: Don't crash if it returns 500 error
+- dict-redis: Fixed timeout handling
+- SEARCH INTHREAD was crashing
+- stats: Only a single fifo_listeners was supported, making it impossible to
+  use both auth_stats=yes and mail stats plugin.
+- SSL errors were logged in separate "Stacked error" log lines instead of as
+  part of the disconnection reason.
+- MIME body parser didn't handle properly when a child MIME part's --boundary
+  had the same prefix as the parent.
+- pigeonhole updated to 0.4.14
+- extprograms plugin: Fixed epoll() panic caused by closing the output
+  FD before the output stream.
+- Made sure that the local part of a mail address is encoded properly
+  using quoted string syntax when it is not a dot-atom.
+
 * Thu Mar 31 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.23-1
 - dovecot updated to 2.2.23, pigeonhole updated to 0.4.13
 - Various fixes to doveadm. Especially running commands via
