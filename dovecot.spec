@@ -3,7 +3,7 @@
 Summary: Secure imap and pop3 server
 Name: dovecot
 Epoch: 1
-Version: 2.2.24
+Version: 2.2.25
 %global prever %{nil}
 Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -412,11 +412,13 @@ make check
 %{_libdir}/dovecot/auth/libmech_gssapi.so
 %{_libdir}/dovecot/auth/libdriver_sqlite.so
 %{_libdir}/dovecot/dict/libdriver_sqlite.so
+%{_libdir}/dovecot/dict/libdict_ldap.so
 %{_libdir}/dovecot/stats/libstats_auth.so
 %{_libdir}/dovecot/stats/libstats_mail.so
 %{_libdir}/dovecot/libdriver_sqlite.so
 %{_libdir}/dovecot/libssl_iostream_openssl.so
 %{_libdir}/dovecot/libfs_compress.so
+%{_libdir}/dovecot/libdcrypt_openssl.so
 %dir %{_libdir}/dovecot/settings
 
 %{_libexecdir}/%{name}
@@ -479,6 +481,19 @@ make check
 %{_libdir}/%{name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Jul 04 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.25-1
+- dovecot updated to 2.2.25
+- doveadm backup was sometimes deleting entire mailboxes unnecessarily.
+- doveadm: Command -parameters weren't being sent to doveadm-server.
+- if dovecot.index read failed e.g. because mmap() reached VSZ limit,
+  an empty index could have been opened instead, corrupting the
+  mailbox state.
+- lazy-expunge: Fixed a crash when copying failed. Various other fixes.
+- fts-lucene: Fixed crash on index rescan.
+- dict-ldap: Various fixes
+- dict-sql: NULL values crashed. Now they're treated as "not found".
+
+
 * Wed Apr 27 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.24-1
 - dovecot updated to 2.2.24
 - Huge header lines could have caused Dovecot to use too much memory
