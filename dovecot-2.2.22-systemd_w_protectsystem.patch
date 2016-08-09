@@ -4,8 +4,9 @@ diff -up dovecot-2.2.22/dovecot.service.in.systemd_w_protectsystem dovecot-2.2.2
 @@ -33,7 +33,7 @@ ExecStop=@bindir@/doveadm stop
  PrivateTmp=true
  NonBlocking=yes
- # Enable this if your systemd is new enough to support it:
+-# Enable this if your systemd is new enough to support it:
 -#ProtectSystem=full
++# Enable this if your systemd is new enough to support it: (it will make /usr /boot /etc read only for dovecot)
 +ProtectSystem=full
  
  [Install]
