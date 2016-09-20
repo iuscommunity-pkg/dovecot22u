@@ -1,17 +1,23 @@
+# IUS spec file for dovecot22u, forked from Fedorao
+
+%global ius_suffix 22u
+%global real_name dovecot
+%global base_ver 2.2
+
 %global __provides_exclude_from %{_docdir}
 %global __requires_exclude_from %{_docdir}
 Summary: Secure imap and pop3 server
-Name: dovecot
+Name: %{real_name}%{?ius_suffix}
 Epoch: 1
 Version: 2.2.25
 %global prever %{nil}
-Release: 1%{?dist}
+Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
 
 URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.2/%{name}-%{version}%{?prever}.tar.gz
+Source: http://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 %global pigeonholever 0.4.14
@@ -81,6 +87,11 @@ BuildRequires: curl-devel expat-devel
 BuildRequires: libcurl-devel expat-devel
 %endif
 
+
+Provides: %{real_name} = %{epoch}:%{version}-%{release}
+Provides: %{real_name}%{?_isa} = %{epoch}:%{version}-%{release}
+Conflicts: %{real_name} < %{base_ver}
+
 %global restart_flag /var/run/%{name}/%{name}-restart-after-rpm-install
 
 %description
@@ -92,6 +103,10 @@ The SQL drivers and authentication plug-ins are in their subpackages.
 
 %package pigeonhole
 Requires: %{name} = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-pigeonhole = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-pigeonhole%{?_isa} = %{epoch}:%{version}-%{release}
+Conflicts: %{real_name}-pigeonhole < %{base_ver}
+
 Summary: Sieve and managesieve plug-in for dovecot
 Group: System Environment/Daemons
 License: MIT and LGPLv2
@@ -101,6 +116,9 @@ This package provides sieve and managesieve plug-in for dovecot LDA.
 
 %package pgsql
 Requires: %{name} = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-pgql = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-pgsql%{?_isa} = %{epoch}:%{version}-%{release}
+Conflicts: %{real_name}-pgsql < %{base_ver}
 Summary: Postgres SQL back end for dovecot
 Group: System Environment/Daemons
 %description pgsql
@@ -108,6 +126,9 @@ This package provides the Postgres SQL back end for dovecot-auth etc.
 
 %package mysql
 Requires: %{name} = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-mysql = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-mysql%{?_isa} = %{epoch}:%{version}-%{release}
+Conflicts: %{real_name}-mysql < %{base_ver}
 Summary: MySQL back end for dovecot
 Group: System Environment/Daemons
 %description mysql
@@ -115,13 +136,16 @@ This package provides the MySQL back end for dovecot-auth etc.
 
 %package devel
 Requires: %{name} = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-devel = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
+Conflicts: %{real_name}-devel < %{base_ver}
 Summary: Development files for dovecot
 Group: Development/Libraries
 %description devel
 This package provides the development files for dovecot.
 
 %prep
-%setup -q -n %{name}-%{version}%{?prever} -a 8
+%setup -q -n %{real_name}-%{version}%{?prever} -a 8
 %patch1 -p1 -b .default-settings
 %patch2 -p1 -b .mkcert-permissions
 %patch3 -p1 -b .mkcert-paths
@@ -144,7 +168,7 @@ autoreconf -I . -fiv #required for aarch64 support
 %endif
 %configure                       \
     INSTALL_DATA="install -c -p -m644" \
-    --docdir=%{_docdir}/%{name}  \
+    --docdir=%{_docdir}/%{real_name}  \
     --disable-static             \
     --disable-rpath              \
     --with-nss                   \
@@ -195,15 +219,15 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
 #move doc dir back to build dir so doc macro in files section can use it
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name} %{_builddir}/%{name}-%{version}%{?prever}/docinstall
+mv $RPM_BUILD_ROOT/%{_docdir}/%{real_name} %{_builddir}/%{real_name}-%{version}%{?prever}/docinstall
 
 
 pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 make install DESTDIR=$RPM_BUILD_ROOT
 
-mv $RPM_BUILD_ROOT/%{_docdir}/%{name} $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole
+mv $RPM_BUILD_ROOT/%{_docdir}/%{real_name} $RPM_BUILD_ROOT/%{_docdir}/%{real_name}-pigeonhole
 
-install -m 644 AUTHORS ChangeLog COPYING COPYING.LGPL INSTALL NEWS README $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole
+install -m 644 AUTHORS ChangeLog COPYING COPYING.LGPL INSTALL NEWS README $RPM_BUILD_ROOT/%{_docdir}/%{real_name}-pigeonhole
 popd
 
 
@@ -240,17 +264,17 @@ mkdir -p $RPM_BUILD_ROOT/var/run/dovecot/{login,empty,token-login}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
 install -p -m 644 docinstall/example-config/dovecot.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot
 install -p -m 644 docinstall/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
-install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
+install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{real_name}-pigeonhole/example-config/conf.d/*.conf $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
 install -p -m 644 docinstall/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d
-install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{name}-pigeonhole/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d ||:
+install -p -m 644 $RPM_BUILD_ROOT/%{_docdir}/%{real_name}-pigeonhole/example-config/conf.d/*.conf.ext $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/conf.d ||:
 install -p -m 644 doc/dovecot-openssl.cnf $RPM_BUILD_ROOT%{ssldir}/dovecot-openssl.cnf
 
-install -p -m755 doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{name}/mkcert.sh
+install -p -m755 doc/mkcert.sh $RPM_BUILD_ROOT%{_libexecdir}/%{real_name}/mkcert.sh
 
 mkdir -p $RPM_BUILD_ROOT/var/lib/dovecot
 
 #remove the libtool archives
-find $RPM_BUILD_ROOT%{_libdir}/%{name}/ -name '*.la' | xargs rm -f
+find $RPM_BUILD_ROOT%{_libdir}/%{real_name}/ -name '*.la' | xargs rm -f
 
 #remove what we don't want
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/dovecot/README
@@ -273,11 +297,11 @@ useradd -r -g dovenull -d /usr/libexec/dovecot -s /sbin/nologin -c "Dovecot's un
 if [ "$1" = "2" ]; then
   rm -f %restart_flag
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
-  /bin/systemctl is-active %{name}.service >/dev/null 2>&1 && touch %restart_flag ||:
-  /bin/systemctl stop %{name}.service >/dev/null 2>&1
+  /bin/systemctl is-active %{real_name}.service >/dev/null 2>&1 && touch %restart_flag ||:
+  /bin/systemctl stop %{real_name}.service >/dev/null 2>&1
 %else
-  /sbin/service %{name} status >/dev/null 2>&1 && touch %restart_flag ||:
-  /sbin/service %{name} stop >/dev/null 2>&1
+  /sbin/service %{real_name} status >/dev/null 2>&1 && touch %restart_flag ||:
+  /sbin/service %{real_name} stop >/dev/null 2>&1
 %endif
 fi
 
@@ -287,7 +311,7 @@ then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
   %systemd_post dovecot.service
 %else
-  /sbin/chkconfig --add %{name}
+  /sbin/chkconfig --add %{real_name}
 %endif
 fi
 
@@ -303,8 +327,8 @@ if [ $1 = 0 ]; then
         /bin/systemctl disable dovecot.service dovecot.socket >/dev/null 2>&1 || :
         /bin/systemctl stop dovecot.service dovecot.socket >/dev/null 2>&1 || :
 %else
-    /sbin/service %{name} stop > /dev/null 2>&1
-    /sbin/chkconfig --del %{name}
+    /sbin/service %{real_name} stop > /dev/null 2>&1
+    /sbin/chkconfig --del %{real_name}
 %endif
     rm -rf /var/run/dovecot
 fi
@@ -318,7 +342,7 @@ if [ "$1" -ge "1" -a -e %restart_flag ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
     /bin/systemctl start dovecot.service >/dev/null 2>&1 || :
 %else
-    /sbin/service %{name} start >/dev/null 2>&1 || :
+    /sbin/service %{real_name} start >/dev/null 2>&1 || :
 %endif
 rm -f %restart_flag
 fi
@@ -330,7 +354,7 @@ if [ -e %restart_flag ]; then
 %if %{?fedora}0 > 140 || %{?rhel}0 > 60
     /bin/systemctl start dovecot.service >/dev/null 2>&1 || :
 %else
-    /sbin/service %{name} start >/dev/null 2>&1 || :
+    /sbin/service %{real_name} start >/dev/null 2>&1 || :
 %endif
 rm -f %restart_flag
 fi
@@ -421,13 +445,13 @@ make check
 %{_libdir}/dovecot/libdcrypt_openssl.so
 %dir %{_libdir}/dovecot/settings
 
-%{_libexecdir}/%{name}
-%exclude %{_libexecdir}/%{name}/managesieve*
+%{_libexecdir}/%{real_name}
+%exclude %{_libexecdir}/%{real_name}/managesieve*
 
 %ghost /var/run/dovecot
 %attr(0750,dovecot,dovecot) /var/lib/dovecot
 
-%{_datadir}/%{name}
+%{_datadir}/%{real_name}
 
 %{_mandir}/man1/deliver.1*
 %{_mandir}/man1/doveadm*.1*
@@ -452,10 +476,10 @@ make check
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve.conf
 %config(noreplace) %{_sysconfdir}/dovecot/conf.d/90-sieve-extprograms.conf
 
-%{_docdir}/%{name}-pigeonhole
+%{_docdir}/%{real_name}-pigeonhole
 
-%{_libexecdir}/%{name}/managesieve
-%{_libexecdir}/%{name}/managesieve-login
+%{_libexecdir}/%{real_name}/managesieve
+%{_libexecdir}/%{real_name}/managesieve-login
 
 %{_libdir}/dovecot/doveadm/*sieve*
 %{_libdir}/dovecot/*_sieve_plugin.so
@@ -471,16 +495,19 @@ make check
 %{_mandir}/man7/pigeonhole.7*
 
 %files mysql
-%{_libdir}/%{name}/libdriver_mysql.so
-%{_libdir}/%{name}/auth/libdriver_mysql.so
-%{_libdir}/%{name}/dict/libdriver_mysql.so
+%{_libdir}/%{real_name}/libdriver_mysql.so
+%{_libdir}/%{real_name}/auth/libdriver_mysql.so
+%{_libdir}/%{real_name}/dict/libdriver_mysql.so
 
 %files pgsql
-%{_libdir}/%{name}/libdriver_pgsql.so
-%{_libdir}/%{name}/auth/libdriver_pgsql.so
-%{_libdir}/%{name}/dict/libdriver_pgsql.so
+%{_libdir}/%{real_name}/libdriver_pgsql.so
+%{_libdir}/%{real_name}/auth/libdriver_pgsql.so
+%{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Sep 19 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.25-1.ius
+- Port from Fedora to IUS
+
 * Mon Jul 04 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.25-1
 - dovecot updated to 2.2.25
 - doveadm backup was sometimes deleting entire mailboxes unnecessarily.
