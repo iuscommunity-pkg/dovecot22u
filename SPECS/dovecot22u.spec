@@ -9,7 +9,7 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.25
+Version: 2.2.26.0
 %global prever %{nil}
 Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -20,7 +20,7 @@ URL: http://www.dovecot.org/
 Source: http://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.14
+%global pigeonholever 0.4.16
 Source8: http://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -505,6 +505,11 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Oct 31 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.26.0-1.ius
+- Latest upstream
+  dovecot to 2.2.26.0
+  pigeonholever to 0.4.16
+
 * Mon Sep 19 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.25-1.ius
 - Port from Fedora to IUS
 
