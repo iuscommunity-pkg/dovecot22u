@@ -1,8 +1,8 @@
---- dovecot-1.0.rc7/doc/mkcert.sh.mkcert-paths	2006-10-04 11:34:46.000000000 +0200
-+++ dovecot-1.0.rc7/doc/mkcert.sh	2006-10-04 11:35:31.000000000 +0200
-@@ -4,8 +4,8 @@
- # Edit dovecot-openssl.cnf before running this.
+--- dovecot-2.2.27/doc/mkcert.sh	2016-12-03 17:13:21.000000000 +0000
++++ dovecot-2.2.27/doc/mkcert.sh.patch	2016-12-05 13:31:15.776837414 +0000
+@@ -5,8 +5,8 @@
  
+ umask 077
  OPENSSL=${OPENSSL-openssl}
 -SSLDIR=${SSLDIR-/etc/ssl}
 -OPENSSLCONFIG=${OPENSSLCONFIG-dovecot-openssl.cnf}

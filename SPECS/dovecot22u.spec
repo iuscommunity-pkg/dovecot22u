@@ -9,7 +9,7 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.26.0
+Version: 2.2.27
 %global prever %{nil}
 Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -164,6 +164,7 @@ export CFLAGS="%{__global_cflags} -fno-strict-aliasing"
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro %{?__global_ldflags}"
 # el6 autoconf too old to regen; use packaged files (#1082384)
 %if %{?fedora}00%{?rhel} > 6
+mkdir -p m4
 autoreconf -I . -fiv #required for aarch64 support
 %endif
 %configure                       \
@@ -442,6 +443,8 @@ make check
 %{_libdir}/dovecot/libdriver_sqlite.so
 %{_libdir}/dovecot/libssl_iostream_openssl.so
 %{_libdir}/dovecot/libfs_compress.so
+%{_libdir}/dovecot/libfs_crypt.so
+%{_libdir}/dovecot/libfs_mail_crypt.so
 %{_libdir}/dovecot/libdcrypt_openssl.so
 %dir %{_libdir}/dovecot/settings
 
@@ -505,6 +508,15 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Dec 05 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.27-1.ius
+- Latest upstream
+  dovecot to 2.2.27
+- refresh Patch2 and Patch3
+- add mkdir
+  http://pkgs.fedoraproject.org/cgit/rpms/dovecot.git/tree/dovecot.spec#n143
+- add libfs_crypt.so and libfs_mail_crypt.so
+
+
 * Mon Oct 31 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.26.0-1.ius
 - Latest upstream
   dovecot to 2.2.26.0
