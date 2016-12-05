@@ -16,12 +16,12 @@ Release: 1.ius%{?dist}
 License: MIT and LGPLv2
 Group: System Environment/Daemons
 
-URL: http://www.dovecot.org/
-Source: http://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
+URL: https://www.dovecot.org/
+Source: https://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
 %global pigeonholever 0.4.16
-Source8: http://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
+Source8: https://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
 
@@ -515,6 +515,7 @@ make check
 - add mkdir
   http://pkgs.fedoraproject.org/cgit/rpms/dovecot.git/tree/dovecot.spec#n143
 - add libfs_crypt.so and libfs_mail_crypt.so
+- upstream now supports https
 
 
 * Mon Oct 31 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.26.0-1.ius
