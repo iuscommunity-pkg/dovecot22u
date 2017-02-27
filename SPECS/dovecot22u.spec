@@ -9,7 +9,7 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.27
+Version: 2.2.28
 %global prever %{nil}
 Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -20,7 +20,7 @@ URL: https://www.dovecot.org/
 Source: https://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.16
+%global pigeonholever 0.4.17
 Source8: https://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -38,7 +38,6 @@ Patch6: dovecot-2.1.10-waitonline.patch
 Patch7: dovecot-2.2.13-online.patch
 
 Patch8: dovecot-2.2.20-initbysystemd.patch
-Patch9: dovecot-2.2.22-systemd_w_protectsystem.patch
 
 Source15: prestartscript
 
@@ -152,7 +151,6 @@ This package provides the development files for dovecot.
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
 %patch8 -p1 -b .initbysystemd
-%patch9 -p1 -b .systemd_w_protectsystem
 #pushd dovecot-2*2-pigeonhole-%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
@@ -508,6 +506,12 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Feb 27 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.28-1.ius
+- Latest upstream
+  dovecot to 2.2.28
+  pigeonholever 0.4.17
+- remove Patch9, fixed upstream
+
 * Mon Dec 05 2016 Ben Harper <ben.harper@rackspace.com> - 1:2.2.27-1.ius
 - Latest upstream
   dovecot to 2.2.27
