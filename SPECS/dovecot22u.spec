@@ -9,7 +9,7 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.28
+Version: 2.2.29.1
 %global prever %{nil}
 Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -20,7 +20,7 @@ URL: https://www.dovecot.org/
 Source: https://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.17
+%global pigeonholever 0.4.18
 Source8: https://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -427,9 +427,10 @@ make check
 %{_libdir}/dovecot/doveadm
 %exclude %{_libdir}/dovecot/doveadm/*sieve*
 %{_libdir}/dovecot/*.so.*
-#these (*.so files) are plugins, not a devel files
+#these (*.so files) are plugins, not devel files
 %{_libdir}/dovecot/*_plugin.so
 %exclude %{_libdir}/dovecot/*_sieve_plugin.so
+%{_libdir}/dovecot/auth/lib20_auth_var_expand_crypt.so
 %{_libdir}/dovecot/auth/libauthdb_imap.so
 %{_libdir}/dovecot/auth/libauthdb_ldap.so
 %{_libdir}/dovecot/auth/libmech_gssapi.so
@@ -444,6 +445,7 @@ make check
 %{_libdir}/dovecot/libfs_crypt.so
 %{_libdir}/dovecot/libfs_mail_crypt.so
 %{_libdir}/dovecot/libdcrypt_openssl.so
+%{_libdir}/dovecot/lib20_var_expand_crypt.so
 %dir %{_libdir}/dovecot/settings
 
 %{_libexecdir}/%{real_name}
@@ -506,6 +508,13 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Wed Apr 12 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.29.1-1.ius
+- Latest upstream
+  dovecot 2.2.29.1
+  pigeonholever 0.4.18
+- add lib20_auth_var_expand_crypt.so and lib20_var_expand_crypt.so files
+
+
 * Mon Feb 27 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.28-1.ius
 - Latest upstream
   dovecot to 2.2.28
