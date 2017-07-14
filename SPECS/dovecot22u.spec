@@ -1,4 +1,4 @@
-# IUS spec file for dovecot22u, forked from Fedorao
+# IUS spec file for dovecot22u, forked from Fedora
 
 %global ius_suffix 22u
 %global real_name dovecot
@@ -11,7 +11,7 @@ Name: %{real_name}%{?ius_suffix}
 Epoch: 1
 Version: 2.2.31
 %global prever %{nil}
-Release: 1.ius%{?dist}
+Release: 2.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -79,7 +79,7 @@ Requires(postun): initscripts
 BuildRequires: clucene-core-devel
 %endif
 
-%global ssldir %{_sysconfdir}/pki/%{name}
+%global ssldir %{_sysconfdir}/pki/%{real_name}
 
 %if %{?fedora}00%{?rhel} < 6
 %global _initddir %{_initrddir}
@@ -93,7 +93,7 @@ Provides: %{real_name} = %{epoch}:%{version}-%{release}
 Provides: %{real_name}%{?_isa} = %{epoch}:%{version}-%{release}
 Conflicts: %{real_name} < %{base_ver}
 
-%global restart_flag /var/run/%{name}/%{name}-restart-after-rpm-install
+%global restart_flag /var/run/%{real_name}/%{real_name}-restart-after-rpm-install
 
 %description
 Dovecot is an IMAP server for Linux/UNIX-like systems, written with security 
@@ -510,6 +510,9 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Jul 14 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.31-2.ius
+- use %{real_name} instead of %{name}
+
 * Tue Jun 27 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.31-1.ius
 - Latest upstream
   dovecot 2.2.31
