@@ -9,9 +9,9 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.31
+Version: 2.2.32
 %global prever %{nil}
-Release: 2.ius%{?dist}
+Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -20,7 +20,7 @@ URL: https://www.dovecot.org/
 Source: https://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.19
+%global pigeonholever 0.4.20
 Source8: https://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -52,6 +52,7 @@ BuildRequires: quota-devel
 BuildRequires: xz-devel
 BuildRequires: git < 2.1.3
 BuildRequires: rsync < 3.1.1
+BuildRequires: tcp_wrappers-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -183,6 +184,7 @@ autoreconf -I . -fiv #required for aarch64 support
     --with-sqlite                \
     --with-zlib                  \
     --with-libcap                \
+    --with-libwrap               \
 %if %{?fedora}0 > 150 || %{?rhel}0 >60
     --with-lucene                \
 %endif
@@ -510,6 +512,13 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Thu Aug 24 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.32-1.ius
+- Latest upstream
+  dovecot 2.2.32
+  pigeonholever 0.4.20
+- enable TCP Wrappers, from Feroda:
+  https://src.fedoraproject.org/rpms/dovecot/c/bcee2255b995a1849174d87483db3cce021ec50a
+
 * Fri Jul 14 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.31-2.ius
 - use %{real_name} instead of %{name}
 
