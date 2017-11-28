@@ -11,7 +11,7 @@ Name: %{real_name}%{?ius_suffix}
 Epoch: 1
 Version: 2.2.33.2
 %global prever %{nil}
-Release: 1.ius%{?dist}
+Release: 2.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -513,6 +513,9 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Tue Nov 28 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.33.2-2.ius
+- correct ssl_cipher_list
+
 * Wed Nov 08 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.33.2-1.ius
 - Latest upstream
   dovecot 2.2.33.2

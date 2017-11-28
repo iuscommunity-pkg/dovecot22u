@@ -23,11 +23,3 @@ diff -up dovecot-2.2.18/doc/example-config/conf.d/10-ssl.conf.default-settings d
  
  # PEM encoded X.509 SSL/TLS certificate and private key. They're opened before
  # dropping root privileges, so keep the key file unreadable by anyone but
-@@ -50,6 +52,7 @@ ssl_key = </etc/ssl/private/dovecot.pem
- 
- # SSL ciphers to use
- #ssl_cipher_list = ALL:!LOW:!SSLv2:!EXP:!aNULL
-+ssl_cipher_list = PROFILE=SYSTEM
- 
- # Prefer the server's order of ciphers over client's.
- #ssl_prefer_server_ciphers = no
