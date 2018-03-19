@@ -9,9 +9,9 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.34
+Version: 2.2.35
 %global prever %{nil}
-Release: 2.ius%{?dist}
+Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -513,6 +513,10 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Mon Mar 19 2018 Ben Harper <ben.harper@rackspace.com> - 1:2.2.35-1.ius
+- Latest upstream
+  dovecot 2.2.35
+
 * Thu Mar 01 2018 Ben Harper <ben.harper@rackspace.com> - 1:2.2.34-1.ius
 - Latest upstream
   dovecot 2.2.34
