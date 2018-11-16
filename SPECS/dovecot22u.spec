@@ -51,12 +51,13 @@ BuildRequires: openldap-devel
 BuildRequires: krb5-devel
 BuildRequires: quota-devel
 BuildRequires: xz-devel
-BuildRequires: git < 2.1.3
-BuildRequires: rsync < 3.1.1
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
 BuildRequires: gettext-devel
+# these are dependencies of gettext, but we want to ensure we use the stock versions
+BuildRequires: git < 2.1.3
+BuildRequires: rsync < 3.1.3
 
 # Explicit Runtime Requirements for executalbe
 Requires: openssl >= 0.9.7f-4
