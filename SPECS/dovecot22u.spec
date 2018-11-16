@@ -117,7 +117,7 @@ This package provides sieve and managesieve plug-in for dovecot LDA.
 
 %package pgsql
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Provides: %{real_name}-pgql = %{epoch}:%{version}-%{release}
+Provides: %{real_name}-pgsql = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-pgsql%{?_isa} = %{epoch}:%{version}-%{release}
 Conflicts: %{real_name}-pgsql < %{epoch}:%{version}-%{release}
 Summary: Postgres SQL back end for dovecot
@@ -515,6 +515,7 @@ make check
 * Fri Nov 16 2018 Carl George <carl@george.computer> - 1:2.2.36-1.ius
 - Latest upstream dovecot (2.2.36) and pigeonholever (0.4.24)
 - Fix conflicts to account for epoch on stock dovecot
+- Fix typo in provides for pgsql subpackage
 
 * Mon Mar 19 2018 Ben Harper <ben.harper@rackspace.com> - 1:2.2.35-1.ius
 - Latest upstream
