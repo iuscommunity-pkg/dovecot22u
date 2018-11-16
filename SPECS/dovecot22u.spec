@@ -154,7 +154,7 @@ This package provides the development files for dovecot.
 %patch6 -p1 -b .waitonline
 %patch7 -p1 -b .online
 %patch8 -p1 -b .initbysystemd
-#pushd dovecot-2*2-pigeonhole-%{pigeonholever}
+#pushd dovecot-2*2-pigeonhole-%%{pigeonholever}
 #popd
 sed -i '/DEFAULT_INCLUDES *=/s|$| '"$(pkg-config --cflags libclucene-core)|" src/plugins/fts-lucene/Makefile.in
 
@@ -533,7 +533,7 @@ make check
 - Latest upstream
   dovecot 2.2.33.1
   pigeonholever 0.4.21
-- use %license macro
+- use %%license macro
 
 * Thu Aug 24 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.32-1.ius
 - Latest upstream
@@ -543,7 +543,7 @@ make check
   https://src.fedoraproject.org/rpms/dovecot/c/bcee2255b995a1849174d87483db3cce021ec50a
 
 * Fri Jul 14 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.31-2.ius
-- use %{real_name} instead of %{name}
+- use %%{real_name} instead of %%{name}
 
 * Tue Jun 27 2017 Ben Harper <ben.harper@rackspace.com> - 1:2.2.31-1.ius
 - Latest upstream
@@ -633,7 +633,7 @@ make check
 
 * Wed Mar 16 2016 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.22-1
 - dovecot updated to 2.2.22
-- auth: Auth caching was done too aggressively when %variables were
+- auth: Auth caching was done too aggressively when %%variables were
   used in default_fields, override_fields or LDAP pass/user_attrs.
   userdb result_* were also ignored when user was found from cache.
 - imap: Fixed various assert-crashes caused v2.2.20+. Some of them
@@ -694,7 +694,7 @@ make check
   allocation in the sieve command implementations.
 
 * Tue Dec 08 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.20-2
-- move ssl initialization from %post to dovecot-init.service
+- move ssl initialization from %%post to dovecot-init.service
 
 * Tue Dec 08 2015 Michal Hlavinka <mhlavink@redhat.com> - 1:2.2.20-1
 - dovecot updated to 2.2.20
@@ -1203,7 +1203,7 @@ make check
 - updated to 2.1.rc1
 - major changes since 2.0.x:
 - plugins now use UTF-8 mailbox names rather than mUTF-7
-- auth_username_format default changed to %Lu
+- auth_username_format default changed to %%Lu
 - solr full text search backend changed to use mailbox GUIDs instead of
   mailbox names, requiring reindexing everything
 
