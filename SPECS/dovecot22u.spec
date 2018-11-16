@@ -2,7 +2,6 @@
 
 %global ius_suffix 22u
 %global real_name dovecot
-%global base_ver 2.2
 
 %global __provides_exclude_from %{_docdir}
 %global __requires_exclude_from %{_docdir}
@@ -93,7 +92,7 @@ BuildRequires: libcurl-devel expat-devel
 
 Provides: %{real_name} = %{epoch}:%{version}-%{release}
 Provides: %{real_name}%{?_isa} = %{epoch}:%{version}-%{release}
-Conflicts: %{real_name} < %{base_ver}
+Conflicts: %{real_name} < %{epoch}:%{version}-%{release}
 
 %global restart_flag /var/run/%{real_name}/%{real_name}-restart-after-rpm-install
 
@@ -108,8 +107,7 @@ The SQL drivers and authentication plug-ins are in their subpackages.
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-pigeonhole = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-pigeonhole%{?_isa} = %{epoch}:%{version}-%{release}
-Conflicts: %{real_name}-pigeonhole < %{base_ver}
-
+Conflicts: %{real_name}-pigeonhole < %{epoch}:%{version}-%{release}
 Summary: Sieve and managesieve plug-in for dovecot
 Group: System Environment/Daemons
 License: MIT and LGPLv2
@@ -121,7 +119,7 @@ This package provides sieve and managesieve plug-in for dovecot LDA.
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-pgql = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-pgsql%{?_isa} = %{epoch}:%{version}-%{release}
-Conflicts: %{real_name}-pgsql < %{base_ver}
+Conflicts: %{real_name}-pgsql < %{epoch}:%{version}-%{release}
 Summary: Postgres SQL back end for dovecot
 Group: System Environment/Daemons
 %description pgsql
@@ -131,7 +129,7 @@ This package provides the Postgres SQL back end for dovecot-auth etc.
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-mysql = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-mysql%{?_isa} = %{epoch}:%{version}-%{release}
-Conflicts: %{real_name}-mysql < %{base_ver}
+Conflicts: %{real_name}-mysql < %{epoch}:%{version}-%{release}
 Summary: MySQL back end for dovecot
 Group: System Environment/Daemons
 %description mysql
@@ -141,7 +139,7 @@ This package provides the MySQL back end for dovecot-auth etc.
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-devel = %{epoch}:%{version}-%{release}
 Provides: %{real_name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
-Conflicts: %{real_name}-devel < %{base_ver}
+Conflicts: %{real_name}-devel < %{epoch}:%{version}-%{release}
 Summary: Development files for dovecot
 Group: Development/Libraries
 %description devel
@@ -516,6 +514,7 @@ make check
 %changelog
 * Fri Nov 16 2018 Carl George <carl@george.computer> - 1:2.2.36-1.ius
 - Latest upstream dovecot (2.2.36) and pigeonholever (0.4.24)
+- Fix conflicts to account for epoch on stock dovecot
 
 * Mon Mar 19 2018 Ben Harper <ben.harper@rackspace.com> - 1:2.2.35-1.ius
 - Latest upstream
