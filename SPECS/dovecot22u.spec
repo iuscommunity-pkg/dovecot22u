@@ -9,7 +9,7 @@
 Summary: Secure imap and pop3 server
 Name: %{real_name}%{?ius_suffix}
 Epoch: 1
-Version: 2.2.35
+Version: 2.2.36
 %global prever %{nil}
 Release: 1.ius%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
@@ -20,7 +20,7 @@ URL: https://www.dovecot.org/
 Source: https://www.dovecot.org/releases/2.2/%{real_name}-%{version}%{?prever}.tar.gz
 Source1: dovecot.init
 Source2: dovecot.pam
-%global pigeonholever 0.4.22
+%global pigeonholever 0.4.24
 Source8: https://pigeonhole.dovecot.org/releases/2.2/dovecot-2.2-pigeonhole-%{pigeonholever}.tar.gz
 Source9: dovecot.sysconfig
 Source10: dovecot.tmpfilesd
@@ -45,6 +45,7 @@ BuildRequires: openssl-devel, pam-devel, zlib-devel, bzip2-devel, libcap-devel
 BuildRequires: libtool, autoconf, automake, pkgconfig
 BuildRequires: sqlite-devel
 BuildRequires: postgresql-devel
+BuildRequires: tcp_wrappers-devel
 BuildRequires: mariadb-devel < 1:10.0.13
 BuildRequires: openldap-devel
 BuildRequires: krb5-devel
@@ -52,7 +53,6 @@ BuildRequires: quota-devel
 BuildRequires: xz-devel
 BuildRequires: git < 2.1.3
 BuildRequires: rsync < 3.1.1
-BuildRequires: tcp_wrappers-devel
 
 # gettext-devel is needed for running autoconf because of the
 # presence of AM_ICONV
@@ -513,6 +513,9 @@ make check
 %{_libdir}/%{real_name}/dict/libdriver_pgsql.so
 
 %changelog
+* Fri Nov 16 2018 Carl George <carl@george.computer> - 1:2.2.36-1.ius
+- Latest upstream dovecot (2.2.36) and pigeonholever (0.4.24)
+
 * Mon Mar 19 2018 Ben Harper <ben.harper@rackspace.com> - 1:2.2.35-1.ius
 - Latest upstream
   dovecot 2.2.35
