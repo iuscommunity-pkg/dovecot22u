@@ -5,9 +5,9 @@
 Summary: Secure imap and pop3 server
 Name: dovecot22u
 Epoch: 1
-Version: 2.2.36
+Version: 2.2.36.3
 %global prever %{nil}
-Release: 1.ius%{?dist}
+Release: 1%{?dist}
 #dovecot itself is MIT, a few sources are PD, pigeonhole is LGPLv2
 License: MIT and LGPLv2
 Group: System Environment/Daemons
@@ -508,6 +508,9 @@ make check
 %{_libdir}/dovecot/dict/libdriver_pgsql.so
 
 %changelog
+* Thu May 23 2019 Carl George <carl@george.computer> - 1:2.2.36.3-1
+- Latest upstream
+
 * Fri Nov 16 2018 Carl George <carl@george.computer> - 1:2.2.36-1.ius
 - Latest upstream dovecot (2.2.36) and pigeonholever (0.4.24)
 - Fix conflicts to account for epoch on stock dovecot
